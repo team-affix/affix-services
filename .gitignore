@@ -1,0 +1,7 @@
+
+*.cache
+*.pdb
+*.exe
+dev/client/windows/Affix Center/.vs/Affix Center/v16/.suo
+dev/client/windows/Affix Center/Affix Center/bin/Debug/Affix Center.exe
+dev/client/windows/Affix Center/Affix Center/obj/Debug/Affix Center.csproj.FileListAbsolute.txt
