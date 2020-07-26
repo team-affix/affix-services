@@ -7,7 +7,7 @@
 *****************************************************************************/
 
 #include <memory>
-#include "../../as-client/startupwindow.h"
+#include "../../../cross-platform/header/startupwindow.h"
 #include <QtCore/qbytearray.h>
 #include <QtCore/qmetatype.h>
 #if !defined(Q_MOC_OUTPUT_REVISION)
