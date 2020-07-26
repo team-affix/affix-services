@@ -14,6 +14,6 @@ struct appColors {
 		textColor1,
 		textColor2,
 		outlineColor0,
-		outlineColor1,
+        outlineColor1,
 		outlineColor2;
 };
