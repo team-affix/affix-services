@@ -11,10 +11,9 @@
 
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QGridLayout>
 #include <QtWidgets/QMainWindow>
-#include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPushButton>
-#include <QtWidgets/QStatusBar>
 #include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -23,28 +22,34 @@ class Ui_StartUpWindow
 {
 public:
     QWidget *centralwidget;
+    QGridLayout *gridLayout;
     QPushButton *pushButton;
-    QMenuBar *menubar;
-    QStatusBar *statusbar;
 
     void setupUi(QMainWindow *StartUpWindow)
     {
         if (StartUpWindow->objectName().isEmpty())
             StartUpWindow->setObjectName(QString::fromUtf8("StartUpWindow"));
-        StartUpWindow->resize(800, 600);
+        StartUpWindow->resize(794, 640);
+        StartUpWindow->setStyleSheet(QString::fromUtf8("background-color: rgb(20, 20, 20);"));
         centralwidget = new QWidget(StartUpWindow);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
+        gridLayout = new QGridLayout(centralwidget);
+        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         pushButton = new QPushButton(centralwidget);
         pushButton->setObjectName(QString::fromUtf8("pushButton"));
-        pushButton->setGeometry(QRect(290, 200, 111, 41));
+        pushButton->setMinimumSize(QSize(0, 100));
+        pushButton->setMaximumSize(QSize(300, 16777215));
+        pushButton->setStyleSheet(QString::fromUtf8("border-style: outset;\n"
+"border-width: 0px;\n"
+"border-radius: 20px;\n"
+"border-color: rgb(30, 30, 30);\n"
+"background-color: rgb(30, 30, 30);\n"
+"color: rgb(123, 255, 156);\n"
+"font: 25 14pt \"Segoe UI\";"));
+
+        gridLayout->addWidget(pushButton, 0, 0, 1, 1);
+
         StartUpWindow->setCentralWidget(centralwidget);
-        menubar = new QMenuBar(StartUpWindow);
-        menubar->setObjectName(QString::fromUtf8("menubar"));
-        menubar->setGeometry(QRect(0, 0, 800, 20));
-        StartUpWindow->setMenuBar(menubar);
-        statusbar = new QStatusBar(StartUpWindow);
-        statusbar->setObjectName(QString::fromUtf8("statusbar"));
-        StartUpWindow->setStatusBar(statusbar);
 
         retranslateUi(StartUpWindow);
 
