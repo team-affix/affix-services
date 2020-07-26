@@ -1,4 +1,4 @@
-#include "../Header/startupwindow.h"
+#include "../../cross-platform/header/startupwindow.h"
 #include "ui_startupwindow.h"
 
 StartUpWindow::StartUpWindow(QWidget *parent)
