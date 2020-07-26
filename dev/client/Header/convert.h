@@ -7,6 +7,6 @@ string getOSDir(string winDir);
 #pragma endregion
 ///////////////////
 #pragma region colors
-wxColor toWXColor(const color& c);
-color toColor(const wxColor& w);
+QColor toQColor(const color& c);
+color toColor(const QColor& w);
 #pragma endregion

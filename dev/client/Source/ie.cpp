@@ -1,4 +1,4 @@
-#include "ie.h"
+#include "../Header/ie.h"
 
 #pragma region appColors
 void iAppColorsConfigs() {
@@ -12,7 +12,7 @@ void iAppColorsConfigs() {
 		stream.read(appColorsConfigsBuff, sizeof(appColors));
 	}
 
-	char appColorsActiveConfigBuff[sizeof(UINT64)];
+    char appColorsActiveConfigBuff[sizeof(uint64_t)];
 
 
 }

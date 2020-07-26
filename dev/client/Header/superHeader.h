@@ -10,10 +10,10 @@ return winDir;
 
 // Application Values
 
-
 #pragma once
 
-#include "wx/wx.h"
+#include <QApplication>
+#include <QColor>
 #include <functional>
 #include <iostream>
 #include <fstream>
