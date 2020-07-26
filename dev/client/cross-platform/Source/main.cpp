@@ -1,6 +1,6 @@
 #pragma once
-#include "../Header/superHeader.h"
-#include "../Header/startupwindow.h"
+#include "../../cross-platform/header/superHeader.h"
+#include "../../cross-platform/header/startupwindow.h"
 
 int main(int argc, char *argv[])
 {
