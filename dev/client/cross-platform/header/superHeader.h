@@ -1,11 +1,15 @@
-// OS Specific Includes
+// OS Specific Includes and Values
 #ifdef _WIN32
 #define OS_PATH_CONVERT \
-return winDir;
+    return winDir;
+#define OS_CREATE_DIRECTORY \
+    mkdir(path.c_str());
 #else
 #define OS_PATH_CONVERT \
 replace(winDir.begin(), winDir.end(), '\\', '/'); \
-return winDir;
+    return winDir;
+#define OS_CREATE_DIRECTORY \
+    mkdir(path.c_str(), S_IWUSR);
 #endif
 
 // Application Includes

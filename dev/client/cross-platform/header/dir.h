@@ -27,4 +27,6 @@ void fixAppDirectories(appDirStatus status);
 
 void import(appFiles files);
 
+void createDirectory(const string& path);
+
 bool pathExists(string path);
