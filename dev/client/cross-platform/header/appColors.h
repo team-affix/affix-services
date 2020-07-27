@@ -3,7 +3,7 @@
 #include "color.h"
 
 struct appColors {
-	color
+    color
 		backColor0,
 		backColor1,
 		backColor2,
@@ -15,5 +15,5 @@ struct appColors {
 		textColor2,
 		outlineColor0,
         outlineColor1,
-		outlineColor2;
+        outlineColor2;
 };

@@ -1,15 +1,17 @@
 #pragma once
 #include "superHeader.h"
 #include "convert.h"
+#include "appColors.h"
 
-#pragma region directories
-const string dirMain = getOSDir("main\\");
-const string dirAppColors = getOSDir(dirMain + "appColors\\");
-const string dirAppColorsConfigs = getOSDir(dirAppColors + "configs");
-const string dirAppColorsActiveConfigIndex = getOSDir(dirAppColors + "activeConfigIndex");
-const string dirAccounts = getOSDir(dirMain + "accounts\\");
-const string dirAccountsLoggedIn = getOSDir(dirAccounts + "loggedIn");
-const string dirAccountsActiveIndex = getOSDir(dirAccounts + "activeIndex");
-const string dirMachine = getOSDir(dirMain + "machine\\");
-const string dirMachineActive = getOSDir(dirMachine + "active");
-#pragma endregion
+inline const string dirMain = getOSDir("main\\");
+inline const string dirAppColors = getOSDir(dirMain + "appColors\\");
+inline const string dirAppColorsActive = getOSDir(dirAppColors + "active");
+inline const string dirAccounts = getOSDir(dirMain + "accounts\\");
+inline const string dirAccountsLoggedIn = getOSDir(dirAccounts + "loggedIn");
+inline const string dirAccountsActiveIndex = getOSDir(dirAccounts + "activeIndex");
+inline const string dirMachine = getOSDir(dirMain + "machine\\");
+inline const string dirMachineActive = getOSDir(dirMachine + "active");
+
+//inline const appColors appColorsDark;
+//inline const appColors appColorsBright;
+//inline const appColors* appColorsDefault = &appColorsDark;

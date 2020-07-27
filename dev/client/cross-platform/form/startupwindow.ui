@@ -17,36 +17,7 @@
    <string notr="true">background-color: rgb(20, 20, 20);</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
-     <widget class="QPushButton" name="pushButton">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>100</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>300</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">border-style: outset;
-border-width: 0px;
-border-radius: 20px;
-border-color: rgb(30, 30, 30);
-background-color: rgb(30, 30, 30);
-color: rgb(123, 255, 156);
-font: 25 14pt &quot;Segoe UI&quot;;</string>
-      </property>
-      <property name="text">
-       <string>PushButton</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
+   <layout class="QGridLayout" name="gridLayout"/>
   </widget>
  </widget>
  <resources/>
