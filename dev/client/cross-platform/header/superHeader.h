@@ -1,14 +1,18 @@
-// OS Specific Values
+// OS Specific Includes and Values
 #ifdef _WIN32
 #define OS_PATH_CONVERT \
-return winDir;
+    return winDir;
+#define OS_CREATE_DIRECTORY \
+    mkdir(path.c_str());
 #else
 #define OS_PATH_CONVERT \
 replace(winDir.begin(), winDir.end(), '\\', '/'); \
-return winDir;
+    return winDir;
+#define OS_CREATE_DIRECTORY \
+    mkdir(path.c_str(), S_IWUSR);
 #endif
 
-// Application Values
+// Application Includes
 
 #pragma once
 
@@ -18,5 +22,8 @@ return winDir;
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <math.h>
 
 using namespace std;

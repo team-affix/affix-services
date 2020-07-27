@@ -11,10 +11,8 @@
 
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QGridLayout>
 #include <QtWidgets/QMainWindow>
-#include <QtWidgets/QMenuBar>
-#include <QtWidgets/QPushButton>
-#include <QtWidgets/QStatusBar>
 #include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -23,28 +21,19 @@ class Ui_StartUpWindow
 {
 public:
     QWidget *centralwidget;
-    QPushButton *pushButton;
-    QMenuBar *menubar;
-    QStatusBar *statusbar;
+    QGridLayout *gridLayout;
 
     void setupUi(QMainWindow *StartUpWindow)
     {
         if (StartUpWindow->objectName().isEmpty())
             StartUpWindow->setObjectName(QString::fromUtf8("StartUpWindow"));
-        StartUpWindow->resize(800, 600);
+        StartUpWindow->resize(794, 640);
+        StartUpWindow->setStyleSheet(QString::fromUtf8("background-color: rgb(20, 20, 20);"));
         centralwidget = new QWidget(StartUpWindow);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
-        pushButton = new QPushButton(centralwidget);
-        pushButton->setObjectName(QString::fromUtf8("pushButton"));
-        pushButton->setGeometry(QRect(290, 200, 111, 41));
+        gridLayout = new QGridLayout(centralwidget);
+        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         StartUpWindow->setCentralWidget(centralwidget);
-        menubar = new QMenuBar(StartUpWindow);
-        menubar->setObjectName(QString::fromUtf8("menubar"));
-        menubar->setGeometry(QRect(0, 0, 800, 20));
-        StartUpWindow->setMenuBar(menubar);
-        statusbar = new QStatusBar(StartUpWindow);
-        statusbar->setObjectName(QString::fromUtf8("statusbar"));
-        StartUpWindow->setStatusBar(statusbar);
 
         retranslateUi(StartUpWindow);
 
@@ -54,7 +43,6 @@ public:
     void retranslateUi(QMainWindow *StartUpWindow)
     {
         StartUpWindow->setWindowTitle(QCoreApplication::translate("StartUpWindow", "StartUpWindow", nullptr));
-        pushButton->setText(QCoreApplication::translate("StartUpWindow", "PushButton", nullptr));
     } // retranslateUi
 
 };

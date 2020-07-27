@@ -1,19 +1,20 @@
 #include "../../cross-platform/header/ie.h"
 
-#pragma region appColors
-void iAppColorsConfigs() {
+// AppColors
 
+void iAppColorsActive() {
 
-	ifstream stream;
-	stream.open(dirAppColorsConfigs, ifstream::binary);
-	
-	while (stream.tellg() != -1) {
-		char appColorsConfigsBuff[sizeof(appColors)];
-		stream.read(appColorsConfigsBuff, sizeof(appColors));
-	}
+    ifstream i(dirAppColorsActive);
 
-    char appColorsActiveConfigBuff[sizeof(uint64_t)];
+    char line[24];
 
+    i.read(line, 24);
 
 }
-#pragma endregion
+void eAppColorsActive(){
+
+    ofstream o(dirAppColorsActive);
+
+    o << toString(appColorsActive);
+
+}

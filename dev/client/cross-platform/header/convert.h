@@ -1,12 +1,28 @@
 #pragma once
 #include "superHeader.h"
 #include "color.h"
+#include "appColors.h"
 
-#pragma region directories
+// string
+
+string toBase(string in, uint from, uint to, uint padding = 0);
+
+// Directories
+
 string getOSDir(string winDir);
-#pragma endregion
-///////////////////
-#pragma region colors
+
+// Colors
+
 QColor toQColor(const color& c);
-color toColor(const QColor& w);
-#pragma endregion
+
+color toColor(const QColor& q);
+
+color toColor(const string& s);
+
+string toString(const color& c);
+
+// AppColors
+
+string toString(const appColors& a);
+
+appColors toAppColors(const string& s);
