@@ -1,2 +1,27 @@
-﻿  main.cpp
+﻿  request.cpp
+D:\files\programming\GitHub\affix-services\dev\both\source\request-response\request.cpp(6,28): warning C4267: '+=': conversion from 'size_t' to 'uint16_t', possible loss of data
+D:\files\programming\GitHub\affix-services\dev\both\source\request-response\request.cpp(12,28): warning C4267: '+=': conversion from 'size_t' to 'uint16_t', possible loss of data
+  response.cpp
+D:\files\programming\GitHub\affix-services\dev\both\source\request-response\response.cpp(6,28): warning C4267: '+=': conversion from 'size_t' to 'uint16_t', possible loss of data
+D:\files\programming\GitHub\affix-services\dev\both\source\request-response\response.cpp(12,28): warning C4267: '+=': conversion from 'size_t' to 'uint16_t', possible loss of data
+  client.cpp
+D:\files\programming\GitHub\affix-services\dev\server\windows\as-server\as-server\client.cpp(21,35): warning C4018: '<': signed/unsigned mismatch
+D:\files\programming\GitHub\affix-services\dev\server\windows\as-server\as-server\client.cpp(66,60): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+  dir.cpp
+D:\files\programming\GitHub\affix-services\dev\server\windows\as-server\as-server\dir.cpp(5,54): warning C4554: '&': check operator precedence for possible error; use parentheses to clarify precedence
+D:\files\programming\GitHub\affix-services\dev\server\windows\as-server\as-server\dir.cpp(8,56): warning C4554: '&': check operator precedence for possible error; use parentheses to clarify precedence
+D:\files\programming\GitHub\affix-services\dev\server\windows\as-server\as-server\dir.cpp(11,58): warning C4554: '&': check operator precedence for possible error; use parentheses to clarify precedence
+D:\files\programming\GitHub\affix-services\dev\server\windows\as-server\as-server\dir.cpp(14,69): warning C4554: '&': check operator precedence for possible error; use parentheses to clarify precedence
+D:\files\programming\GitHub\affix-services\dev\server\windows\as-server\as-server\dir.cpp(17,65): warning C4554: '&': check operator precedence for possible error; use parentheses to clarify precedence
+D:\files\programming\GitHub\affix-services\dev\server\windows\as-server\as-server\dir.cpp(20,58): warning C4554: '&': check operator precedence for possible error; use parentheses to clarify precedence
+D:\files\programming\GitHub\affix-services\dev\server\windows\as-server\as-server\dir.cpp(23,54): warning C4554: '&': check operator precedence for possible error; use parentheses to clarify precedence
+D:\files\programming\GitHub\affix-services\dev\server\windows\as-server\as-server\dir.cpp(26,53): warning C4554: '&': check operator precedence for possible error; use parentheses to clarify precedence
+  ie.cpp
+  log.cpp
+  main.cpp
+  overhead_classes.cpp
+  overhead_functions.cpp
+  process.cpp
+  server.cpp
+  Generating Code...
   as-server.vcxproj -> D:\files\programming\GitHub\affix-services\dev\server\windows\as-server\x64\Debug\as-server.exe
