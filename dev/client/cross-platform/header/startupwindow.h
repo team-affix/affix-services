@@ -2,6 +2,8 @@
 #define STARTUPWINDOW_H
 
 #include <QMainWindow>
+#include "superHeader.h"
+#include "const.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class StartUpWindow; }

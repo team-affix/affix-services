@@ -24,6 +24,9 @@ HEADERS += \
 FORMS += \
     ..\..\cross-platform\form\*.ui
 
+INCLUDEPATH += \
+    ../../cross-platform/include
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin

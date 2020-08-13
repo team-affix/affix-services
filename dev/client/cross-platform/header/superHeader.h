@@ -25,5 +25,6 @@ replace(winDir.begin(), winDir.end(), '\\', '/'); \
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <math.h>
+#include <QPixmap>
 
 using namespace std;
