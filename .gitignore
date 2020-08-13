@@ -13,3 +13,10 @@ dev/server/windows/as-server/.vs/as-server/v16/Browse.VC.db
 dev/server/windows/as-server/.vs/as-server/v16/.suo
 *.tlog
 *.tlog
+*.obj
+dev/server/windows/as-server/.vs/as-server/v16/Browse.VC.db-shm
+dev/server/windows/as-server/.vs/as-server/v16/Browse.VC.db-wal
+dev/server/windows/as-server/.vs/as-server/v16/Browse.VC.opendb
+dev/server/windows/as-server/as-server/x64/Debug/vc142.idb
+dev/server/windows/as-server/x64/Debug/as-server.ilk
+dev/server/windows/as-server/as-server/x64/Debug/vc142.idb
