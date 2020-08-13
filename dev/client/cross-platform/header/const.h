@@ -11,6 +11,9 @@ inline const string dirAccountsLoggedIn = getOSDir(dirAccounts + "loggedIn");
 inline const string dirAccountsActiveIndex = getOSDir(dirAccounts + "activeIndex");
 inline const string dirMachine = getOSDir(dirMain + "machine\\");
 inline const string dirMachineActive = getOSDir(dirMachine + "active");
+inline const string dirImages = getOSDir("..\\..\\..\\..\\image\\");
+inline const string dirLogos = getOSDir(dirImages + "logo\\");
+inline const string dirBackgrounds = getOSDir(dirImages + "background\\");
 
 //inline const appColors appColorsDark;
 //inline const appColors appColorsBright;

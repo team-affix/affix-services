@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\users">
+      <UniqueIdentifier>{37033f67-9324-4eef-8f16-449fd1f59198}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\comms">
+      <UniqueIdentifier>{dbd4bd43-d263-4e63-bddd-f28d96568d2d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\processing">
+      <UniqueIdentifier>{40eb8359-22ca-4f46-9001-a8fbbe5c1afd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\super">
+      <UniqueIdentifier>{f2242681-f1f7-4324-a3ce-e1d7d9a9587a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\storage">
+      <UniqueIdentifier>{7cbec3ba-6b47-4f8f-bd07-a3cebc6b3337}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\storage">
+      <UniqueIdentifier>{e1493638-eee6-4925-8279-296ff25e90c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\comms">
+      <UniqueIdentifier>{c58808eb-016d-41fe-8082-5d9347d4abc2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\processing">
+      <UniqueIdentifier>{afcd5c19-108a-4c8e-88a8-844982889287}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\request-response">
+      <UniqueIdentifier>{9243f0c3-fb2b-403d-a0d2-d50bddd09838}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\request-response">
+      <UniqueIdentifier>{58489bfd-e5d1-4a49-9201-f057b0abd28e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\logging">
+      <UniqueIdentifier>{57e6f6fc-2b93-4c37-832f-84fa3407dc14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\logging">
+      <UniqueIdentifier>{3d103679-7286-4eea-8fc9-d76b0c450b3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\super">
+      <UniqueIdentifier>{d2085323-64f8-45a9-950a-bf06d51957df}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="accounts.h">
+      <Filter>Header Files\users</Filter>
+    </ClInclude>
+    <ClInclude Include="machines.h">
+      <Filter>Header Files\users</Filter>
+    </ClInclude>
+    <ClInclude Include="client.h">
+      <Filter>Header Files\comms</Filter>
+    </ClInclude>
+    <ClInclude Include="server.h">
+      <Filter>Header Files\comms</Filter>
+    </ClInclude>
+    <ClInclude Include="process.h">
+      <Filter>Header Files\processing</Filter>
+    </ClInclude>
+    <ClInclude Include="dir.h">
+      <Filter>Header Files\storage</Filter>
+    </ClInclude>
+    <ClInclude Include="ie.h">
+      <Filter>Header Files\storage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\both\header\request-response\request.h">
+      <Filter>Header Files\request-response</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\both\header\request-response\response.h">
+      <Filter>Header Files\request-response</Filter>
+    </ClInclude>
+    <ClInclude Include="log.h">
+      <Filter>Header Files\logging</Filter>
+    </ClInclude>
+    <ClInclude Include="overhead_vars.h">
+      <Filter>Header Files\super</Filter>
+    </ClInclude>
+    <ClInclude Include="overhead_include.h">
+      <Filter>Header Files\super</Filter>
+    </ClInclude>
+    <ClInclude Include="overhead_classes.h">
+      <Filter>Header Files\super</Filter>
+    </ClInclude>
+    <ClInclude Include="overhead_functions.h">
+      <Filter>Header Files\super</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="server.cpp">
+      <Filter>Source Files\comms</Filter>
+    </ClCompile>
+    <ClCompile Include="client.cpp">
+      <Filter>Source Files\comms</Filter>
+    </ClCompile>
+    <ClCompile Include="dir.cpp">
+      <Filter>Source Files\storage</Filter>
+    </ClCompile>
+    <ClCompile Include="ie.cpp">
+      <Filter>Source Files\storage</Filter>
+    </ClCompile>
+    <ClCompile Include="process.cpp">
+      <Filter>Source Files\processing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\both\source\request-response\request.cpp">
+      <Filter>Source Files\request-response</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\both\source\request-response\response.cpp">
+      <Filter>Source Files\request-response</Filter>
+    </ClCompile>
+    <ClCompile Include="log.cpp">
+      <Filter>Source Files\logging</Filter>
+    </ClCompile>
+    <ClCompile Include="overhead_functions.cpp">
+      <Filter>Source Files\super</Filter>
+    </ClCompile>
+    <ClCompile Include="overhead_classes.cpp">
+      <Filter>Source Files\super</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

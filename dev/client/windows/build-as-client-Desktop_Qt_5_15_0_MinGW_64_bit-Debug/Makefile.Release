@@ -16,10 +16,10 @@ CXX           = g++
 DEFINES       = -DUNICODE -D_UNICODE -DWIN32 -DMINGW_HAS_SECURE_API=1 -DQT_DEPRECATED_WARNINGS -DQT_QML_DEBUG -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_NEEDS_QMAIN
 CFLAGS        = -fno-keep-inline-dllexport -O2 -Wall -Wextra -Wextra $(DEFINES)
 CXXFLAGS      = -fno-keep-inline-dllexport -O2 -std=gnu++1z -Wall -Wextra -Wextra -fexceptions -mthreads $(DEFINES)
-INCPATH       = -I..\as-client -I. -IC:\Qt\5.15.0\mingw81_64\include -IC:\Qt\5.15.0\mingw81_64\include\QtWidgets -IC:\Qt\5.15.0\mingw81_64\include\QtGui -IC:\Qt\5.15.0\mingw81_64\include\QtANGLE -IC:\Qt\5.15.0\mingw81_64\include\QtCore -Irelease -I. -I/include -IC:\Qt\5.15.0\mingw81_64\mkspecs\win32-g++ 
+INCPATH       = -I..\as-client -I. -I..\..\cross-platform\include -I..\..\cross-platform\include -I..\..\cross-platform\include -IC:\Qt\5.15.0\mingw81_64\include -IC:\Qt\5.15.0\mingw81_64\include\QtWidgets -IC:\Qt\5.15.0\mingw81_64\include\QtGui -IC:\Qt\5.15.0\mingw81_64\include\QtANGLE -IC:\Qt\5.15.0\mingw81_64\include\QtCore -Irelease -I. -I/include -IC:\Qt\5.15.0\mingw81_64\mkspecs\win32-g++ 
 LINKER      =        g++
 LFLAGS        =        -Wl,-s -Wl,-subsystem,windows -mthreads
-LIBS        =        C:\Qt\5.15.0\mingw81_64\lib\libQt5Widgets.a C:\Qt\5.15.0\mingw81_64\lib\libQt5Gui.a C:\Qt\5.15.0\mingw81_64\lib\libQt5Core.a  -lmingw32 C:\Qt\5.15.0\mingw81_64\lib\libqtmain.a -LC:\openssl\lib -LC:\Utils\my_sql\mysql-5.7.25-winx64\lib -LC:\Utils\postgresql\pgsql\lib -lshell32 
+LIBS        =        -LD:\files\programming\GitHub\affix-services\dev\client\cross-platform\lib -llibboost_filesystem-vc142-mt-x64-1_74 -llibboost_filesystem-vc142-mt-gd-x64-1_74 C:\Qt\5.15.0\mingw81_64\lib\libQt5Widgets.a C:\Qt\5.15.0\mingw81_64\lib\libQt5Gui.a C:\Qt\5.15.0\mingw81_64\lib\libQt5Core.a  -lmingw32 C:\Qt\5.15.0\mingw81_64\lib\libqtmain.a -LC:\openssl\lib -LC:\Utils\my_sql\mysql-5.7.25-winx64\lib -LC:\Utils\postgresql\pgsql\lib -lshell32 
 QMAKE         = C:\Qt\5.15.0\mingw81_64\bin\qmake.exe
 DEL_FILE      = del
 CHK_DIR_EXISTS= if not exist
@@ -85,7 +85,7 @@ DESTDIR_TARGET = release\as-client.exe
 first: all
 all: Makefile.Release  release/as-client.exe
 
-release/as-client.exe: C:/Qt/5.15.0/mingw81_64/lib/libQt5Widgets.a C:/Qt/5.15.0/mingw81_64/lib/libQt5Gui.a C:/Qt/5.15.0/mingw81_64/lib/libQt5Core.a C:/Qt/5.15.0/mingw81_64/lib/libqtmain.a ui_startupwindow.h $(OBJECTS) 
+release/as-client.exe: D:/files/programming/GitHub/affix-services/dev/client/windows/as-client/../../cross-platform/lib/liblibboost_filesystem-vc142-mt-x64-1_74.a D:/files/programming/GitHub/affix-services/dev/client/windows/as-client/../../cross-platform/lib/liblibboost_filesystem-vc142-mt-gd-x64-1_74.a C:/Qt/5.15.0/mingw81_64/lib/libQt5Widgets.a C:/Qt/5.15.0/mingw81_64/lib/libQt5Gui.a C:/Qt/5.15.0/mingw81_64/lib/libQt5Core.a C:/Qt/5.15.0/mingw81_64/lib/libqtmain.a ui_startupwindow.h $(OBJECTS) 
 	$(LINKER) $(LFLAGS) -o $(DESTDIR_TARGET) $(OBJECTS)  $(LIBS)
 
 qmake: FORCE
@@ -234,7 +234,7 @@ release/moc_startupwindow.cpp: ../../cross-platform/header/startupwindow.h \
 		C:/Qt/5.15.0/mingw81_64/include/QtGui/qicon.h \
 		release/moc_predefs.h \
 		C:/Qt/5.15.0/mingw81_64/bin/moc.exe
-	C:\Qt\5.15.0\mingw81_64\bin\moc.exe $(DEFINES) --include D:/files/programming/GitHub/affix-services/dev/client/windows/build-as-client-Desktop_Qt_5_15_0_MinGW_64_bit-Debug/release/moc_predefs.h -IC:/Qt/5.15.0/mingw81_64/mkspecs/win32-g++ -ID:/files/programming/GitHub/affix-services/dev/client/windows/as-client -IC:/Qt/5.15.0/mingw81_64/include -IC:/Qt/5.15.0/mingw81_64/include/QtWidgets -IC:/Qt/5.15.0/mingw81_64/include/QtGui -IC:/Qt/5.15.0/mingw81_64/include/QtANGLE -IC:/Qt/5.15.0/mingw81_64/include/QtCore -I. -IC:/Qt/Tools/mingw810_64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++ -IC:/Qt/Tools/mingw810_64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32 -IC:/Qt/Tools/mingw810_64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward -IC:/Qt/Tools/mingw810_64/lib/gcc/x86_64-w64-mingw32/8.1.0/include -IC:/Qt/Tools/mingw810_64/lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed -IC:/Qt/Tools/mingw810_64/x86_64-w64-mingw32/include ..\..\cross-platform\header\startupwindow.h -o release\moc_startupwindow.cpp
+	C:\Qt\5.15.0\mingw81_64\bin\moc.exe $(DEFINES) --include D:/files/programming/GitHub/affix-services/dev/client/windows/build-as-client-Desktop_Qt_5_15_0_MinGW_64_bit-Debug/release/moc_predefs.h -IC:/Qt/5.15.0/mingw81_64/mkspecs/win32-g++ -ID:/files/programming/GitHub/affix-services/dev/client/windows/as-client -ID:/files/programming/GitHub/affix-services/dev/client/cross-platform/include -ID:/files/programming/GitHub/affix-services/dev/client/cross-platform/include -ID:/files/programming/GitHub/affix-services/dev/client/cross-platform/include -IC:/Qt/5.15.0/mingw81_64/include -IC:/Qt/5.15.0/mingw81_64/include/QtWidgets -IC:/Qt/5.15.0/mingw81_64/include/QtGui -IC:/Qt/5.15.0/mingw81_64/include/QtANGLE -IC:/Qt/5.15.0/mingw81_64/include/QtCore -I. -IC:/Qt/Tools/mingw810_64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++ -IC:/Qt/Tools/mingw810_64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32 -IC:/Qt/Tools/mingw810_64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward -IC:/Qt/Tools/mingw810_64/lib/gcc/x86_64-w64-mingw32/8.1.0/include -IC:/Qt/Tools/mingw810_64/lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed -IC:/Qt/Tools/mingw810_64/x86_64-w64-mingw32/include ..\..\cross-platform\header\startupwindow.h -o release\moc_startupwindow.cpp
 
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:

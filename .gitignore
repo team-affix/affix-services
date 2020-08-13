@@ -5,3 +5,18 @@
 dev/client/windows/Affix Center/.vs/Affix Center/v16/.suo
 dev/client/windows/Affix Center/Affix Center/bin/Debug/Affix Center.exe
 dev/client/windows/Affix Center/Affix Center/obj/Debug/Affix Center.csproj.FileListAbsolute.txt
+*.ipch
+dev/server/windows/as-server/.vs/as-server/v16/.suo
+*.db
+dev/server/windows/as-server/.vs/as-server/v16/ipch/AutoPCH/9a428433cf6f1668/REQUEST.ipch
+dev/server/windows/as-server/.vs/as-server/v16/Browse.VC.db
+dev/server/windows/as-server/.vs/as-server/v16/.suo
+*.tlog
+*.tlog
+*.obj
+dev/server/windows/as-server/.vs/as-server/v16/Browse.VC.db-shm
+dev/server/windows/as-server/.vs/as-server/v16/Browse.VC.db-wal
+dev/server/windows/as-server/.vs/as-server/v16/Browse.VC.opendb
+dev/server/windows/as-server/as-server/x64/Debug/vc142.idb
+dev/server/windows/as-server/x64/Debug/as-server.ilk
+dev/server/windows/as-server/as-server/x64/Debug/vc142.idb

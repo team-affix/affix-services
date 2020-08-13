@@ -35,7 +35,7 @@ appDirStatus scanAppDirectories(){
 
 void fixAppDirectories(appDirStatus status){
 
-    ofstream o;
+    std::ofstream o;
 
     if((status & mainExists) == 0){
         createDirectory(dirMain);
