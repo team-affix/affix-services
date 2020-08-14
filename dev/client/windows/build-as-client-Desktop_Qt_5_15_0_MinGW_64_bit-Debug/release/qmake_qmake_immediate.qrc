@@ -1,5 +1,0 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource prefix="/">
-<file alias="../Resource/*.resx">D:/files/programming/GitHub/affix-services/dev/client/windows/Resource/*.resx</file>
-</qresource>
-</RCC>
