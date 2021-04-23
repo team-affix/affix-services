@@ -1,7 +1,5 @@
 #include "affix_services.h"
 
-
-
 int main() {
 	
 
