@@ -163,6 +163,9 @@
     <ClInclude Include="affix_services.h" />
     <ClInclude Include="background.h" />
     <ClInclude Include="background_thread.h" />
+    <ClInclude Include="net_message.h" />
+    <ClInclude Include="net_message_header.h" />
+    <ClInclude Include="net_common.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp" />

@@ -16,6 +16,12 @@
     <Filter Include="Header Files\background">
       <UniqueIdentifier>{2ca1aa8e-e401-423b-90e3-264b4ee035e0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\net_common">
+      <UniqueIdentifier>{d80ac953-406a-49bf-a6e3-4ebbfa2c313a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\net_common">
+      <UniqueIdentifier>{fbb1741b-2b83-4ab6-9659-90827ea2dcce}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="affix_services.h">
@@ -26,6 +32,15 @@
     </ClInclude>
     <ClInclude Include="background_thread.h">
       <Filter>Header Files\background</Filter>
+    </ClInclude>
+    <ClInclude Include="net_message.h">
+      <Filter>Header Files\net_common</Filter>
+    </ClInclude>
+    <ClInclude Include="net_message_header.h">
+      <Filter>Header Files\net_common</Filter>
+    </ClInclude>
+    <ClInclude Include="net_common.h">
+      <Filter>Header Files\net_common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
