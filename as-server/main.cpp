@@ -7,7 +7,7 @@ using affix_base::enums::severity;
 
 int main() {
 
-	
+
 	
 	return 0;
 }
