@@ -144,6 +144,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="net_server.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\affix-base\affix-base\affix-base.vcxproj">
@@ -152,6 +153,9 @@
     <ProjectReference Include="..\affix-services\affix-services.vcxproj">
       <Project>{05f915d3-f691-4c08-b845-8ea69909b5f0}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="net_server.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

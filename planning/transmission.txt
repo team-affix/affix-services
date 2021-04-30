@@ -1,0 +1,12 @@
+- transmission
+    - header
+        - size of message
+        - symmetric key (encrypted)
+    - message (encrypted)
+        - authentication header
+            - token
+        - header
+            - id
+            - size of body
+        - body
+            - message contents

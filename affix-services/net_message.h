@@ -13,6 +13,13 @@ namespace affix_services {
 			size_t size() const {
 				return sizeof(message_header) + body.size();
 			}
+			vector<uint8_t> serialize() {
+				vector<uint8_t> result;
+				result.resize(sizeof(message_header) + body.size());
+				std::memcpy(result.data(), &header, sizeof(message_header));
+				std::memcpy(result.data() + sizeof(message_header), body.data(), body.size());
+				return result;
+			}
 			friend std::ostream& operator <<(std::ostream& os, const message& msg) {
 				os << "ID:" << int(msg.header.id) << " Size:" << msg.header.size;
 				return os;
