@@ -11,7 +11,7 @@ int main() {
 	asio::io_context context;
 	std::string ip_addr_0 = "93.184.216.34";
 	std::string ip_addr_1 = "170.3.3.3";
-	asio::ip::tcp::endpoint ep(asio::ip::make_address(ip_addr_1, ec), 80);
+	asio::ip::tcp::endpoint ep(asio::ip::make_address(ip_addr_0, ec), 80);
 	asio::ip::tcp::socket sock(context);
 	
 	sock.connect(ep, ec);
