@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{9025010e-523e-4ea3-9487-bcf1a6094404}</ProjectGuid>
+    <ProjectGuid>{838c29fb-fbdf-4cdf-a814-ec5db584549b}</ProjectGuid>
     <RootNamespace>algtest</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -88,7 +88,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(AFFIX_BASE)\affix-base;$(AFFIX_SERVICES)\affix-services;$(ASIO)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\affix-services\;..\..\affix-base\affix-base\;..\..\affix-base\affix-base-clr;..\..\cfvi-cross-file-variable-interpreter\cfvi\cfvi;../../asio/asio/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -103,7 +103,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(AFFIX_BASE)\affix-base;$(AFFIX_SERVICES)\affix-services;$(ASIO)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\affix-services\;..\..\affix-base\affix-base\;..\..\affix-base\affix-base-clr;..\..\cfvi-cross-file-variable-interpreter\cfvi\cfvi;../../asio/asio/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -118,7 +118,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(AFFIX_BASE)\affix-base;$(AFFIX_SERVICES)\affix-services;$(ASIO)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\affix-services\;..\..\affix-base\affix-base\;..\..\affix-base\affix-base-clr;..\..\cfvi-cross-file-variable-interpreter\cfvi\cfvi;../../asio/asio/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -133,7 +133,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(AFFIX_BASE)\affix-base;$(AFFIX_SERVICES)\affix-services;$(ASIO)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\affix-services\;..\..\affix-base\affix-base\;..\..\affix-base\affix-base-clr;..\..\cfvi-cross-file-variable-interpreter\cfvi\cfvi;../../asio/asio/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -147,7 +147,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\affix-services\affix-services.vcxproj">
-      <Project>{05f915d3-f691-4c08-b845-8ea69909b5f0}</Project>
+      <Project>{0e5e1456-706b-49c2-b5b2-dccd9445c1f7}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

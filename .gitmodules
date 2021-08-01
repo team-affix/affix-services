@@ -1,0 +1,9 @@
+[submodule "cfvi-cross-file-variable-interpreter"]
+	path = cfvi-cross-file-variable-interpreter
+	url = https://github.com/team-affix/cfvi-cross-file-variable-interpreter
+[submodule "affix-base"]
+	path = affix-base
+	url = https://github.com/team-affix/affix-base.git
+[submodule "asio"]
+	path = asio
+	url = https://github.com/chriskohlhoff/asio
