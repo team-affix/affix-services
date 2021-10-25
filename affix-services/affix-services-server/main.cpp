@@ -2,9 +2,8 @@
 
 int main() {
 
-	using namespace affix_base::cryptography;
-
 
 
 	return 0;
+
 }
