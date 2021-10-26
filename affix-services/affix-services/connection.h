@@ -58,12 +58,8 @@ namespace affix_services {
 			connection(tcp::socket& a_socket);
 
 		public:
-			void async_send_securely(const vector<uint8_t>& a_data, const function<void(bool)>& a_callback);
-			void async_receive_securely(vector<uint8_t>& a_data, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback);
-
-		public:
 			void async_send(const vector<uint8_t>& a_data, const function<void(bool)>& a_callback);
-			void async_receive(vector<uint8_t>& a_data, const function<void(bool)>& a_callback);
+			void async_receive(vector<uint8_t>& a_data, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback);
 
 		public:
 			bool outbound_secured() const;

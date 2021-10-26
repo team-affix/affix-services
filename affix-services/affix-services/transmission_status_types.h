@@ -4,13 +4,15 @@
 namespace affix_services {
 	namespace messaging {
 
-		enum class transmission_status_types {
+		enum class transmission_status_types : uint16_t {
 
 			unknown = 0,
-			success,
-			error_decrypting_data,
-			error_token_invalid,
-			error_signature_invalid,
+			success = 1,
+			error_decrypting_data = 2,
+			error_token_invalid = 3,
+			error_signature_invalid = 4,
+			error_version_mismatch = 5,
+			error_deserializing_data = 6,
 
 		};
 

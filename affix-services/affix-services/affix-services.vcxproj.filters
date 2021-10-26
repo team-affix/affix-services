@@ -51,7 +51,7 @@
     <ClInclude Include="identity.h">
       <Filter>Header Files\security</Filter>
     </ClInclude>
-    <ClInclude Include="message.h">
+    <ClInclude Include="message_header.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
     <ClInclude Include="message_types.h">
@@ -66,6 +66,18 @@
     <ClInclude Include="version.h">
       <Filter>Header Files\details</Filter>
     </ClInclude>
+    <ClInclude Include="message_identity_authenticate_0.h">
+      <Filter>Header Files\messaging</Filter>
+    </ClInclude>
+    <ClInclude Include="serialization_result.h">
+      <Filter>Header Files\messaging</Filter>
+    </ClInclude>
+    <ClInclude Include="message_identity_authenticate_1.h">
+      <Filter>Header Files\messaging</Filter>
+    </ClInclude>
+    <ClInclude Include="message_identity_authenticate_2.h">
+      <Filter>Header Files\messaging</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rolling_token.cpp">
@@ -76,6 +88,18 @@
     </ClCompile>
     <ClCompile Include="identity.cpp">
       <Filter>Source Files\security</Filter>
+    </ClCompile>
+    <ClCompile Include="message_header.cpp">
+      <Filter>Source Files\messaging</Filter>
+    </ClCompile>
+    <ClCompile Include="message_identity_authenticate_0.cpp">
+      <Filter>Source Files\messaging</Filter>
+    </ClCompile>
+    <ClCompile Include="message_identity_authenticate_1.cpp">
+      <Filter>Source Files\messaging</Filter>
+    </ClCompile>
+    <ClCompile Include="message_identity_authenticate_2.cpp">
+      <Filter>Source Files\messaging</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

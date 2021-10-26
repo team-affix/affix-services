@@ -19,33 +19,31 @@ connection::connection(tcp::socket& a_socket) : m_network_header(a_socket), m_st
 
 }
 
-void connection::async_send_securely(const vector<uint8_t>& a_data, const function<void(bool)>& a_callback) {
-
-	CATCH_FRIENDLY_ASSERT(outbound_secured(), "Error: connection is not secure.");
-
-	vector<uint8_t> l_encrypted = rsa_encrypt_in_chunks(a_data, m_security_header.m_identity.m_public_key);
-	async_send(l_encrypted, a_callback);
-
-}
-
-void connection::async_receive_securely(vector<uint8_t>& a_data, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback) {
-
-	CATCH_FRIENDLY_ASSERT(inbound_secured(), "Error: connection is not secure.");
-
-	async_receive(a_data, [&, a_private_key, a_callback] (bool a_result) {
-		if (a_result)
-			a_data = rsa_decrypt_in_chunks(a_data, a_private_key);
-		a_callback(a_result);
-	});
-
-}
-
 void connection::async_send(const vector<uint8_t>& a_data, const function<void(bool)>& a_callback) {
-	m_network_header.m_socket_io_guard.async_send(a_data, a_callback);
+
+	if (!outbound_secured()) {
+		m_network_header.m_socket_io_guard.async_send(a_data, a_callback);
+	}
+	else {
+		vector<uint8_t> l_encrypted = rsa_encrypt_in_chunks(a_data, m_security_header.m_identity.m_public_key);
+		m_network_header.m_socket_io_guard.async_send(l_encrypted, a_callback);
+	}
+
 }
 
-void connection::async_receive(vector<uint8_t>& a_data, const function<void(bool)>& a_callback) {
-	m_network_header.m_socket_io_guard.async_receive(a_data, a_callback);
+void connection::async_receive(vector<uint8_t>& a_data, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback) {
+
+	if (!inbound_secured()) {
+		m_network_header.m_socket_io_guard.async_receive(a_data, a_callback);
+	}
+	else {
+		m_network_header.m_socket_io_guard.async_receive(a_data, [&, a_private_key, a_callback] (bool a_result) {
+			if (a_result)
+				a_data = rsa_decrypt_in_chunks(a_data, a_private_key);
+			a_callback(a_result);
+		});
+	}
+
 }
 
 bool connection::outbound_secured() const {
