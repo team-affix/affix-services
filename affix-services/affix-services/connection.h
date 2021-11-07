@@ -30,40 +30,27 @@ namespace affix_services {
 
 		class connection {
 		public:
-			struct security_header {
-			public:
-				identity m_identity;
-				rolling_token m_inbound_token;
-				rolling_token m_outbound_token;
+			// SECURITY FIELDS
+			RSA::PublicKey m_outbound_public_key;
+			rolling_token m_inbound_token;
+			rolling_token m_outbound_token;
 
-			};
-			struct network_header {
-			public:
-				tcp::socket m_socket;
-				socket_io_guard m_socket_io_guard;
-
-			public:
-				network_header(tcp::socket& a_socket);
-
-			};
+			// NETWORKING FIELDS
+			tcp::socket m_socket;
+			socket_io_guard m_socket_io_guard;
 
 		protected:
 			uint64_t m_start_time = 0;
 
 		public:
-			security_header m_security_header;
-			network_header m_network_header;
-
-		public:
 			connection(tcp::socket& a_socket);
 
 		public:
-			void async_send(const vector<uint8_t>& a_data, const function<void(bool)>& a_callback);
+			void async_send(const vector<uint8_t>& a_data, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback);
 			void async_receive(vector<uint8_t>& a_data, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback);
 
 		public:
-			bool outbound_secured() const;
-			bool inbound_secured() const;
+			bool secured() const;
 
 		public:
 			uint64_t lifetime() const;

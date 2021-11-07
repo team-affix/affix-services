@@ -11,8 +11,7 @@ namespace affix_services {
 			error_decrypting_data = 2,
 			error_token_invalid = 3,
 			error_signature_invalid = 4,
-			error_version_mismatch = 5,
-			error_deserializing_data = 6,
+			error_deserializing_data = 5,
 
 		};
 

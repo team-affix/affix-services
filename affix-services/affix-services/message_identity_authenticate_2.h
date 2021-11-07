@@ -16,7 +16,6 @@ namespace affix_services {
 			serialization_result try_serialize(byte_buffer& a_data);
 			static serialization_result try_deserialize(byte_buffer& a_data, message_identity_authenticate_2& a_message);
 
-
 		};
 
 	}
