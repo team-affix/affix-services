@@ -48,9 +48,6 @@
     <ClInclude Include="connection.h">
       <Filter>Header Files\networking</Filter>
     </ClInclude>
-    <ClInclude Include="identity.h">
-      <Filter>Header Files\security</Filter>
-    </ClInclude>
     <ClInclude Include="message_header.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
