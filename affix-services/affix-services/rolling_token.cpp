@@ -9,7 +9,7 @@
 
 using namespace affix_services::security;
 using CryptoPP::AutoSeededRandomPool;
-using affix_base::networking::byte_buffer;
+using affix_base::data::byte_buffer;
 
 rolling_token::rolling_token() {
 
@@ -26,8 +26,8 @@ void rolling_token::operator++() {
 vector<uint8_t> rolling_token::serialize() const {
 
 	byte_buffer result;
-	result << m_seed;
-	result << m_index;
+	result.push_back(m_seed);
+	result.push_back(m_index);
 	return result.data();
 
 }
