@@ -1,11 +1,11 @@
-#include "security_manager.h"
+#include "transmission_security_manager.h"
 #include "affix-base/rsa.h"
 
 using namespace affix_base::cryptography;
-using affix_services::security::security_manager;
+using affix_services::security::transmission_security_manager;
 using affix_base::data::byte_buffer;
 
-bool security_manager::export_message(const vector<uint8_t>& a_message_data, vector<uint8_t>& a_output) {
+bool transmission_security_manager::export_transmission(const vector<uint8_t>& a_message_data, vector<uint8_t>& a_output) {
 	
 	byte_buffer l_byte_buffer;
 
@@ -28,7 +28,7 @@ bool security_manager::export_message(const vector<uint8_t>& a_message_data, vec
 
 }
 
-bool security_manager::import_message(const vector<uint8_t>& a_data, message& a_output) {
+bool transmission_security_manager::import_transmission(const vector<uint8_t>& a_data, transmission& a_output) {
 
 	byte_buffer l_byte_buffer;
 
@@ -54,14 +54,14 @@ bool security_manager::import_message(const vector<uint8_t>& a_data, message& a_
 
 }
 
-bool security_manager::pack_signature(byte_buffer& a_data) {
+bool transmission_security_manager::pack_signature(byte_buffer& a_data) {
 	vector<uint8_t> l_signature;
 	if (!rsa_try_sign(a_data.data(), m_inbound_private_key, l_signature)) return false;
 	if (!a_data.push_front(l_signature)) return false;
 	return true;
 }
 
-bool security_manager::unpack_signature(byte_buffer& a_data, message& a_output) {
+bool transmission_security_manager::unpack_signature(byte_buffer& a_data, transmission& a_output) {
 	vector<uint8_t> l_signature;
 	if (!a_data.pop_front(l_signature)) return false;
 
@@ -72,12 +72,12 @@ bool security_manager::unpack_signature(byte_buffer& a_data, message& a_output) 
 	return true;
 }
 
-bool security_manager::pack_token(byte_buffer& a_data) {
+bool transmission_security_manager::pack_token(byte_buffer& a_data) {
 	if (!a_data.push_front(m_outbound_token.serialize())) return false;
 	return true;
 }
 
-bool security_manager::unpack_token(byte_buffer& a_data, message& a_output) {
+bool transmission_security_manager::unpack_token(byte_buffer& a_data, transmission& a_output) {
 
 	vector<uint8_t> l_inbound_token;
 	if (!a_data.pop_front(l_inbound_token)) return false;
@@ -86,4 +86,12 @@ bool security_manager::unpack_token(byte_buffer& a_data, message& a_output) {
 	a_output.m_token = l_inbound_token;
 
 	return true;
+}
+
+bool transmission_security_manager::secured() const {
+	return
+		m_outbound_confidential &&
+		m_outbound_authenticated &&
+		m_inbound_confidential &&
+		m_inbound_authenticated;
 }

@@ -1,7 +1,6 @@
 #include "connection.h"
 #include "affix-base/pch.h"
 #include "affix-base/utc_time.h"
-#include "affix-base/transmission.h"
 #include "affix-base/rsa.h"
 #include "affix-base/catch_friendly_assert.h"
 
@@ -11,42 +10,56 @@ using asio::ip::tcp;
 using namespace affix_base::networking;
 using namespace affix_base::cryptography;
 
+#if 1
+#define LOG(x) std::cout << x <<std::endl
+#else
+#define LOG(x)
+#endif
+
 connection::connection(tcp::socket& a_socket) : m_socket(std::move(a_socket)), m_socket_io_guard(m_socket), m_start_time(utc_time()) {
 
 }
 
-void connection::async_send(const vector<uint8_t>& a_data, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback) {
+bool connection::async_send(const vector<uint8_t>& a_message_data, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback) {
 
-	if (!secured()) {
-		m_socket_io_guard.async_send(a_data, a_callback);
-	}
-	else {
-		vector<uint8_t> l_encrypted = rsa_encrypt_in_chunks(a_data, m_outbound_public_key);
-		m_socket_io_guard.async_send(l_encrypted, a_callback);
-	}
+	vector<uint8_t> l_final;
+
+	if (!m_message_security_manager.export_transmission(a_message_data, l_final)) return false;
+	LOG("[ CONNECTION ] Exported message without error.");
+
+	m_socket_io_guard.async_send(l_final, a_callback);
+	LOG("[ CONNECTION ] Began async send request.");
+
+	return true;
 
 }
 
-void connection::async_receive(vector<uint8_t>& a_data, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback) {
+void connection::async_receive(transmission& a_message, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback) {
 
-	if (!secured()) {
-		m_socket_io_guard.async_receive(a_data, a_callback);
-	}
-	else {
-		m_socket_io_guard.async_receive(a_data, [&, a_private_key, a_callback] (bool a_result) {
-			if (a_result)
-				a_data = rsa_decrypt_in_chunks(a_data, a_private_key);
-			a_callback(a_result);
-		});
-	}
+	ptr<vector<uint8_t>> l_data = new vector<uint8_t>();
+
+	m_socket_io_guard.async_receive(l_data.val(), [&, l_data, a_private_key, a_callback] (bool a_result) {
+
+		if (!a_result) {
+			LOG("[ CONNECTION ] Error receiving data.");
+			a_callback(false);
+			return;
+		}
+
+		if (!m_message_security_manager.import_transmission(l_data.val(), a_message)) {
+			a_callback(false);
+			return;
+		}
+
+		a_callback(true);
+
+	});
+	LOG("[ CONNECTION ] Began async receive request.");
 
 }
 
 bool connection::secured() const {
-	AutoSeededRandomPool l_random;
-	return m_outbound_public_key.Validate(l_random, 3)
-		&& m_outbound_token.initialized()
-		&& m_inbound_token.initialized();
+	return m_message_security_manager.secured();
 }
 
 uint64_t connection::lifetime() const {

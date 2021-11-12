@@ -3,17 +3,19 @@
 #include "rolling_token.h"
 #include "asio.hpp"
 #include "cryptopp/rsa.h"
-#include "identity.h"
+#include "transmission_security_manager.h"
 #include "affix-base/ts_deque.h"
 #include "affix-base/ptr.h"
 #include "affix-base/networking.h"
+#include "affix-base/transmission.h"
 
 namespace affix_services {
 	namespace networking {
 
 		using std::vector;
 		using security::rolling_token;
-		using security::identity;
+		using security::transmission_security_manager;
+		using networking::transmission;
 		using affix_base::data::ts_deque;
 		using affix_base::data::ptr;
 		using namespace asio::ip;
@@ -31,9 +33,7 @@ namespace affix_services {
 		class connection {
 		public:
 			// SECURITY FIELDS
-			RSA::PublicKey m_outbound_public_key;
-			rolling_token m_inbound_token;
-			rolling_token m_outbound_token;
+			transmission_security_manager m_message_security_manager;
 
 			// NETWORKING FIELDS
 			tcp::socket m_socket;
@@ -46,8 +46,8 @@ namespace affix_services {
 			connection(tcp::socket& a_socket);
 
 		public:
-			void async_send(const vector<uint8_t>& a_data, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback);
-			void async_receive(vector<uint8_t>& a_data, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback);
+			bool async_send(const vector<uint8_t>& a_message_data, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback);
+			void async_receive(transmission& a_message, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback);
 
 		public:
 			bool secured() const;

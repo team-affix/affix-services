@@ -152,12 +152,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="message.h" />
+    <ClInclude Include="transmission.h" />
     <ClInclude Include="details.h" />
     <ClInclude Include="message_identity_authenticate_0.h" />
     <ClInclude Include="message_identity_authenticate_1.h" />
     <ClInclude Include="message_identity_authenticate_2.h" />
-    <ClInclude Include="security_manager.h" />
+    <ClInclude Include="transmission_security_manager.h" />
     <ClInclude Include="serialization_result.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="connection.h" />
@@ -171,12 +171,12 @@
   <ItemGroup>
     <ClCompile Include="connection.cpp" />
     <ClCompile Include="identity.cpp" />
-    <ClCompile Include="message.cpp" />
+    <ClCompile Include="transmission.cpp" />
     <ClCompile Include="message_header.cpp" />
     <ClCompile Include="message_identity_authenticate_0.cpp" />
     <ClCompile Include="message_identity_authenticate_1.cpp" />
     <ClCompile Include="message_identity_authenticate_2.cpp" />
-    <ClCompile Include="security_manager.cpp" />
+    <ClCompile Include="transmission_security_manager.cpp" />
     <ClCompile Include="rolling_token.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

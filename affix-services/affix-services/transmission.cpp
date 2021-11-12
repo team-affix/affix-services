@@ -1,9 +1,9 @@
-#include "message.h"
+#include "transmission.h"
 
-using affix_services::networking::message;
+using affix_services::networking::transmission;
 using namespace affix_base::cryptography;
 
-bool message::authentic(const RSA::PublicKey& a_outbound_public_key, const vector<uint8_t>& a_inbound_token) const {
+bool transmission::authentic(const RSA::PublicKey& a_outbound_public_key, const vector<uint8_t>& a_inbound_token) const {
 	bool l_token_valid =
 		std::equal(a_inbound_token.begin(), a_inbound_token.end(),
 		m_token.begin(), m_token.end());

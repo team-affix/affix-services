@@ -9,7 +9,7 @@ using CryptoPP::RSA;
 
 namespace affix_services {
 	namespace networking {
-		struct message {
+		struct transmission {
 			vector<uint8_t> m_full_data;
 			vector<uint8_t> m_signature;
 			vector<uint8_t> m_signed_data;

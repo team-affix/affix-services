@@ -75,11 +75,11 @@
     <ClInclude Include="message_identity_authenticate_2.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
-    <ClInclude Include="security_manager.h">
+    <ClInclude Include="transmission_security_manager.h">
       <Filter>Header Files\security</Filter>
     </ClInclude>
-    <ClInclude Include="message.h">
-      <Filter>Header Files\messaging</Filter>
+    <ClInclude Include="transmission.h">
+      <Filter>Header Files\networking</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -104,11 +104,11 @@
     <ClCompile Include="message_identity_authenticate_2.cpp">
       <Filter>Source Files\messaging</Filter>
     </ClCompile>
-    <ClCompile Include="security_manager.cpp">
+    <ClCompile Include="transmission_security_manager.cpp">
       <Filter>Source Files\security</Filter>
     </ClCompile>
-    <ClCompile Include="message.cpp">
-      <Filter>Source Files\messaging</Filter>
+    <ClCompile Include="transmission.cpp">
+      <Filter>Source Files\networking</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
