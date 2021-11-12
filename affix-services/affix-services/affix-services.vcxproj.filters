@@ -75,11 +75,11 @@
     <ClInclude Include="message_identity_authenticate_2.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
-    <ClInclude Include="message_security_manager.h">
+    <ClInclude Include="security_manager.h">
       <Filter>Header Files\security</Filter>
     </ClInclude>
-    <ClInclude Include="authenticated_message.h">
-      <Filter>Header Files\security</Filter>
+    <ClInclude Include="message.h">
+      <Filter>Header Files\messaging</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -104,8 +104,11 @@
     <ClCompile Include="message_identity_authenticate_2.cpp">
       <Filter>Source Files\messaging</Filter>
     </ClCompile>
-    <ClCompile Include="message_security_manager.cpp">
+    <ClCompile Include="security_manager.cpp">
       <Filter>Source Files\security</Filter>
+    </ClCompile>
+    <ClCompile Include="message.cpp">
+      <Filter>Source Files\messaging</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
