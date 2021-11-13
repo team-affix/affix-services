@@ -33,7 +33,7 @@ namespace affix_services {
 		class connection {
 		public:
 			// SECURITY FIELDS
-			transmission_security_manager m_message_security_manager;
+			transmission_security_manager m_transmission_security_manager;
 
 			// NETWORKING FIELDS
 			tcp::socket m_socket;
@@ -46,8 +46,8 @@ namespace affix_services {
 			connection(tcp::socket& a_socket);
 
 		public:
-			bool async_send(const vector<uint8_t>& a_message_data, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback);
-			void async_receive(transmission& a_message, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback);
+			void async_send(const vector<uint8_t>& a_message_data, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback);
+			void async_receive(transmission& a_transmission, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback);
 
 		public:
 			bool secured() const;

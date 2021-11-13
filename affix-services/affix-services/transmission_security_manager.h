@@ -4,10 +4,12 @@
 #include "affix-base/rsa.h"
 #include "affix-base/byte_buffer.h"
 #include "transmission.h"
+#include "transmission_result.h"
 
 using namespace CryptoPP;
 using affix_base::data::byte_buffer;
 using affix_services::networking::transmission;
+using affix_services::networking::transmission_result;
 
 namespace affix_services {
 	namespace security {
@@ -25,14 +27,14 @@ namespace affix_services {
 			bool m_inbound_authenticated;
 			
 		public:
-			bool export_transmission(const vector<uint8_t>& a_message_data, vector<uint8_t>& a_output);
-			bool import_transmission(const vector<uint8_t>& a_message_data, transmission& a_output);
+			bool export_transmission(const vector<uint8_t>& a_message_data, vector<uint8_t>& a_output, transmission_result& a_result);
+			bool import_transmission(const vector<uint8_t>& a_message_data, transmission& a_output, transmission_result& a_result);
 
 		protected:
-			bool pack_signature(byte_buffer& a_data);
-			bool unpack_signature(byte_buffer& a_data, transmission& a_output);
-			bool pack_token(byte_buffer& a_data);
-			bool unpack_token(byte_buffer& a_data, transmission& a_output);
+			bool pack_signature(byte_buffer& a_data, transmission_result& a_result);
+			bool unpack_signature(byte_buffer& a_data, transmission& a_output, transmission_result& a_result);
+			bool pack_token(byte_buffer& a_data, transmission_result& a_result);
+			bool unpack_token(byte_buffer& a_data, transmission& a_output, transmission_result& a_result);
 
 		public:
 			bool secured() const;

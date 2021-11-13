@@ -12,8 +12,8 @@ namespace affix_services {
 			message_identity_authenticate_0(const vector<uint8_t>& a_seed);
 
 		public:
-			serialization_result try_serialize(byte_buffer& a_data);
-			static serialization_result try_deserialize(byte_buffer& a_data, message_identity_authenticate_0& a_message);
+			message_result try_serialize(byte_buffer& a_data);
+			static message_result try_deserialize(byte_buffer& a_data, message_identity_authenticate_0& a_message);
 
 		};
 

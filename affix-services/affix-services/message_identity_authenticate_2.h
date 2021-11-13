@@ -13,8 +13,8 @@ namespace affix_services {
 			message_identity_authenticate_2(identity_authenticate_1_status_response_type a_status);
 
 		public:
-			serialization_result try_serialize(byte_buffer& a_data);
-			static serialization_result try_deserialize(byte_buffer& a_data, message_identity_authenticate_2& a_message);
+			message_result try_serialize(byte_buffer& a_data);
+			static message_result try_deserialize(byte_buffer& a_data, message_identity_authenticate_2& a_message);
 
 		};
 

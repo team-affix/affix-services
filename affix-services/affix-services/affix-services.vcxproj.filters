@@ -54,9 +54,6 @@
     <ClInclude Include="message_types.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
-    <ClInclude Include="transmission_status_types.h">
-      <Filter>Header Files\messaging</Filter>
-    </ClInclude>
     <ClInclude Include="details.h">
       <Filter>Header Files\details</Filter>
     </ClInclude>
@@ -66,7 +63,7 @@
     <ClInclude Include="message_identity_authenticate_0.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
-    <ClInclude Include="serialization_result.h">
+    <ClInclude Include="message_result.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
     <ClInclude Include="message_identity_authenticate_1.h">
@@ -79,6 +76,9 @@
       <Filter>Header Files\security</Filter>
     </ClInclude>
     <ClInclude Include="transmission.h">
+      <Filter>Header Files\networking</Filter>
+    </ClInclude>
+    <ClInclude Include="transmission_result.h">
       <Filter>Header Files\networking</Filter>
     </ClInclude>
   </ItemGroup>

@@ -10,32 +10,30 @@ using asio::ip::tcp;
 using namespace affix_base::networking;
 using namespace affix_base::cryptography;
 
-#if 1
-#define LOG(x) std::cout << x <<std::endl
-#else
-#define LOG(x)
-#endif
-
 connection::connection(tcp::socket& a_socket) : m_socket(std::move(a_socket)), m_socket_io_guard(m_socket), m_start_time(utc_time()) {
 
 }
 
-bool connection::async_send(const vector<uint8_t>& a_message_data, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback) {
+void connection::async_send(const vector<uint8_t>& a_message_data, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback) {
 
 	vector<uint8_t> l_final;
 
-	if (!m_message_security_manager.export_transmission(a_message_data, l_final)) return false;
-	LOG("[ CONNECTION ] Exported message without error.");
+	transmission_result l_transmission_result = transmission_result::unknown;
 
+	// TRY TO EXPORT MESSAGE DATA IN "TRANSMISSION" FORMAT
+	if (!m_transmission_security_manager.export_transmission(a_message_data, l_final, l_transmission_result)) {
+		LOG("[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result]);
+		return;
+	}
+
+	// SEND TRANSMISSION
 	m_socket_io_guard.async_send(l_final, a_callback);
-	LOG("[ CONNECTION ] Began async send request.");
-
-	return true;
 
 }
 
-void connection::async_receive(transmission& a_message, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback) {
+void connection::async_receive(transmission& a_transmission, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback) {
 
+	// ALLOCATE DYNAMIC VECTOR FOR CALLBACK LAMBDA FUNCTION TO ACCESS AFTER PROGRAM EXITS THIS FUNCTION'S SCOPE
 	ptr<vector<uint8_t>> l_data = new vector<uint8_t>();
 
 	m_socket_io_guard.async_receive(l_data.val(), [&, l_data, a_private_key, a_callback] (bool a_result) {
@@ -46,7 +44,11 @@ void connection::async_receive(transmission& a_message, const RSA::PrivateKey& a
 			return;
 		}
 
-		if (!m_message_security_manager.import_transmission(l_data.val(), a_message)) {
+		transmission_result l_transmission_result = transmission_result::unknown;
+
+		// TRY TO "IMPORT" THE TRANSMISSION DATA
+		if (!m_transmission_security_manager.import_transmission(l_data.val(), a_transmission, l_transmission_result)) {
+			LOG("[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result]);
 			a_callback(false);
 			return;
 		}
@@ -54,12 +56,11 @@ void connection::async_receive(transmission& a_message, const RSA::PrivateKey& a
 		a_callback(true);
 
 	});
-	LOG("[ CONNECTION ] Began async receive request.");
 
 }
 
 bool connection::secured() const {
-	return m_message_security_manager.secured();
+	return m_transmission_security_manager.secured();
 }
 
 uint64_t connection::lifetime() const {
