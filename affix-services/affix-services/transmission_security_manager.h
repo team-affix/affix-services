@@ -25,7 +25,7 @@ namespace affix_services {
 			bool m_inbound_confidential;
 			bool m_outbound_authenticated;
 			bool m_inbound_authenticated;
-			
+
 		public:
 			bool export_transmission(const vector<uint8_t>& a_message_data, vector<uint8_t>& a_output, transmission_result& a_result);
 			bool import_transmission(const vector<uint8_t>& a_message_data, transmission& a_output, transmission_result& a_result);

@@ -27,8 +27,8 @@ namespace affix_services {
 		using std::function;
 
 		const size_t AS_ID_SIZE = 25;
-		const size_t AS_MAX_INBOUND_DATA_SIZE = 1024;
-		const size_t AS_MAX_OUTBOUND_DATA_SIZE = 1024;
+		const size_t AS_MAX_INBOUND_DATA_SIZE = 4096;
+		const size_t AS_MAX_OUTBOUND_DATA_SIZE = 4096;
 
 		class connection {
 		public:
@@ -40,14 +40,18 @@ namespace affix_services {
 			socket_io_guard m_socket_io_guard;
 
 		protected:
+			vector<uint8_t> m_inbound_data;
+
+
+		protected:
 			uint64_t m_start_time = 0;
 
 		public:
 			connection(tcp::socket& a_socket);
 
 		public:
-			void async_send(const vector<uint8_t>& a_message_data, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback);
-			void async_receive(transmission& a_transmission, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback);
+			void async_send(const vector<uint8_t>& a_message_data, const function<void(bool)>& a_callback);
+			void async_receive(transmission& a_transmission, const function<void(bool)>& a_callback);
 
 		public:
 			bool secured() const;

@@ -10,11 +10,14 @@ using asio::ip::tcp;
 using namespace affix_base::networking;
 using namespace affix_base::cryptography;
 
-connection::connection(tcp::socket& a_socket) : m_socket(std::move(a_socket)), m_socket_io_guard(m_socket), m_start_time(utc_time()) {
-
+connection::connection(tcp::socket& a_socket) : 
+	m_socket(std::move(a_socket)), 
+    m_socket_io_guard(m_socket), 
+	m_start_time(utc_time()) {
+	
 }
 
-void connection::async_send(const vector<uint8_t>& a_message_data, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback) {
+void connection::async_send(const vector<uint8_t>& a_message_data, const function<void(bool)>& a_callback) {
 
 	vector<uint8_t> l_final;
 
@@ -31,12 +34,12 @@ void connection::async_send(const vector<uint8_t>& a_message_data, const RSA::Pr
 
 }
 
-void connection::async_receive(transmission& a_transmission, const RSA::PrivateKey& a_private_key, const function<void(bool)>& a_callback) {
+void connection::async_receive(transmission& a_transmission, const function<void(bool)>& a_callback) {
 
 	// ALLOCATE DYNAMIC VECTOR FOR CALLBACK LAMBDA FUNCTION TO ACCESS AFTER PROGRAM EXITS THIS FUNCTION'S SCOPE
 	ptr<vector<uint8_t>> l_data = new vector<uint8_t>();
-
-	m_socket_io_guard.async_receive(l_data.val(), [&, l_data, a_private_key, a_callback] (bool a_result) {
+	
+	m_socket_io_guard.async_receive(l_data.val(), [&, a_callback](bool a_result) {
 
 		if (!a_result) {
 			LOG("[ CONNECTION ] Error receiving data.");

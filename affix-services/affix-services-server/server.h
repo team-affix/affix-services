@@ -16,6 +16,7 @@ namespace affix_services {
 	using std::mutex;
 	using affix_services::networking::connection;
 	using affix_base::data::ptr;
+	using std::function;
 
 	const size_t AS_MAX_INBOUND_DATA_SIZE = 4096;
 	const size_t AS_SEED_SIZE = 25;
@@ -25,12 +26,17 @@ namespace affix_services {
 		tcp::acceptor m_acceptor;
 
 	protected:
-		mutex m_connections_mutex;
 		deque<ptr<connection>> m_connections;
 
 	public:
-		void start_accepting();
-		void stop_accepting();
+		function<void(const vector<uint8_t>&)> m_process_inbound_transmission_data;
+
+	public:
+		void start_accept();
+		void stop_accept();
+
+	protected:
+		void accept_callback(asio::error_code a_ec, tcp::socket a_socket);
 
 	public:
 		void clean_connections();
@@ -38,6 +44,7 @@ namespace affix_services {
 
 	public:
 		void process_connections();
+		void process_connection(deque<ptr<connection>>::iterator a_connection);
 
 	};
 
