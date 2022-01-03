@@ -22,11 +22,13 @@ namespace affix_services {
 			affix_base::details::semantic_version_number m_affix_services_version = affix_services::details::i_affix_services_version;
 
 		public:
-			uint32_t m_discourse_id = 0;
 			message_types m_message_type = message_types::unknown;
 			affix_services::networking::transmission_result m_transmission_result = affix_services::networking::transmission_result::unknown;
 
 		public:
+			message_header(
+
+			);
 			message_header(
 				const uint32_t& a_discourse_id,
 				const message_types& a_message_type,
