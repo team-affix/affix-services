@@ -4,9 +4,7 @@
 namespace affix_services {
 	namespace details {
 
-		using affix_base::details::semantic_version_number;
-
-		inline semantic_version_number affix_services_version = {0, 0, 0};
+		inline affix_base::details::semantic_version_number i_affix_services_version = {0, 0, 0};
 
 	}
 }
