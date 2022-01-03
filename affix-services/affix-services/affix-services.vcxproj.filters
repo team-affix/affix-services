@@ -63,9 +63,6 @@
     <ClInclude Include="message_identity_authenticate_0.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
-    <ClInclude Include="message_result.h">
-      <Filter>Header Files\messaging</Filter>
-    </ClInclude>
     <ClInclude Include="message_identity_authenticate_1.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
@@ -75,11 +72,11 @@
     <ClInclude Include="transmission_security_manager.h">
       <Filter>Header Files\security</Filter>
     </ClInclude>
-    <ClInclude Include="transmission.h">
-      <Filter>Header Files\networking</Filter>
-    </ClInclude>
     <ClInclude Include="transmission_result.h">
       <Filter>Header Files\networking</Filter>
+    </ClInclude>
+    <ClInclude Include="message_rqt_identity_pull.h">
+      <Filter>Header Files\messaging</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -88,9 +85,6 @@
     </ClCompile>
     <ClCompile Include="connection.cpp">
       <Filter>Source Files\networking</Filter>
-    </ClCompile>
-    <ClCompile Include="identity.cpp">
-      <Filter>Source Files\security</Filter>
     </ClCompile>
     <ClCompile Include="message_header.cpp">
       <Filter>Source Files\messaging</Filter>
@@ -106,9 +100,6 @@
     </ClCompile>
     <ClCompile Include="transmission_security_manager.cpp">
       <Filter>Source Files\security</Filter>
-    </ClCompile>
-    <ClCompile Include="transmission.cpp">
-      <Filter>Source Files\networking</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

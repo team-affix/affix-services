@@ -152,13 +152,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="transmission.h" />
+    <ClInclude Include="message_rqt_identity_pull.h" />
     <ClInclude Include="details.h" />
     <ClInclude Include="message_identity_authenticate_0.h" />
     <ClInclude Include="message_identity_authenticate_1.h" />
     <ClInclude Include="message_identity_authenticate_2.h" />
     <ClInclude Include="transmission_security_manager.h" />
-    <ClInclude Include="message_result.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="connection.h" />
     <ClInclude Include="message_header.h" />
@@ -170,8 +169,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="connection.cpp" />
-    <ClCompile Include="identity.cpp" />
-    <ClCompile Include="transmission.cpp" />
     <ClCompile Include="message_header.cpp" />
     <ClCompile Include="message_identity_authenticate_0.cpp" />
     <ClCompile Include="message_identity_authenticate_1.cpp" />
