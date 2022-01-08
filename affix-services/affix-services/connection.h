@@ -30,18 +30,22 @@ namespace affix_services {
 
 		public:
 			connection(
-				tcp::socket& a_socket
+				asio::ip::tcp::socket& a_socket,
+				const CryptoPP::RSA::PrivateKey& a_local_private_key,
+				const affix_services::security::rolling_token& a_local_token,
+				const CryptoPP::RSA::PublicKey& a_remote_public_key,
+				const affix_services::security::rolling_token& a_remote_token
 			);
 
 		public:
 			void async_send(
 				const std::vector<uint8_t>& a_message_header_data,
-				const std::vector<uint8_t>& a_message_data,
+				const std::vector<uint8_t>& a_message_body_data,
 				const std::function<void(bool)>& a_callback
 			);
 			void async_receive(
 				std::vector<uint8_t>& a_message_header_data,
-				std::vector<uint8_t>& a_message_data,
+				std::vector<uint8_t>& a_message_body_data,
 				const std::function<void(bool)>& a_callback
 			);
 

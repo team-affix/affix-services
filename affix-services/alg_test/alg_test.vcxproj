@@ -21,32 +21,32 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{ebf602b3-0557-428e-b7e8-2476688753ba}</ProjectGuid>
-    <RootNamespace>affixservices</RootNamespace>
+    <ProjectGuid>{eaa3e3c1-04d2-4be4-9c23-9ad27e29a987}</ProjectGuid>
+    <RootNamespace>algtest</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -88,7 +88,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../;../../affix-base;../../affix-base/asio/asio/include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../affix-base;../;../../affix-base/asio/asio/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../;../../affix-base;../../affix-base/asio/asio/include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../affix-base;../;../../affix-base/asio/asio/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -120,7 +120,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../;../../affix-base;../../affix-base/asio/asio/include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../affix-base;../;../../affix-base/asio/asio/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -136,7 +136,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../;../../affix-base;../../affix-base/asio/asio/include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../affix-base;../;../../affix-base/asio/asio/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -147,28 +147,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\affix-base\affix-base\affix-base.vcxproj">
-      <Project>{7b4bfee2-ac81-40ce-a365-529cfc1111b3}</Project>
+    <ProjectReference Include="..\affix-services\affix-services.vcxproj">
+      <Project>{ebf602b3-0557-428e-b7e8-2476688753ba}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="message_rqt_identity_push.h" />
-    <ClInclude Include="details.h" />
-    <ClInclude Include="transmission_security_manager.h" />
-    <ClInclude Include="version.h" />
-    <ClInclude Include="connection.h" />
-    <ClInclude Include="message_header.h" />
-    <ClInclude Include="message_types.h" />
-    <ClInclude Include="networking.h" />
-    <ClInclude Include="rolling_token.h" />
-    <ClInclude Include="security.h" />
-    <ClInclude Include="transmission_result.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="connection.cpp" />
-    <ClCompile Include="message_header.cpp" />
-    <ClCompile Include="transmission_security_manager.cpp" />
-    <ClCompile Include="rolling_token.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
