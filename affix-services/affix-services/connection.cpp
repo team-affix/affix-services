@@ -10,9 +10,12 @@ using asio::ip::tcp;
 using namespace affix_base::networking;
 using namespace affix_base::cryptography;
 using affix_services::networking::connection;
+using std::vector;
+using affix_base::data::byte_buffer;
+using affix_base::data::ptr;
 
 connection::connection(
-	asio::ip::tcp::socket& a_socket,
+	asio::ip::tcp::socket&& a_socket,
 	const CryptoPP::RSA::PrivateKey& a_local_private_key,
 	const affix_services::security::rolling_token& a_local_token,
 	const CryptoPP::RSA::PublicKey& a_remote_public_key,

@@ -1,11 +1,13 @@
 #include "transmission_security_manager.h"
 #include "affix-base/rsa.h"
+#include "rolling_token.h"
 
 using namespace affix_base::cryptography;
 using affix_services::security::transmission_security_manager;
 using affix_base::data::byte_buffer;
 using affix_services::networking::transmission_result;
 using std::vector;
+using affix_services::security::rolling_token;
 
 transmission_security_manager::transmission_security_manager(
 	const CryptoPP::RSA::PrivateKey& a_local_private_key,
@@ -37,8 +39,8 @@ bool transmission_security_manager::export_transmission(
 	}
 
 	// PUSH TOKEN AND SIGNATURE INTO BUFFER
-	if (pack_token(l_byte_buffer, a_result)) return false;
-	if (pack_signature(l_byte_buffer, a_result)) return false;
+	if (!pack_token(l_byte_buffer, a_result)) return false;
+	if (!pack_signature(l_byte_buffer, a_result)) return false;
 	m_local_token++;
 
 	// ENCRYPT BUFFER

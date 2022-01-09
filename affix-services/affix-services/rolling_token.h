@@ -4,7 +4,7 @@
 namespace affix_services {
 	namespace security {
 
-		const size_t AS_SEED_SIZE = 25;
+		inline size_t AS_SEED_SIZE = 25;
 
 		class rolling_token {
 		public:
@@ -16,7 +16,10 @@ namespace affix_services {
 			rolling_token(const std::vector<uint8_t>& a_seed, const uint64_t& a_index = 0);
 
 		public:
-			void operator++();
+			rolling_token& operator++();
+			rolling_token& operator++(
+				int a_n
+			);
 
 		public:
 			std::vector<uint8_t> serialize() const;
