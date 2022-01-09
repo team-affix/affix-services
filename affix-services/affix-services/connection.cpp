@@ -46,7 +46,7 @@ void connection::async_send(
 
 	// TRY TO EXPORT MESSAGE DATA IN "TRANSMISSION" FORMAT
 	if (!m_transmission_security_manager.export_transmission(l_message_data_buffer.data(), l_final, l_transmission_result)) {
-		LOG("[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result]);
+		std::cerr << "[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result] << std::endl;
 		return;
 	}
 
@@ -68,7 +68,7 @@ void connection::async_receive(
 	m_socket_io_guard.async_receive(l_data.val(), [&, l_data, a_callback](bool a_result) {
 
 		if (!a_result) {
-			LOG("[ CONNECTION ] Error receiving data.");
+			std::cerr << "[ CONNECTION ] Error receiving data." << std::endl;
 			a_callback(false);
 			return;
 		}
@@ -80,7 +80,7 @@ void connection::async_receive(
 		// TRY TO "IMPORT" THE TRANSMISSION DATA
 		if (!m_transmission_security_manager.import_transmission(l_data.val(), l_message_data, l_transmission_result))
 		{
-			LOG("[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result]);
+			std::cerr << "[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result] << std::endl;
 			a_callback(false);
 			return;
 		}
@@ -89,14 +89,14 @@ void connection::async_receive(
 
 		if (!l_message_data_buffer.pop_back(a_message_body_data))
 		{
-			LOG("[ CONNECTION ] Failed to unpack message body: " << transmission_result_strings[transmission_result::error_deserializing_data]);
+			std::cerr << "[ CONNECTION ] Failed to unpack message body: " << transmission_result_strings[transmission_result::error_unpacking_message_body] << std::endl;
 			a_callback(false);
 			return;
 		}
 
 		if (!l_message_data_buffer.pop_back(a_message_header_data))
 		{
-			LOG("[ CONNECTION ] Failed to unpack message header: " << transmission_result_strings[transmission_result::error_deserializing_data]);
+			std::cerr << "[ CONNECTION ] Failed to unpack message header: " << transmission_result_strings[transmission_result::error_unpacking_message_header] << std::endl;
 			a_callback(false);
 			return;
 		}

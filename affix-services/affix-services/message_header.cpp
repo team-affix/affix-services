@@ -52,7 +52,7 @@ bool message_header::serialize(
 	}
 	catch (std::exception& ex)
 	{
-		LOG("[ SERIALIZE ] Error: failed to serialize message_header: " << ex.what());
+		std::cerr << "[ SERIALIZE ] Error: failed to serialize message_header: " << ex.what() << std::endl;
 		a_result = transmission_result::error_serializing_data;
 		return false;
 	}
@@ -99,7 +99,7 @@ bool message_header::deserialize(
 	}
 	catch (std::exception& ex)
 	{
-		LOG("[ DESERIALIZE ] Error: failed to deserialize message_header: " << ex.what());
+		std::cerr << "[ DESERIALIZE ] Error: failed to deserialize message_header: " << ex.what() << std::endl;
 		a_result = transmission_result::error_deserializing_data;
 		return false;
 	}

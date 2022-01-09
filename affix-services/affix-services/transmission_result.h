@@ -19,6 +19,8 @@ namespace affix_services {
 			error_version_mismatch,
 			error_serializing_data,
 			error_deserializing_data,
+			error_unpacking_message_body,
+			error_unpacking_message_header
 		};
 
 		inline std::map<transmission_result, std::string> transmission_result_strings = {
@@ -35,6 +37,8 @@ namespace affix_services {
 			{transmission_result::error_version_mismatch, "ERROR_VERSION_MISMATCH"},
 			{transmission_result::error_serializing_data, "ERROR_SERIALIZING_DATA"},
 			{transmission_result::error_deserializing_data, "ERROR_DESERIALIZING_DATA"},
+			{transmission_result::error_unpacking_message_body, "ERROR_UNPACKING_MESSAGE_BODY"},
+			{transmission_result::error_unpacking_message_header, "ERROR_UNPACKING_MESSAGE_HEADER"},
 		};
 
 	}

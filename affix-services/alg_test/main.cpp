@@ -3,6 +3,8 @@
 #include "affix-base/rsa.h"
 #include "affix-base/networking.h"
 #include "affix-services/rolling_token.h"
+#include "affix-base/nat.h"
+#include <fstream>
 
 using asio::io_context;
 using namespace asio::ip;
@@ -11,28 +13,6 @@ using affix_base::data::ptr;
 using affix_services::security::rolling_token;
 
 std::mutex g_std_cout_mutex;
-
-bool get_local_ip_address(
-	address& a_address
-)
-{
-	try {
-		asio::io_service netService;
-		udp::resolver   resolver(netService);
-		udp::resolver::query query(udp::v4(), "google.com", "");
-		udp::resolver::iterator endpoints = resolver.resolve(query);
-		udp::endpoint ep = *endpoints;
-		udp::socket socket(netService);
-		socket.connect(ep);
-		asio::ip::address addr = socket.local_endpoint().address();
-		a_address = addr;
-		return true;
-	}
-	catch (std::exception& e) {
-		std::cerr << "Could not deal with socket. Exception: " << e.what() << std::endl;
-		return false;
-	}
-}
 
 bool connect_two_sockets(
 	io_context& a_context_0,
@@ -43,10 +23,12 @@ bool connect_two_sockets(
 )
 {
 	address l_local_address;
-	if (!get_local_ip_address(l_local_address))
+	if (!affix_base::networking::socket_internal_ip_address(l_local_address))
 	{
 		return false;
 	}
+
+	std::cout << "Local IP Address is: " << l_local_address.to_v4().to_string() << std::endl;
 
 	tcp::endpoint l_acceptor_remote_endpoint(l_local_address, a_port_num);
 	tcp::endpoint l_acceptor_local_endpoint(asio::ip::tcp::v4(), a_port_num);
@@ -249,7 +231,7 @@ bool test_connection_object_recv(
 
 }
 
-int main()
+bool test_two_socket_connecting_authenticating_and_transmitting()
 {
 	io_context l_context_0;
 	io_context l_context_1;
@@ -261,7 +243,7 @@ int main()
 	if (!connect_two_sockets(l_context_0, l_context_1, 8090, l_socket_0, l_socket_1))
 	{
 		std::cout << "Unable to connect two sockets." << std::endl;
-		return 1;
+		return false;
 	}
 
 	// Prepare necessary security information to be populated
@@ -279,7 +261,7 @@ int main()
 	bool l_authentication_successful_0 = false;
 	std::thread l_authenticate_thread_0(
 		[&]
-		{ 
+		{
 			if (!async_authenticate_connected_socket(l_context_0, l_socket_0, l_local_key_pair_0, l_local_token_0, l_remote_public_key_0, l_remote_token_0, true))
 			{
 				std::lock_guard<std::mutex> l_lock(g_std_cout_mutex);
@@ -312,7 +294,7 @@ int main()
 		l_authenticate_thread_1.join();
 
 	if (!l_authentication_successful_0 || !l_authentication_successful_1)
-		return 1;
+		return false;
 
 	bool l_connection_transmit_0_successful = false;
 	std::thread l_connection_transmit_0(
@@ -350,7 +332,19 @@ int main()
 		l_connection_transmit_1.join();
 
 	if (!l_connection_transmit_0_successful || !l_connection_transmit_1_successful)
-		return 1;
+		return false;
+
+	return true;
+
+}
+
+
+int main()
+{
+	std::ofstream nullstream;
+	std::clog.rdbuf(nullstream.rdbuf());
+
+	test_two_socket_connecting_authenticating_and_transmitting();
 
 	return 0;
 }
