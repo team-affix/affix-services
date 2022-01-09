@@ -15,7 +15,7 @@ using affix_base::data::byte_buffer;
 using affix_base::data::ptr;
 
 connection::connection(
-	asio::ip::tcp::socket&& a_socket,
+	asio::ip::tcp::socket& a_socket,
 	const CryptoPP::RSA::PrivateKey& a_local_private_key,
 	const affix_services::security::rolling_token& a_local_token,
 	const CryptoPP::RSA::PublicKey& a_remote_public_key,
@@ -36,7 +36,6 @@ void connection::async_send(
 	const std::function<void(bool)>& a_callback
 )
 {
-
 	vector<uint8_t> l_final;
 
 	transmission_result l_transmission_result = transmission_result::unknown;

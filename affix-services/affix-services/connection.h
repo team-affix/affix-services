@@ -30,7 +30,7 @@ namespace affix_services {
 
 		public:
 			connection(
-				asio::ip::tcp::socket&& a_socket,
+				asio::ip::tcp::socket& a_socket,
 				const CryptoPP::RSA::PrivateKey& a_local_private_key,
 				const affix_services::security::rolling_token& a_local_token,
 				const CryptoPP::RSA::PublicKey& a_remote_public_key,

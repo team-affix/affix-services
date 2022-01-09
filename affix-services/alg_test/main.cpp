@@ -12,14 +12,43 @@ using affix_services::security::rolling_token;
 
 std::mutex g_std_cout_mutex;
 
+bool get_local_ip_address(
+	address& a_address
+)
+{
+	try {
+		asio::io_service netService;
+		udp::resolver   resolver(netService);
+		udp::resolver::query query(udp::v4(), "google.com", "");
+		udp::resolver::iterator endpoints = resolver.resolve(query);
+		udp::endpoint ep = *endpoints;
+		udp::socket socket(netService);
+		socket.connect(ep);
+		asio::ip::address addr = socket.local_endpoint().address();
+		a_address = addr;
+		return true;
+	}
+	catch (std::exception& e) {
+		std::cerr << "Could not deal with socket. Exception: " << e.what() << std::endl;
+		return false;
+	}
+}
+
 bool connect_two_sockets(
 	io_context& a_context_0,
 	io_context& a_context_1,
 	const uint16_t& a_port_num,
 	tcp::socket& a_socket_0,
-	tcp::socket& a_socket_1)
+	tcp::socket& a_socket_1
+)
 {
-	tcp::endpoint l_acceptor_remote_endpoint(make_address("192.168.1.141"), a_port_num);
+	address l_local_address;
+	if (!get_local_ip_address(l_local_address))
+	{
+		return false;
+	}
+
+	tcp::endpoint l_acceptor_remote_endpoint(l_local_address, a_port_num);
 	tcp::endpoint l_acceptor_local_endpoint(asio::ip::tcp::v4(), a_port_num);
 
 	tcp::socket l_socket_0(a_context_0);
@@ -137,7 +166,7 @@ bool test_connection_object_send(
 )
 {
 	affix_services::networking::connection l_connection(
-		std::move(a_socket),
+		a_socket,
 		a_local_private_key,
 		a_local_token,
 		a_remote_public_key,
@@ -181,7 +210,7 @@ bool test_connection_object_recv(
 )
 {
 	affix_services::networking::connection l_connection(
-		std::move(a_socket),
+		a_socket,
 		a_local_private_key,
 		a_local_token,
 		a_remote_public_key,
@@ -205,7 +234,7 @@ bool test_connection_object_recv(
 			std::lock_guard<std::mutex> l_lock(g_std_cout_mutex);
 			if (l_successful)
 			{
-				std::cout << "Received successfully" << std::endl;
+				std::cout << "Received successfully & data matches what was expected." << std::endl;
 			}
 			else
 			{
@@ -314,6 +343,11 @@ int main()
 				l_connection_transmit_1_successful = true;
 			}
 		});
+
+	if (l_connection_transmit_0.joinable())
+		l_connection_transmit_0.join();
+	if (l_connection_transmit_1.joinable())
+		l_connection_transmit_1.join();
 
 	if (!l_connection_transmit_0_successful || !l_connection_transmit_1_successful)
 		return 1;

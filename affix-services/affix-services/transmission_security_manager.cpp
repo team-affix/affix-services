@@ -80,7 +80,7 @@ bool transmission_security_manager::import_transmission(
 	m_remote_token++;
 
 	// STORE DATA IN OUTPUT VECTOR
-	a_output = l_byte_buffer.data();
+	l_byte_buffer.pop_back(a_output);
 
 	return true;
 
@@ -128,7 +128,7 @@ bool transmission_security_manager::unpack_signature(
 
 	// TRY TO VERIFY SIGNATURE ASSOCIATED WITH MESSAGE
 	bool l_signature_valid = false;
-	if (!rsa_try_verify(l_signed_data, l_signed_data, m_remote_public_key, l_signature_valid))
+	if (!rsa_try_verify(l_signed_data, l_signature, m_remote_public_key, l_signature_valid))
 	{
 		a_result = transmission_result::error_unpacking_signature;
 		return false;
