@@ -31,6 +31,16 @@ namespace affix_services_application
 		/// A vector of fully authenticated connections.
 		/// </summary>
 		std::vector<affix_base::data::ptr<affix_services::networking::connection>> m_connections;
+
+		/// <summary>
+		/// Mutex that prevents concurrent reads/writes to m_connection_async_receive_results.
+		/// </summary>
+		affix_base::threading::cross_thread_mutex m_connection_async_receive_results_mutex;
+
+		/// <summary>
+		/// Receive results for all authenticated connections.
+		/// </summary>
+		std::vector<affix_base::data::ptr<affix_services::networking::connection_async_receive_result>> m_connection_async_receive_results;
 		
 	public:
 		/// <summary>
@@ -61,6 +71,13 @@ namespace affix_services_application
 		/// of the allocated resources if so.
 		/// </summary>
 		void process_authenticated_connections(
+
+		);
+
+		/// <summary>
+		/// Processes all async receive results in the vector.
+		/// </summary>
+		void process_async_receive_results(
 
 		);
 

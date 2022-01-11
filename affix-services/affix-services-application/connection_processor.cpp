@@ -1,4 +1,4 @@
-#include "application.h"
+#include "connection_processor.h"
 
 using namespace affix_services_application;
 using namespace asio::ip;
@@ -35,6 +35,13 @@ void connection_processor::process_authentication_attempts(
 }
 
 void connection_processor::process_authenticated_connections(
+
+)
+{
+
+}
+
+void connection_processor::process_async_receive_results(
 
 )
 {
