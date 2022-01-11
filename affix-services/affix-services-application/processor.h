@@ -60,7 +60,8 @@ namespace affix_services_application
 
 	public:
 		/// <summary>
-		/// Processes all active connections with this client.
+		/// Processes all unauthenticated, authentication-in-progress, and fully
+		/// authenticated connections, as well as all received messages.
 		/// </summary>
 		void process(
 

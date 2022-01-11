@@ -11,6 +11,10 @@ using affix_services_application::processor;
 
 int main()
 {
+	// Redirect std::clog to nullbuffer
+	std::ofstream l_nullstream;
+	std::clog.rdbuf(l_nullstream.rdbuf());
+
 	affix_base::cryptography::rsa_key_pair l_key_pair = affix_base::cryptography::rsa_generate_key_pair(2048);
 
 	processor l_processor(l_key_pair);
@@ -26,6 +30,11 @@ int main()
 		l_processor.m_unauthenticated_connections_mutex,
 		l_processor.m_unauthenticated_connections
 	);
+
+	while (true)
+	{
+		l_processor.process();
+	}
 
 	return 0;
 }
