@@ -7,6 +7,11 @@ namespace affix_services_application
 	{
 	protected:
 		/// <summary>
+		/// Defines the inclusive minimum lifetime (in seconds) for the authentication attempt to be considered expired.
+		/// </summary>
+		static uint64_t s_expire_time;
+
+		/// <summary>
 		/// Guard for IO operations on the socket, prevents concurrent async read/write requests.
 		/// </summary>
 		affix_base::networking::socket_io_guard m_socket_io_guard;
@@ -47,6 +52,16 @@ namespace affix_services_application
 			const bool& a_authenticate_remote_first
 		);
 
+	public:
+		/// <summary>
+		/// Returns whether or not the authentication attempt has expired.
+		/// </summary>
+		/// <returns></returns>
+		bool expired(
+
+		) const;
+
+	protected:
 		/// <summary>
 		/// Returns the lifetime of this authentication request in seconds.
 		/// </summary>

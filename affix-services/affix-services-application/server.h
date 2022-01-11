@@ -4,6 +4,7 @@
 #include "asio.hpp"
 #include "affix-base/threading.h"
 #include "server_configuration.h"
+#include "unauthenticated_connection.h"
 
 namespace affix_services_application
 {
@@ -24,13 +25,13 @@ namespace affix_services_application
 		/// <summary>
 		/// Mutex preventing concurrent reads/writes to the m_accepted_sockets object.
 		/// </summary>
-		affix_base::threading::cross_thread_mutex m_accepted_sockets_mutex;
+		affix_base::threading::cross_thread_mutex& m_unauthenticated_connections_mutex;
 
 		/// <summary>
 		/// Vector of accepted connections, which is populated by the async_accept_next method,
 		/// and is cleared by an instance of the processer type.
 		/// </summary>
-		std::vector<affix_base::data::ptr<asio::ip::tcp::socket>> m_accepted_sockets;
+		std::vector<affix_base::data::ptr<unauthenticated_connection>>& m_unauthenticated_connections;
 
 	public:
 		/// <summary>
@@ -46,7 +47,9 @@ namespace affix_services_application
 		/// </summary>
 		/// <param name="a_configuration"></param>
 		server(
-			const affix_base::data::ptr<server_configuration>& a_configuration
+			const affix_base::data::ptr<server_configuration>& a_configuration,
+			affix_base::threading::cross_thread_mutex& a_unauthenticated_connections_mutex,
+			std::vector<affix_base::data::ptr<unauthenticated_connection>>& a_unauthenticated_connections
 		);
 
 	protected:

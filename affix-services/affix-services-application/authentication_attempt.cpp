@@ -3,6 +3,8 @@
 
 using namespace affix_services_application;
 
+uint64_t authentication_attempt::s_expire_time(3);
+
 authentication_attempt::authentication_attempt(
 	const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
 	const std::vector<uint8_t>& a_remote_seed,
@@ -15,6 +17,13 @@ authentication_attempt::authentication_attempt(
 	m_async_authenticate(m_socket_io_guard, a_remote_seed, a_local_key_pair, a_authenticate_remote_first, [&](bool a_result) { m_authenticated = a_result; })
 {
 
+}
+
+bool authentication_attempt::expired(
+
+) const
+{
+	return lifetime() >= s_expire_time;
 }
 
 uint64_t authentication_attempt::lifetime(

@@ -18,7 +18,7 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="connection_processor.cpp">
+    <ClCompile Include="processor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="server.cpp">
@@ -33,9 +33,12 @@
     <ClCompile Include="authentication_attempt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="unauthenticated_connection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="connection_processor.h">
+    <ClInclude Include="processor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="application_configuration.h">
@@ -50,7 +53,7 @@
     <ClInclude Include="authentication_attempt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="message_processor.h">
+    <ClInclude Include="unauthenticated_connection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

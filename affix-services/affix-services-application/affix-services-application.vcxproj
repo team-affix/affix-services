@@ -151,12 +151,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="connection_processor.cpp" />
+    <ClCompile Include="processor.cpp" />
     <ClCompile Include="application_configuration.cpp" />
     <ClCompile Include="authentication_attempt.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="server.cpp" />
     <ClCompile Include="server_configuration.cpp" />
+    <ClCompile Include="unauthenticated_connection.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\affix-services\affix-services.vcxproj">
@@ -164,12 +165,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="connection_processor.h" />
+    <ClInclude Include="processor.h" />
     <ClInclude Include="application_configuration.h" />
     <ClInclude Include="authentication_attempt.h" />
-    <ClInclude Include="message_processor.h" />
     <ClInclude Include="server.h" />
     <ClInclude Include="server_configuration.h" />
+    <ClInclude Include="unauthenticated_connection.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
