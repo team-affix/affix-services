@@ -151,6 +151,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="pending_outbound_connection.cpp" />
+    <ClCompile Include="outbound_connection_configuration.cpp" />
     <ClCompile Include="processor.cpp" />
     <ClCompile Include="application_configuration.cpp" />
     <ClCompile Include="authentication_attempt.cpp" />
@@ -165,6 +167,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="pending_outbound_connection.h" />
+    <ClInclude Include="outbound_connection_configuration.h" />
     <ClInclude Include="processor.h" />
     <ClInclude Include="application_configuration.h" />
     <ClInclude Include="authentication_attempt.h" />

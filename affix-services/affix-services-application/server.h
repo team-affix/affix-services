@@ -23,7 +23,7 @@ namespace affix_services_application
 
 	public:
 		/// <summary>
-		/// Mutex preventing concurrent reads/writes to the m_accepted_sockets object.
+		/// Mutex preventing concurrent reads/writes to the m_unauthenticated_connections object.
 		/// </summary>
 		affix_base::threading::cross_thread_mutex& m_unauthenticated_connections_mutex;
 

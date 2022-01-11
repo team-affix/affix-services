@@ -36,6 +36,12 @@
     <ClCompile Include="unauthenticated_connection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="pending_outbound_connection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="outbound_connection_configuration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="processor.h">
@@ -54,6 +60,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="unauthenticated_connection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pending_outbound_connection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="outbound_connection_configuration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
