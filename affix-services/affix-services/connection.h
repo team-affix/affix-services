@@ -23,9 +23,6 @@ namespace affix_services {
 			affix_base::networking::socket_io_guard m_socket_io_guard;
 
 		protected:
-			std::vector<uint8_t> m_inbound_data;
-
-		protected:
 			uint64_t m_start_time = 0;
 
 		public:

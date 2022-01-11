@@ -4,41 +4,63 @@
 #include "affix-services/connection.h"
 #include "affix-base/persistent_thread.h"
 #include "asio.hpp"
+#include "server.h"
+#include "authentication_attempt.h"
 
 namespace affix_services_application
 {
-	class application
+	class connection_processor
 	{
 	protected:
-		asio::ip::tcp::endpoint s_acceptor_endpoint;
-		asio::io_context s_acceptor_context;
-		asio::ip::tcp::acceptor s_acceptor;
-		affix_base::threading::persistent_thread s_acceptor_context_thread;
+		/// <summary>
+		/// A mutex guarding m_new_connections.
+		/// </summary>
+		affix_base::threading::cross_thread_mutex m_new_connections_mutex;
 
-	protected:
-		std::mutex s_connections_mutex;
-		std::vector<affix_base::data::ptr<affix_services::networking::connection>> s_connections;
+		/// <summary>
+		/// A vector of all newly established connections.
+		/// </summary>
+		std::vector<affix_base::data::ptr<asio::ip::tcp::socket>> m_new_connections;
+
+		/// <summary>
+		/// A vector of all current authentication attempts, which holds those for both inbound and outbound connections.
+		/// </summary>
+		std::vector<affix_base::data::ptr<authentication_attempt>> m_authentication_attempts;
+
+		/// <summary>
+		/// A vector of fully authenticated connections.
+		/// </summary>
+		std::vector<affix_base::data::ptr<affix_services::networking::connection>> m_connections;
 		
 	public:
-		virtual ~application(
-
-		);
-		application(
-
-		);
-
-	public:
+		/// <summary>
+		/// Processes all active connections with this client.
+		/// </summary>
 		void process_connections(
 
 		);
 
 	protected:
-		void process_connection(
-			std::vector<affix_base::data::ptr<affix_services::networking::connection>>::iterator a_connection
+		/// <summary>
+		/// Processes all new (unauthenticated) connections.
+		/// </summary>
+		void process_new_connections(
+
 		);
 
-	protected:
-		void async_accept(
+		/// <summary>
+		/// Processes all authentication attempts, looping through, checking if any have been successful,
+		/// and stopping any if they've expired.
+		/// </summary>
+		void process_authentication_attempts(
+
+		);
+
+		/// <summary>
+		/// Processes all authenticated connections, checking if any have disconnected, and disposing
+		/// of the allocated resources if so.
+		/// </summary>
+		void process_authenticated_connections(
 
 		);
 

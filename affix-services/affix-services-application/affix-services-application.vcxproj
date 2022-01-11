@@ -152,7 +152,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="application.cpp" />
+    <ClCompile Include="application_configuration.cpp" />
+    <ClCompile Include="authentication_attempt.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="server.cpp" />
+    <ClCompile Include="server_configuration.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\affix-services\affix-services.vcxproj">
@@ -162,6 +166,8 @@
   <ItemGroup>
     <ClInclude Include="application.h" />
     <ClInclude Include="application_configuration.h" />
+    <ClInclude Include="authentication_attempt.h" />
+    <ClInclude Include="server.h" />
     <ClInclude Include="server_configuration.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

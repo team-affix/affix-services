@@ -7,40 +7,34 @@ using affix_base::data::ptr;
 using affix_services::networking::connection;
 using std::lock_guard;
 using std::mutex;
+using affix_base::threading::cross_thread_mutex;
 
-application::~application(
+void connection_processor::process_connections(
+
+)
+{
+	process_new_connections();
+	process_authentication_attempts();
+	process_authenticated_connections();
+}
+
+void connection_processor::process_new_connections(
+
+)
+{
+	// Lock the mutex, preventing changes to m_new_connections.
+	lock_guard<cross_thread_mutex> l_lock_guard(m_new_connections_mutex);
+
+}
+
+void connection_processor::process_authentication_attempts(
 
 )
 {
 
 }
 
-application::application(
-
-)
-{
-
-}
-
-void application::process_connections(
-
-)
-{
-	lock_guard<mutex> l_lock(s_connections_mutex);
-	for (int i = s_connections.size() - 1; i >= 0; i--)
-	{
-		process_connection(s_connections.begin() + i);
-	}
-}
-
-void application::process_connection(
-	vector<ptr<connection>>::iterator a_connection
-)
-{
-
-}
-
-void application::async_accept(
+void connection_processor::process_authenticated_connections(
 
 )
 {
