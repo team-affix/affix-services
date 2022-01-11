@@ -69,6 +69,9 @@
     <ClInclude Include="message_rqt_identity_push.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
+    <ClInclude Include="connection_async_receive_result.h">
+      <Filter>Header Files\networking</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rolling_token.cpp">
@@ -82,6 +85,9 @@
     </ClCompile>
     <ClCompile Include="transmission_security_manager.cpp">
       <Filter>Source Files\security</Filter>
+    </ClCompile>
+    <ClCompile Include="connection_async_receive_result.cpp">
+      <Filter>Source Files\networking</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

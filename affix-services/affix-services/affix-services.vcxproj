@@ -158,6 +158,7 @@
   <ItemGroup>
     <ClInclude Include="message_rqt_identity_push.h" />
     <ClInclude Include="details.h" />
+    <ClInclude Include="connection_async_receive_result.h" />
     <ClInclude Include="transmission_security_manager.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="connection.h" />
@@ -170,6 +171,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="connection.cpp" />
+    <ClCompile Include="connection_async_receive_result.cpp" />
     <ClCompile Include="message_header.cpp" />
     <ClCompile Include="transmission_security_manager.cpp" />
     <ClCompile Include="rolling_token.cpp" />
