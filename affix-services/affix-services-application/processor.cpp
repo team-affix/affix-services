@@ -148,7 +148,7 @@ void processor::process_authentication_attempt_result(
 
 		// Erase authentication attempt result object
 		m_authentication_attempt_results.erase(a_authentication_attempt_result);
-
+		
 		// Begin receiving data from socket
 		l_authenticated_connection->async_receive();
 
