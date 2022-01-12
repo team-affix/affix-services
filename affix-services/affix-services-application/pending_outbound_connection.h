@@ -14,13 +14,6 @@ namespace affix_services_application
 		/// </summary>
 		affix_base::data::ptr<outbound_connection_configuration> m_outbound_connection_configuration;
 
-		/// <summary>
-		/// Thread in which the IO context will do it's work.
-		/// This field is STATIC so only one thread will act on behalf of all the
-		/// pending outbound connections.
-		/// </summary>
-		static affix_base::threading::persistent_thread s_context_thread;
-
 	public:
 		/// <summary>
 		/// Mutex preventing concurrent reads/writes to the m_unauthenticated_connections object.

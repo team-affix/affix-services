@@ -4,6 +4,7 @@ using namespace affix_services_application;
 using namespace asio::ip;
 using std::lock_guard;
 using affix_base::threading::cross_thread_mutex;
+using affix_base::data::ptr;
 
 server::~server(
 
@@ -20,11 +21,9 @@ server::server(
 ) :
 	m_server_configuration(a_configuration),
 	m_unauthenticated_connections_mutex(a_unauthenticated_connections_mutex),
-	m_unauthenticated_connections(a_unauthenticated_connections),
-	m_context_thread([&] { m_server_configuration->m_acceptor_context.reset(); m_server_configuration->m_acceptor_context.run(); })
+	m_unauthenticated_connections(a_unauthenticated_connections)
 {
 	async_accept_next();
-	m_context_thread.call();
 }
 
 void server::async_accept_next(
@@ -44,4 +43,11 @@ void server::async_accept_next(
 				async_accept_next();
 
 		});
+}
+
+const ptr<server_configuration>& server::configuration(
+
+) const
+{
+	return m_server_configuration;
 }

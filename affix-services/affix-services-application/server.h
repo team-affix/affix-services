@@ -16,11 +16,6 @@ namespace affix_services_application
 		/// </summary>
 		affix_base::data::ptr<server_configuration> m_server_configuration;
 
-		/// <summary>
-		/// The thread in which the IO context for this server is performing asynchronous tasks.
-		/// </summary>
-		affix_base::threading::persistent_thread m_context_thread;
-
 	public:
 		/// <summary>
 		/// Mutex preventing concurrent reads/writes to the m_unauthenticated_connections object.
@@ -61,6 +56,15 @@ namespace affix_services_application
 		void async_accept_next(
 
 		);
+
+	public:
+		/// <summary>
+		/// Get a const reference to the configuration of the server.
+		/// </summary>
+		/// <returns></returns>
+		const affix_base::data::ptr<server_configuration>& configuration(
+			
+		) const;
 
 	};
 }

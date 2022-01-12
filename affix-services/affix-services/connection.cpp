@@ -27,7 +27,7 @@ connection::connection(
 ) :
 	m_transmission_security_manager(a_local_private_key, a_local_token, a_remote_public_key, a_remote_token),
 	m_socket(std::move(a_socket)),
-    m_socket_io_guard(m_socket),
+    m_socket_io_guard(a_socket),
 	m_start_time(utc_time()),
 	m_receive_results_mutex(a_receive_results_mutex),
 	m_receive_results(a_receive_results)

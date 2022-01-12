@@ -7,9 +7,10 @@ using affix_base::data::byte_buffer;
 using namespace asio::ip;
 
 server_configuration::server_configuration(
+	asio::io_context& a_io_context,
 	const uint16_t& a_port
 ) :
-	m_acceptor(m_acceptor_context, tcp::endpoint(tcp::v4(), a_port))
+	m_acceptor(a_io_context, tcp::endpoint(tcp::v4(), a_port))
 {
 
 }
@@ -38,6 +39,7 @@ void server_configuration::export_connection_information(
 }
 
 bool server_configuration::try_import(
+	asio::io_context& a_io_context,
 	const std::string& a_file_path,
 	affix_base::data::ptr<server_configuration> a_result
 )
@@ -59,9 +61,17 @@ bool server_configuration::try_import(
 
 	// Construct resulting server_configuration instance
 	a_result = new server_configuration(
+		a_io_context,
 		l_port
 	);
 
 	return true;
 	
+}
+
+const tcp::acceptor& server_configuration::acceptor(
+
+) const
+{
+	return m_acceptor;
 }

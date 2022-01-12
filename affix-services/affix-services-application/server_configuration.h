@@ -11,11 +11,6 @@ namespace affix_services_application
 	{
 	public:
 		/// <summary>
-		/// IO context by which ASIO performs most of its asynchronous tasks.
-		/// </summary>
-		asio::io_context m_acceptor_context;
-
-		/// <summary>
 		/// If the server has a dedicated port, the endpoint for this acceptor should include that port.
 		/// If the server doesn't have a dedicated port, the endpoint should have port set to 0.
 		/// </summary>
@@ -28,6 +23,7 @@ namespace affix_services_application
 		/// <param name="a_callback"></param>
 		/// <param name="a_port"></param>
 		server_configuration(
+			asio::io_context& a_io_context,
 			const uint16_t& a_port = 0
 		);
 
@@ -47,9 +43,19 @@ namespace affix_services_application
 		/// <param name="a_result"></param>
 		/// <returns></returns>
 		static bool try_import(
+			asio::io_context& a_io_context,
 			const std::string& a_file_path,
 			affix_base::data::ptr<server_configuration> a_result
 		);
+
+	public:
+		/// <summary>
+		/// Get a const reference to the acceptor.
+		/// </summary>
+		/// <returns></returns>
+		const asio::ip::tcp::acceptor& acceptor(
+
+		) const;
 
 	};
 }

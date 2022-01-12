@@ -1,5 +1,6 @@
 #pragma once
 #include "asio.hpp"
+#include "affix-base/ptr.h"
 
 namespace affix_services_application
 {
@@ -7,16 +8,9 @@ namespace affix_services_application
 	{
 	public:
 		/// <summary>
-		/// Utility by which ASIO performs socket work.
-		/// This field is STATIC so there will only be one io_context for all
-		/// pending outbound connections.
-		/// </summary>
-		static asio::io_context s_socket_context;
-
-		/// <summary>
 		/// Actual network interface provided by ASIO.
 		/// </summary>
-		asio::ip::tcp::socket m_socket;
+		affix_base::data::ptr<asio::ip::tcp::socket> m_socket;
 
 		/// <summary>
 		/// Endpoint the socket will attempt to connect to.
@@ -31,6 +25,7 @@ namespace affix_services_application
 		/// <param name="a_remote_endpoint"></param>
 		/// <param name="a_local_port"></param>
 		outbound_connection_configuration(
+			asio::io_context& a_io_context,
 			const asio::ip::tcp::endpoint& a_remote_endpoint,
 			const uint16_t& a_local_port = 0
 		);

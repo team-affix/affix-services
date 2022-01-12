@@ -53,9 +53,19 @@ void processor::process_unauthenticated_connection(
 	CryptoPP::AutoSeededRandomPool l_random;
 	l_random.GenerateBlock(l_remote_seed.data(), l_remote_seed.size());
 
+	// Pull out data from unauthenticated connection instance
+	ptr<tcp::socket> l_socket = (*a_unauthenticated_connection)->m_socket;
+	bool l_inbound_connection = (*a_unauthenticated_connection)->m_inbound_connection;
+	
+
 	// Create authentication attempt
 	ptr<authentication_attempt> l_authentication_attempt(
-		new authentication_attempt((*a_unauthenticated_connection)->m_socket, l_remote_seed, m_local_key_pair, (*a_unauthenticated_connection)->m_inbound_connection)
+		new authentication_attempt(
+			l_socket,
+			l_remote_seed,
+			m_local_key_pair,
+			l_inbound_connection
+		)
 	);
 
 	// Push new authentication attempt to back of vector
@@ -84,11 +94,11 @@ void processor::process_authentication_attempt(
 		// Just erase the authentication attempt.
 		m_authentication_attempts.erase(a_authentication_attempt);
 	}
-	else if ((*a_authentication_attempt)->m_authenticated)
+	else if (*(*a_authentication_attempt)->m_authenticated)
 	{
 		// Create local and remote tokens
-		affix_services::security::rolling_token l_local_token((*a_authentication_attempt)->m_async_authenticate.m_authenticate_local->m_local_seed);
-		affix_services::security::rolling_token l_remote_token((*a_authentication_attempt)->m_async_authenticate.m_authenticate_remote->m_remote_seed);
+		affix_services::security::rolling_token l_local_token((*a_authentication_attempt)->m_async_authenticate->m_authenticate_local->m_local_seed);
+		affix_services::security::rolling_token l_remote_token((*a_authentication_attempt)->m_async_authenticate->m_authenticate_remote->m_remote_seed);
 
 		// Create authenticated connection object
 		ptr<connection> l_authenticated_connection(
@@ -96,7 +106,7 @@ void processor::process_authentication_attempt(
 				*(*a_authentication_attempt)->m_socket,
 				m_local_key_pair.private_key,
 				l_local_token,
-				(*a_authentication_attempt)->m_async_authenticate.m_authenticate_remote->m_remote_public_key,
+				(*a_authentication_attempt)->m_async_authenticate->m_authenticate_remote->m_remote_public_key,
 				l_remote_token,
 				m_connection_async_receive_results_mutex,
 				m_connection_async_receive_results

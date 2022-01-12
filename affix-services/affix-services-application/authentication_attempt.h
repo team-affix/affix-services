@@ -30,12 +30,12 @@ namespace affix_services_application
 		/// <summary>
 		/// Actual asynchronous authentication object. Handles authenticating the local and the remote.
 		/// </summary>
-		affix_base::networking::async_authenticate m_async_authenticate;
+		affix_base::data::ptr<affix_base::networking::async_authenticate> m_async_authenticate;
 
 		/// <summary>
 		/// Boolean suggesting whether or not authentication of both local and remote has succeeded.
 		/// </summary>
-		bool m_authenticated = false;
+		affix_base::data::ptr<bool> m_authenticated = new bool(false);
 
 	public:
 		/// <summary>
