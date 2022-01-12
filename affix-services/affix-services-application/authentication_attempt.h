@@ -1,5 +1,6 @@
 #pragma once
 #include "affix-base/async_authenticate.h"
+#include "authentication_attempt_result.h"
 
 namespace affix_services_application
 {
@@ -32,11 +33,6 @@ namespace affix_services_application
 		/// </summary>
 		affix_base::data::ptr<affix_base::networking::async_authenticate> m_async_authenticate;
 
-		/// <summary>
-		/// Boolean suggesting whether or not authentication of both local and remote has succeeded.
-		/// </summary>
-		affix_base::data::ptr<bool> m_authenticated = new bool(false);
-
 	public:
 		/// <summary>
 		/// Constructor which receives all necessary authentication initialization data.
@@ -49,7 +45,9 @@ namespace affix_services_application
 			const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
 			const std::vector<uint8_t>& a_remote_seed,
 			const affix_base::cryptography::rsa_key_pair& a_local_key_pair,
-			const bool& a_authenticate_remote_first
+			const bool& a_authenticate_remote_first,
+			affix_base::threading::cross_thread_mutex& a_authentication_attempt_results_mutex,
+			std::vector<affix_base::data::ptr<authentication_attempt_result>>& a_authentication_attempt_results
 		);
 
 	public:

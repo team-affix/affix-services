@@ -7,6 +7,7 @@
 #include "server.h"
 #include "authentication_attempt.h"
 #include "unauthenticated_connection.h"
+#include "authentication_attempt_result.h"
 
 namespace affix_services_application
 {
@@ -28,6 +29,16 @@ namespace affix_services_application
 		/// A vector of all current authentication attempts, which holds those for both inbound and outbound connections.
 		/// </summary>
 		std::vector<affix_base::data::ptr<authentication_attempt>> m_authentication_attempts;
+
+		/// <summary>
+		/// Mutex guarding m_authentication_attempt_results from concurrent actions.
+		/// </summary>
+		affix_base::threading::cross_thread_mutex m_authentication_attempt_results_mutex;
+
+		/// <summary>
+		/// Vector holding results from authentication attempts.
+		/// </summary>
+		std::vector<affix_base::data::ptr<authentication_attempt_result>> m_authentication_attempt_results;
 
 		/// <summary>
 		/// A vector of fully authenticated connections.
@@ -97,6 +108,21 @@ namespace affix_services_application
 		/// </summary>
 		void process_authentication_attempt(
 			std::vector<affix_base::data::ptr<authentication_attempt>>::iterator a_authentication_attempt
+		);
+
+		/// <summary>
+		/// Processes all authentication attempt results.
+		/// </summary>
+		void process_authentication_attempt_results(
+
+		);
+
+		/// <summary>
+		/// Processes a single authentication attempt result.
+		/// </summary>
+		/// <param name="a_authentication_attempt_result"></param>
+		void process_authentication_attempt_result(
+			std::vector<affix_base::data::ptr<authentication_attempt_result>>::iterator a_authentication_attempt_result
 		);
 
 		/// <summary>

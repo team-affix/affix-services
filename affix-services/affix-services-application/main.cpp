@@ -18,11 +18,10 @@ int main()
 {
 	// Redirect std::clog to nullbuffer
 	std::ofstream l_nullstream;
-	//std::clog.rdbuf(l_nullstream.rdbuf());
+	std::clog.rdbuf(l_nullstream.rdbuf());
 
 	// Create IO context object, which will be used for entire program's networking
 	asio::io_context l_io_context;
-	//asio::io_context l_outbound_io_context;
 
 	affix_base::cryptography::rsa_key_pair l_key_pair = affix_base::cryptography::rsa_generate_key_pair(2048);
 
@@ -73,16 +72,6 @@ int main()
 				l_io_context.reset();
 			}
 		});
-	/*std::thread l_outbound_context_thread(
-		[&]
-		{
-			while (true)
-			{
-				asio::io_context::work l_idle_work(l_outbound_io_context);
-				l_outbound_io_context.run();
-				l_outbound_io_context.reset();
-			}
-		});*/
 
 	while (true)
 	{
@@ -91,9 +80,6 @@ int main()
 
 	if (l_context_thread.joinable())
 		l_context_thread.join();
-
-	/*if (l_outbound_context_thread.joinable())
-		l_outbound_context_thread.join();*/
 
 	return 0;
 }

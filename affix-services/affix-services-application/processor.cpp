@@ -25,6 +25,7 @@ void processor::process(
 {
 	process_unauthenticated_connections();
 	process_authentication_attempts();
+	process_authentication_attempt_results();
 	process_authenticated_connections();
 	process_async_receive_results();
 }
@@ -64,7 +65,9 @@ void processor::process_unauthenticated_connection(
 			l_socket,
 			l_remote_seed,
 			m_local_key_pair,
-			l_inbound_connection
+			l_inbound_connection,
+			m_authentication_attempt_results_mutex,
+			m_authentication_attempt_results
 		)
 	);
 
@@ -91,22 +94,49 @@ void processor::process_authentication_attempt(
 {
 	if ((*a_authentication_attempt)->expired())
 	{
-		// Just erase the authentication attempt.
-		m_authentication_attempts.erase(a_authentication_attempt);
+		try
+		{
+			// Just erase the authentication attempt.
+			m_authentication_attempts.erase(a_authentication_attempt);
+		}
+		catch (std::exception a_ex)
+		{
+			std::cerr << "[ PROCESSOR ] Error: " << a_ex.what() << std::endl;
+		}
+		catch (...)
+		{
+			std::cerr << "[ PROCESSOR ] Error: unhandled exception when trying to erase expired authentication attempts." << std::endl;
+		}
 	}
-	else if (*(*a_authentication_attempt)->m_authenticated)
+
+}
+
+void processor::process_authentication_attempt_results(
+
+)
+{
+	// Decrement through vector, since each call to process will erase elements.
+	for (int i = m_authentication_attempt_results.size() - 1; i >= 0; i--)
+		process_authentication_attempt_result(m_authentication_attempt_results.begin() + i);
+}
+
+void processor::process_authentication_attempt_result(
+	std::vector<affix_base::data::ptr<authentication_attempt_result>>::iterator a_authentication_attempt_result
+)
+{
+	if ((*a_authentication_attempt_result)->m_successful)
 	{
-		// Create local and remote tokens
-		affix_services::security::rolling_token l_local_token((*a_authentication_attempt)->m_async_authenticate->m_authenticate_local->m_local_seed);
-		affix_services::security::rolling_token l_remote_token((*a_authentication_attempt)->m_async_authenticate->m_authenticate_remote->m_remote_seed);
+		// Get local and remote tokens
+		affix_services::security::rolling_token l_local_token((*a_authentication_attempt_result)->m_local_seed);
+		affix_services::security::rolling_token l_remote_token((*a_authentication_attempt_result)->m_remote_seed);
 
 		// Create authenticated connection object
 		ptr<connection> l_authenticated_connection(
 			new connection(
-				*(*a_authentication_attempt)->m_socket,
+				*(*a_authentication_attempt_result)->m_socket,
 				m_local_key_pair.private_key,
 				l_local_token,
-				(*a_authentication_attempt)->m_async_authenticate->m_authenticate_remote->m_remote_public_key,
+				(*a_authentication_attempt_result)->m_remote_public_key,
 				l_remote_token,
 				m_connection_async_receive_results_mutex,
 				m_connection_async_receive_results
@@ -116,14 +146,20 @@ void processor::process_authentication_attempt(
 		// Push authenticated connection object onto vector
 		m_authenticated_connections.push_back(l_authenticated_connection);
 
-		// Erase authentication attempt object
-		m_authentication_attempts.erase(a_authentication_attempt);
+		// Erase authentication attempt result object
+		m_authentication_attempt_results.erase(a_authentication_attempt_result);
 
 		// Begin receiving data from socket
 		l_authenticated_connection->async_receive();
 
 	}
+	else
+	{
+		// Erase authentication attempt result object
+		m_authentication_attempt_results.erase(a_authentication_attempt_result);
 
+	}
+	
 }
 
 void processor::process_authenticated_connections(
