@@ -2,7 +2,7 @@
 #include "affix-base/byte_buffer.h"
 #include "affix-base/files.h"
 
-using namespace affix_services_application;
+using namespace affix_services;
 using affix_base::data::byte_buffer;
 using namespace asio::ip;
 

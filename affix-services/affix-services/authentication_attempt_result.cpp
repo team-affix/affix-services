@@ -1,6 +1,6 @@
 #include "authentication_attempt_result.h"
 
-using namespace affix_services_application;
+using namespace affix_services;
 
 authentication_attempt_result::authentication_attempt_result(
 	const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,

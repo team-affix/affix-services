@@ -1,7 +1,7 @@
 #pragma once
 #include "affix-base/pch.h"
 #include "affix-base/ptr.h"
-#include "affix-services/connection.h"
+#include "connection.h"
 #include "affix-base/persistent_thread.h"
 #include "asio.hpp"
 #include "server.h"
@@ -9,7 +9,7 @@
 #include "unauthenticated_connection.h"
 #include "authentication_attempt_result.h"
 
-namespace affix_services_application
+namespace affix_services
 {
 	class processor
 	{

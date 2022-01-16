@@ -151,16 +151,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="authentication_attempt_result.cpp" />
-    <ClCompile Include="pending_outbound_connection.cpp" />
-    <ClCompile Include="outbound_connection_configuration.cpp" />
-    <ClCompile Include="processor.cpp" />
     <ClCompile Include="application_configuration.cpp" />
-    <ClCompile Include="authentication_attempt.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="server.cpp" />
-    <ClCompile Include="server_configuration.cpp" />
-    <ClCompile Include="unauthenticated_connection.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\affix-services\affix-services.vcxproj">
@@ -168,15 +160,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="authentication_attempt_result.h" />
-    <ClInclude Include="pending_outbound_connection.h" />
-    <ClInclude Include="outbound_connection_configuration.h" />
-    <ClInclude Include="processor.h" />
     <ClInclude Include="application_configuration.h" />
-    <ClInclude Include="authentication_attempt.h" />
-    <ClInclude Include="server.h" />
-    <ClInclude Include="server_configuration.h" />
-    <ClInclude Include="unauthenticated_connection.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

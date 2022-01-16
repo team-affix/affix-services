@@ -4,6 +4,14 @@
 #include "affix-base/rsa.h"
 #include "affix-base/catch_friendly_assert.h"
 
+#if 1
+#define LOG(x) std::clog << x << std::endl
+#define LOG_ERROR(x) std::cerr << x << std::endl
+#else
+#define LOG(x)
+#define LOG_ERROR(x)
+#endif
+
 using namespace affix_services::networking;
 using affix_base::timing::utc_time;
 using asio::ip::tcp;
@@ -16,8 +24,15 @@ using affix_base::data::ptr;
 using std::lock_guard;
 using affix_base::threading::cross_thread_mutex;
 
+connection::~connection(
+
+)
+{
+	m_socket_io_guard.clear_queues();
+}
+
 connection::connection(
-	asio::ip::tcp::socket& a_socket,
+	const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
 	const CryptoPP::RSA::PrivateKey& a_local_private_key,
 	const affix_services::security::rolling_token& a_local_token,
 	const CryptoPP::RSA::PublicKey& a_remote_public_key,
@@ -26,8 +41,8 @@ connection::connection(
 	std::vector<affix_base::data::ptr<connection_async_receive_result>>& a_receive_results
 ) :
 	m_transmission_security_manager(a_local_private_key, a_local_token, a_remote_public_key, a_remote_token),
-	m_socket(std::move(a_socket)),
-    m_socket_io_guard(a_socket),
+	m_socket(a_socket),
+    m_socket_io_guard(*a_socket),
 	m_start_time(utc_time()),
 	m_receive_results_mutex(a_receive_results_mutex),
 	m_receive_results(a_receive_results)
@@ -51,7 +66,7 @@ void connection::async_send(
 
 	// TRY TO EXPORT MESSAGE DATA IN "TRANSMISSION" FORMAT
 	if (!m_transmission_security_manager.export_transmission(l_message_data_buffer.data(), l_final, l_transmission_result)) {
-		std::cerr << "[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result] << std::endl;
+		LOG_ERROR("[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result]);
 		return;
 	}
 
@@ -79,8 +94,8 @@ void connection::async_receive(
 		m_receive_results.push_back(l_result);
 
 		if (!a_result) {
-			std::cerr << "[ CONNECTION ] Error receiving data." << std::endl;
-			return;
+			LOG_ERROR("[ CONNECTION ] Error receiving data.");
+			return; 
 		}
 
 		transmission_result l_transmission_result = transmission_result::unknown;
@@ -90,7 +105,7 @@ void connection::async_receive(
 		// TRY TO "IMPORT" THE TRANSMISSION DATA
 		if (!m_transmission_security_manager.import_transmission(l_data.val(), l_message_data, l_transmission_result))
 		{
-			std::cerr << "[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result] << std::endl;
+			LOG_ERROR("[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result]);
 			return;
 		}
 
@@ -98,13 +113,13 @@ void connection::async_receive(
 
 		if (!l_message_data_buffer.pop_back(l_result->m_message_body_data))
 		{
-			std::cerr << "[ CONNECTION ] Failed to unpack message body: " << transmission_result_strings[transmission_result::error_unpacking_message_body] << std::endl;
+			LOG_ERROR("[ CONNECTION ] Failed to unpack message body: " << transmission_result_strings[transmission_result::error_unpacking_message_body]);
 			return;
 		}
 
 		if (!l_message_data_buffer.pop_back(l_result->m_message_header_data))
 		{
-			std::cerr << "[ CONNECTION ] Failed to unpack message header: " << transmission_result_strings[transmission_result::error_unpacking_message_header] << std::endl;
+			LOG_ERROR("[ CONNECTION ] Failed to unpack message header: " << transmission_result_strings[transmission_result::error_unpacking_message_header]);
 			return;
 		}
 

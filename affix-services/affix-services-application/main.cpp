@@ -1,24 +1,24 @@
 #include "affix-base/ptr.h"
-#include "server.h"
-#include "processor.h"
+#include "affix-services/server.h"
+#include "affix-services/processor.h"
 #include <iostream>
 #include <fstream>
-#include "outbound_connection_configuration.h"
-#include "pending_outbound_connection.h"
+#include "affix-services/outbound_connection_configuration.h"
+#include "affix-services/pending_outbound_connection.h"
 
 using affix_base::data::ptr;
-using affix_services_application::server_configuration;
-using affix_services_application::server;
-using affix_services_application::processor;
-using affix_services_application::outbound_connection_configuration;
-using affix_services_application::pending_outbound_connection;
+using affix_services::server_configuration;
+using affix_services::server;
+using affix_services::processor;
+using affix_services::outbound_connection_configuration;
+using affix_services::pending_outbound_connection;
 using namespace asio::ip;
 
 int main()
 {
 	// Redirect std::clog to nullbuffer
-	std::ofstream l_nullstream;
-	std::clog.rdbuf(l_nullstream.rdbuf());
+	/*std::ofstream l_nullstream;
+	std::clog.rdbuf(l_nullstream.rdbuf());*/
 
 	// Create IO context object, which will be used for entire program's networking
 	asio::io_context l_io_context;

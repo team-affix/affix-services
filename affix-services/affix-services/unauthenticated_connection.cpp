@@ -1,6 +1,6 @@
 #include "unauthenticated_connection.h"
 
-using namespace affix_services_application;
+using namespace affix_services;
 
 unauthenticated_connection::unauthenticated_connection(
 	const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,

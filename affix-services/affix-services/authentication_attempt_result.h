@@ -4,7 +4,7 @@
 #include "asio.hpp"
 #include "affix-base/rsa.h"
 
-namespace affix_services_application
+namespace affix_services
 {
 	struct authentication_attempt_result
 	{

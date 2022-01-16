@@ -1,7 +1,7 @@
 #include "pending_outbound_connection.h"
 #include "unauthenticated_connection.h"
 
-using namespace affix_services_application;
+using namespace affix_services;
 using namespace affix_base::threading;
 using affix_base::data::ptr;
 using std::lock_guard;

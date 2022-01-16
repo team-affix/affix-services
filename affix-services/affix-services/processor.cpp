@@ -1,7 +1,16 @@
 #include "processor.h"
 #include "cryptopp/osrng.h"
+#include "affix-base/vector_extensions.h"
 
-using namespace affix_services_application;
+#if 1
+#define LOG(x) std::clog << x << std::endl
+#define LOG_ERROR(x) std::cerr << x << std::endl
+#else
+#define LOG(x)
+#define LOG_ERROR(x)
+#endif
+
+using namespace affix_services;
 using namespace asio::ip;
 using std::vector;
 using affix_base::data::ptr;
@@ -10,6 +19,8 @@ using std::lock_guard;
 using std::mutex;
 using affix_base::threading::cross_thread_mutex;
 using affix_base::cryptography::rsa_key_pair;
+using affix_base::cryptography::rsa_to_base64_string;
+using affix_base::data::to_string;
 
 processor::processor(
 	const rsa_key_pair& a_local_key_pair
@@ -92,21 +103,25 @@ void processor::process_authentication_attempt(
 	std::vector<affix_base::data::ptr<authentication_attempt>>::iterator a_authentication_attempt
 )
 {
-	if ((*a_authentication_attempt)->expired())
+	// Local variable outside of unnamed scope
+	// describing the finished state of the authentication attempt
+	bool l_finished = false;
+
+	// Should stay its own scope because of std::lock_guard
 	{
-		try
-		{
-			// Just erase the authentication attempt.
-			m_authentication_attempts.erase(a_authentication_attempt);
-		}
-		catch (std::exception a_ex)
-		{
-			std::cerr << "[ PROCESSOR ] Error: " << a_ex.what() << std::endl;
-		}
-		catch (...)
-		{
-			std::cerr << "[ PROCESSOR ] Error: unhandled exception when trying to erase expired authentication attempts." << std::endl;
-		}
+		// Lock the authentication attempt's state mutex while we read it
+		lock_guard<cross_thread_mutex> l_lock_guard((*a_authentication_attempt)->m_state_mutex);
+
+		// Extract the finished state of the authentication attempt
+		l_finished = (*a_authentication_attempt)->m_finished;
+	}
+
+	// Utilize the extracted information
+	if (l_finished)
+	{
+		// Just erase the authentication attempt
+		m_authentication_attempts.erase(a_authentication_attempt);
+
 	}
 
 }
@@ -115,9 +130,13 @@ void processor::process_authentication_attempt_results(
 
 )
 {
+	// Lock mutex preventing concurrent reads/writes to m_authentication_attempt_results.
+	lock_guard l_lock_guard(m_authentication_attempt_results_mutex);
+
 	// Decrement through vector, since each call to process will erase elements.
 	for (int i = m_authentication_attempt_results.size() - 1; i >= 0; i--)
 		process_authentication_attempt_result(m_authentication_attempt_results.begin() + i);
+
 }
 
 void processor::process_authentication_attempt_result(
@@ -126,6 +145,15 @@ void processor::process_authentication_attempt_result(
 {
 	if ((*a_authentication_attempt_result)->m_successful)
 	{
+		// Log the success of the authentication attempt.
+		LOG("============================================================");
+		LOG("[ PROCESSOR ] Success: authentication attempt successful: " << std::endl);
+		LOG("Remote IPv4: " << (*a_authentication_attempt_result)->m_socket->remote_endpoint().address().to_string() << ":" << (*a_authentication_attempt_result)->m_socket->remote_endpoint().port());
+		LOG("Remote Identity (base64): " << std::endl << rsa_to_base64_string((*a_authentication_attempt_result)->m_remote_public_key) << std::endl);
+		LOG("Remote Seed: " << to_string((*a_authentication_attempt_result)->m_remote_seed, "-"));
+		LOG("Local Seed:  " << to_string((*a_authentication_attempt_result)->m_local_seed, "-"));
+		LOG("============================================================");
+
 		// Get local and remote tokens
 		affix_services::security::rolling_token l_local_token((*a_authentication_attempt_result)->m_local_seed);
 		affix_services::security::rolling_token l_remote_token((*a_authentication_attempt_result)->m_remote_seed);
@@ -133,7 +161,7 @@ void processor::process_authentication_attempt_result(
 		// Create authenticated connection object
 		ptr<connection> l_authenticated_connection(
 			new connection(
-				*(*a_authentication_attempt_result)->m_socket,
+				(*a_authentication_attempt_result)->m_socket,
 				m_local_key_pair.private_key,
 				l_local_token,
 				(*a_authentication_attempt_result)->m_remote_public_key,
@@ -155,6 +183,10 @@ void processor::process_authentication_attempt_result(
 	}
 	else
 	{
+		// Log the success of the authentication attempt.
+		LOG("[ PROCESSOR ] Error: authentication attempt failed: ");
+		LOG("Remote IPv4: " << (*a_authentication_attempt_result)->m_socket->remote_endpoint().address().to_string() << ":" << (*a_authentication_attempt_result)->m_socket->remote_endpoint().port());
+		
 		// Erase authentication attempt result object
 		m_authentication_attempt_results.erase(a_authentication_attempt_result);
 
@@ -175,7 +207,7 @@ void processor::process_authenticated_connection(
 	std::vector<affix_base::data::ptr<connection>>::iterator a_authenticated_connection
 )
 {
-	if (!(*a_authenticated_connection)->m_socket.is_open())
+	if (!(*a_authenticated_connection)->m_socket->is_open())
 	{
 		// If socket is closed, dispose of the connection object
 		m_authenticated_connections.erase(a_authenticated_connection);
@@ -205,13 +237,29 @@ void processor::process_async_receive_result(
 
 	if (l_connection != m_authenticated_connections.end())
 	{
-		// If the connection is still active, process the inbound message
-		process_message_data(
-			(*a_async_receive_result)->m_message_header_data,
-			(*a_async_receive_result)->m_message_body_data,
-			(*a_async_receive_result)->m_owner
-		);
+		if (!(*a_async_receive_result)->m_successful)
+		{
+			// Log that there was an error receiving data.
+			LOG_ERROR("[ PROCESSOR ] Error: Failed to receive data from connection: ");
+			LOG_ERROR("Remote Identity (base64): " << std::endl << rsa_to_base64_string((*a_async_receive_result)->m_owner->m_transmission_security_manager.m_remote_public_key) << std::endl);
 
+			// Close connection
+			m_authenticated_connections.erase(l_connection);
+
+		}
+		else
+		{
+			// If the connection is still active, process the inbound message
+			process_message_data(
+				(*a_async_receive_result)->m_message_header_data,
+				(*a_async_receive_result)->m_message_body_data,
+				(*a_async_receive_result)->m_owner
+			);
+
+			// Prime the IO context with another async receive request
+			(*l_connection)->async_receive();
+
+		}
 	}
 
 	m_connection_async_receive_results.erase(a_async_receive_result);

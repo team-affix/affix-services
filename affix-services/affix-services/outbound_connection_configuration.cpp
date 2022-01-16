@@ -1,6 +1,6 @@
 #include "outbound_connection_configuration.h"
 
-using namespace affix_services_application;
+using namespace affix_services;
 using namespace asio::ip;
 
 outbound_connection_configuration::outbound_connection_configuration(

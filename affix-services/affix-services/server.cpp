@@ -1,6 +1,6 @@
 #include "server.h"
 
-using namespace affix_services_application;
+using namespace affix_services;
 using namespace asio::ip;
 using std::lock_guard;
 using affix_base::threading::cross_thread_mutex;

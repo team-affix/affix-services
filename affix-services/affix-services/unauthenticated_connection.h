@@ -3,7 +3,7 @@
 #include "affix-base/ptr.h"
 #include "asio.hpp"
 
-namespace affix_services_application
+namespace affix_services
 {
 	struct unauthenticated_connection
 	{

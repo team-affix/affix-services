@@ -2,7 +2,7 @@
 #include "asio.hpp"
 #include "affix-base/ptr.h"
 
-namespace affix_services_application
+namespace affix_services
 {
 	struct outbound_connection_configuration
 	{

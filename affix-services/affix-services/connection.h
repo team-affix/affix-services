@@ -21,7 +21,7 @@ namespace affix_services {
 			affix_services::security::transmission_security_manager m_transmission_security_manager;
 
 		public:
-			asio::ip::tcp::socket m_socket;
+			affix_base::data::ptr<asio::ip::tcp::socket> m_socket;
 
 		protected:
 			affix_base::networking::socket_io_guard m_socket_io_guard;
@@ -40,8 +40,11 @@ namespace affix_services {
 			std::vector<affix_base::data::ptr<connection_async_receive_result>>& m_receive_results;
 
 		public:
+			virtual ~connection(
+
+			);
 			connection(
-				asio::ip::tcp::socket& a_socket,
+				const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
 				const CryptoPP::RSA::PrivateKey& a_local_private_key,
 				const affix_services::security::rolling_token& a_local_token,
 				const CryptoPP::RSA::PublicKey& a_remote_public_key,

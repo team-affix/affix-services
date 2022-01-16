@@ -2,7 +2,7 @@
 #include "affix-base/async_authenticate.h"
 #include "authentication_attempt_result.h"
 
-namespace affix_services_application
+namespace affix_services
 {
 	struct authentication_attempt
 	{
@@ -32,6 +32,17 @@ namespace affix_services_application
 		/// Actual asynchronous authentication object. Handles authenticating the local and the remote.
 		/// </summary>
 		affix_base::data::ptr<affix_base::networking::async_authenticate> m_async_authenticate;
+
+	public:
+		/// <summary>
+		/// Mutex preventing concurrent access to the m_finished boolean.
+		/// </summary>
+		affix_base::threading::cross_thread_mutex m_state_mutex;
+
+		/// <summary>
+		/// Boolean describing whether the asynchronous authenticate request has finished.
+		/// </summary>
+		bool m_finished = false;
 
 	public:
 		/// <summary>

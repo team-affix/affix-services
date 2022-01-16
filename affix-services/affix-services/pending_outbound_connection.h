@@ -4,7 +4,7 @@
 #include "outbound_connection_configuration.h"
 #include "affix-base/threading.h"
 
-namespace affix_services_application
+namespace affix_services
 {
 	class pending_outbound_connection
 	{

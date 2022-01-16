@@ -156,10 +156,18 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="authentication_attempt.h" />
+    <ClInclude Include="authentication_attempt_result.h" />
     <ClInclude Include="message_rqt_identity_push.h" />
     <ClInclude Include="details.h" />
     <ClInclude Include="connection_async_receive_result.h" />
+    <ClInclude Include="outbound_connection_configuration.h" />
+    <ClInclude Include="pending_outbound_connection.h" />
+    <ClInclude Include="processor.h" />
+    <ClInclude Include="server.h" />
+    <ClInclude Include="server_configuration.h" />
     <ClInclude Include="transmission_security_manager.h" />
+    <ClInclude Include="unauthenticated_connection.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="connection.h" />
     <ClInclude Include="message_header.h" />
@@ -170,11 +178,19 @@
     <ClInclude Include="transmission_result.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="authentication_attempt.cpp" />
+    <ClCompile Include="authentication_attempt_result.cpp" />
     <ClCompile Include="connection.cpp" />
     <ClCompile Include="connection_async_receive_result.cpp" />
     <ClCompile Include="message_header.cpp" />
+    <ClCompile Include="outbound_connection_configuration.cpp" />
+    <ClCompile Include="pending_outbound_connection.cpp" />
+    <ClCompile Include="processor.cpp" />
+    <ClCompile Include="server.cpp" />
+    <ClCompile Include="server_configuration.cpp" />
     <ClCompile Include="transmission_security_manager.cpp" />
     <ClCompile Include="rolling_token.cpp" />
+    <ClCompile Include="unauthenticated_connection.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

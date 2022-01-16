@@ -6,7 +6,7 @@
 #include "server_configuration.h"
 #include "unauthenticated_connection.h"
 
-namespace affix_services_application
+namespace affix_services
 {
 	class server
 	{
