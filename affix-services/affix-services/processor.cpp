@@ -1,6 +1,8 @@
 #include "processor.h"
 #include "cryptopp/osrng.h"
 #include "affix-base/vector_extensions.h"
+#include "messaging.h"
+#include "transmission_result.h"
 
 #if 1
 #define LOG(x) std::clog << x << std::endl
@@ -11,6 +13,7 @@
 #endif
 
 using namespace affix_services;
+using namespace affix_services::messaging;
 using namespace asio::ip;
 using std::vector;
 using affix_base::data::ptr;
@@ -21,6 +24,8 @@ using affix_base::threading::cross_thread_mutex;
 using affix_base::cryptography::rsa_key_pair;
 using affix_base::cryptography::rsa_to_base64_string;
 using affix_base::data::to_string;
+using affix_services::networking::transmission_result;
+using affix_services::networking::transmission_result_strings;
 
 processor::processor(
 	const rsa_key_pair& a_local_key_pair
@@ -272,5 +277,32 @@ void processor::process_message_data(
 	const affix_base::data::ptr<affix_services::networking::connection>& a_connection
 )
 {
-	
+	// Transmission result, which could represent different possible failure modes.
+	transmission_result l_transmission_result;
+
+	// Create the message header used to identify the type of message
+	message_header l_message_header;
+
+	// Create the byte buffer for the header
+	affix_base::data::byte_buffer l_header_byte_buffer(a_message_header_data);
+
+	// Try to deserialize the header.
+	if (!l_message_header.deserialize(l_header_byte_buffer, l_transmission_result))
+	{
+		LOG_ERROR("[ PROCESSOR ] Error: unable to deserialize message header:");
+		LOG_ERROR(transmission_result_strings[l_transmission_result]);
+		return;
+	}
+
+	switch (l_message_header.m_message_type)
+	{
+	case message_types::rqt_identity_push:
+
+		break;
+	case message_types::rsp_identity_push:
+
+		break;
+	}
+
+
 }

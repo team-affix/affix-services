@@ -65,32 +65,31 @@ bool message_header::serialize(
 
 bool message_header::deserialize(
 	byte_buffer& a_input,
-	message_header& a_output,
 	affix_services::networking::transmission_result& a_result
 )
 {
 
 	try
 	{
-		if (!a_input.pop_front(a_output.m_affix_services_version))
+		if (!a_input.pop_front(m_affix_services_version))
 		{
 			a_result = transmission_result::error_deserializing_data;
 			return false;
 		}
 
-		if (a_output.m_affix_services_version.m_major != details::i_affix_services_version.m_major ||
-			a_output.m_affix_services_version.m_minor != details::i_affix_services_version.m_minor) {
+		if (m_affix_services_version.m_major != details::i_affix_services_version.m_major ||
+			m_affix_services_version.m_minor != details::i_affix_services_version.m_minor) {
 			a_result = transmission_result::error_version_mismatch;
 			return false;
 		}
 
-		if (!a_input.pop_front(a_output.m_message_type))
+		if (!a_input.pop_front(m_message_type))
 		{
 			a_result = transmission_result::error_deserializing_data;
 			return false;
 		}
 
-		if (!a_input.pop_front(a_output.m_transmission_result))
+		if (!a_input.pop_front(m_transmission_result))
 		{
 			a_result = transmission_result::error_deserializing_data;
 			return false;

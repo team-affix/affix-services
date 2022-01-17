@@ -96,6 +96,9 @@
     <ClInclude Include="unauthenticated_connection.h">
       <Filter>Header Files\networking</Filter>
     </ClInclude>
+    <ClInclude Include="messaging.h">
+      <Filter>Header Files\messaging</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rolling_token.cpp">
@@ -136,6 +139,9 @@
     </ClCompile>
     <ClCompile Include="unauthenticated_connection.cpp">
       <Filter>Source Files\networking</Filter>
+    </ClCompile>
+    <ClCompile Include="message_rqt_identity_push.cpp">
+      <Filter>Source Files\messaging</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

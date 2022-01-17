@@ -11,7 +11,8 @@
 namespace affix_services {
 	namespace messaging {
 
-		class message_header {
+		class message_header
+		{
 		public:
 			affix_base::details::semantic_version_number m_affix_services_version = affix_services::details::i_affix_services_version;
 
@@ -34,10 +35,14 @@ namespace affix_services {
 				affix_base::data::byte_buffer& a_output,
 				affix_services::networking::transmission_result& a_result
 			);
-			static bool deserialize(
+			virtual bool deserialize(
 				affix_base::data::byte_buffer& a_input,
-				message_header& a_output,
 				affix_services::networking::transmission_result& a_result
+			);
+
+		public:
+			virtual bool process(
+
 			);
 
 		};

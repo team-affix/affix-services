@@ -8,28 +8,22 @@ namespace affix_services {
 
 			unknown = 0,
 
-			identity_authenticate_0,			// seed remote peer
-			identity_authenticate_1,			// peer signs token (seed + index) with private key
-			identity_authenticate_2,			// verify token signature
+			rqt_identity_push,		// push identity info
+			rsp_identity_push,
+			rqt_identity_delete,		// delete identity
+			rsp_identity_delete,
 
-			identity_pull_0,		// pull identity info
-			identity_pull_1,		
-			identity_push_0,		// push identity info
-			identity_push_1,
-			identity_delete_0,		// delete identity
-			identity_delete_1,
+			rqt_turn_create,			// create a TURN group
+			rsp_turn_create,
+			rqt_turn_pull,			// pull TURN group data
+			rsp_turn_pull,
+			rqt_turn_push,
+			rsp_turn_push,
+			rqt_turn_delete,
+			rsp_turn_delete,
 
-			turn_create_0,			// create a TURN group
-			turn_create_1,
-			turn_pull_0,			// pull TURN group data
-			turn_pull_1,
-			turn_push_0,
-			turn_push_1,
-			turn_delete_0,
-			turn_delete_1,
-
-			relay_0,				// relay data to connected party
-			relay_1,
+			rqt_relay,				// relay data to connected party
+			rsp_relay,
 
 		};
 

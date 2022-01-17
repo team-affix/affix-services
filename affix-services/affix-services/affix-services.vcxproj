@@ -161,6 +161,7 @@
     <ClInclude Include="message_rqt_identity_push.h" />
     <ClInclude Include="details.h" />
     <ClInclude Include="connection_async_receive_result.h" />
+    <ClInclude Include="messaging.h" />
     <ClInclude Include="outbound_connection_configuration.h" />
     <ClInclude Include="pending_outbound_connection.h" />
     <ClInclude Include="processor.h" />
@@ -183,6 +184,7 @@
     <ClCompile Include="connection.cpp" />
     <ClCompile Include="connection_async_receive_result.cpp" />
     <ClCompile Include="message_header.cpp" />
+    <ClCompile Include="message_rqt_identity_push.cpp" />
     <ClCompile Include="outbound_connection_configuration.cpp" />
     <ClCompile Include="pending_outbound_connection.cpp" />
     <ClCompile Include="processor.cpp" />
