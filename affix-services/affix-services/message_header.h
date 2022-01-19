@@ -40,11 +40,6 @@ namespace affix_services {
 				affix_services::networking::transmission_result& a_result
 			);
 
-		public:
-			virtual bool process(
-
-			);
-
 		};
 
 	}

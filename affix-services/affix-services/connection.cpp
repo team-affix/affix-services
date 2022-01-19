@@ -51,27 +51,22 @@ connection::connection(
 }
 
 void connection::async_send(
-	const std::vector<uint8_t>& a_message_header_data,
-	const std::vector<uint8_t>& a_message_body_data,
+	affix_base::data::byte_buffer& a_byte_buffer,
 	const std::function<void(bool)>& a_callback
 )
 {
-	vector<uint8_t> l_final;
+	vector<uint8_t> l_exported_transmission_data;
 
 	transmission_result l_transmission_result = transmission_result::unknown;
 
-	byte_buffer l_message_data_buffer;
-	l_message_data_buffer.push_back(a_message_header_data);
-	l_message_data_buffer.push_back(a_message_body_data);
-
 	// TRY TO EXPORT MESSAGE DATA IN "TRANSMISSION" FORMAT
-	if (!m_transmission_security_manager.export_transmission(l_message_data_buffer.data(), l_final, l_transmission_result)) {
+	if (!m_transmission_security_manager.export_transmission(a_byte_buffer.data(), l_exported_transmission_data, l_transmission_result)) {
 		LOG_ERROR("[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result]);
 		return;
 	}
 
 	// SEND TRANSMISSION
-	m_socket_io_guard.async_send(l_final, a_callback);
+	m_socket_io_guard.async_send(l_exported_transmission_data, a_callback);
 
 }
 
@@ -111,17 +106,8 @@ void connection::async_receive(
 
 		byte_buffer l_message_data_buffer(l_message_data);
 
-		if (!l_message_data_buffer.pop_back(l_result->m_message_body_data))
-		{
-			LOG_ERROR("[ CONNECTION ] Failed to unpack message body: " << transmission_result_strings[transmission_result::error_unpacking_message_body]);
-			return;
-		}
-
-		if (!l_message_data_buffer.pop_back(l_result->m_message_header_data))
-		{
-			LOG_ERROR("[ CONNECTION ] Failed to unpack message header: " << transmission_result_strings[transmission_result::error_unpacking_message_header]);
-			return;
-		}
+		// Save byte buffer for future use.
+		l_result->m_byte_buffer = l_message_data_buffer;
 
 	});
 

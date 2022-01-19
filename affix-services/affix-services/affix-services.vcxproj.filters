@@ -84,7 +84,7 @@
     <ClInclude Include="pending_outbound_connection.h">
       <Filter>Header Files\networking</Filter>
     </ClInclude>
-    <ClInclude Include="processor.h">
+    <ClInclude Include="connection_processor.h">
       <Filter>Header Files\networking</Filter>
     </ClInclude>
     <ClInclude Include="server.h">
@@ -98,6 +98,12 @@
     </ClInclude>
     <ClInclude Include="messaging.h">
       <Filter>Header Files\messaging</Filter>
+    </ClInclude>
+    <ClInclude Include="message_rsp_identity_push.h">
+      <Filter>Header Files\messaging</Filter>
+    </ClInclude>
+    <ClInclude Include="message_processor.h">
+      <Filter>Header Files\networking</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -128,7 +134,7 @@
     <ClCompile Include="pending_outbound_connection.cpp">
       <Filter>Source Files\networking</Filter>
     </ClCompile>
-    <ClCompile Include="processor.cpp">
+    <ClCompile Include="connection_processor.cpp">
       <Filter>Source Files\networking</Filter>
     </ClCompile>
     <ClCompile Include="server.cpp">
@@ -142,6 +148,12 @@
     </ClCompile>
     <ClCompile Include="message_rqt_identity_push.cpp">
       <Filter>Source Files\messaging</Filter>
+    </ClCompile>
+    <ClCompile Include="message_rsp_identity_push.cpp">
+      <Filter>Source Files\messaging</Filter>
+    </ClCompile>
+    <ClCompile Include="message_processor.cpp">
+      <Filter>Source Files\networking</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

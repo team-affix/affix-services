@@ -1,4 +1,4 @@
-#include "processor.h"
+#include "connection_processor.h"
 #include "cryptopp/osrng.h"
 #include "affix-base/vector_extensions.h"
 #include "messaging.h"
@@ -27,15 +27,17 @@ using affix_base::data::to_string;
 using affix_services::networking::transmission_result;
 using affix_services::networking::transmission_result_strings;
 
-processor::processor(
+connection_processor::connection_processor(
+	message_processor& a_message_processor,
 	const rsa_key_pair& a_local_key_pair
 ) :
+	m_message_processor(a_message_processor),
 	m_local_key_pair(a_local_key_pair)
 {
 
 }
 
-void processor::process(
+void connection_processor::process(
 
 )
 {
@@ -46,7 +48,7 @@ void processor::process(
 	process_async_receive_results();
 }
 
-void processor::process_unauthenticated_connections(
+void connection_processor::process_unauthenticated_connections(
 
 )
 {
@@ -59,7 +61,7 @@ void processor::process_unauthenticated_connections(
 
 }
 
-void processor::process_unauthenticated_connection(
+void connection_processor::process_unauthenticated_connection(
 	std::vector<affix_base::data::ptr<unauthenticated_connection>>::iterator a_unauthenticated_connection
 )
 {
@@ -95,7 +97,7 @@ void processor::process_unauthenticated_connection(
 
 }
 
-void processor::process_authentication_attempts(
+void connection_processor::process_authentication_attempts(
 
 )
 {
@@ -104,7 +106,7 @@ void processor::process_authentication_attempts(
 		process_authentication_attempt(m_authentication_attempts.begin() + i);
 }
 
-void processor::process_authentication_attempt(
+void connection_processor::process_authentication_attempt(
 	std::vector<affix_base::data::ptr<authentication_attempt>>::iterator a_authentication_attempt
 )
 {
@@ -131,7 +133,7 @@ void processor::process_authentication_attempt(
 
 }
 
-void processor::process_authentication_attempt_results(
+void connection_processor::process_authentication_attempt_results(
 
 )
 {
@@ -144,7 +146,7 @@ void processor::process_authentication_attempt_results(
 
 }
 
-void processor::process_authentication_attempt_result(
+void connection_processor::process_authentication_attempt_result(
 	std::vector<affix_base::data::ptr<authentication_attempt_result>>::iterator a_authentication_attempt_result
 )
 {
@@ -199,7 +201,7 @@ void processor::process_authentication_attempt_result(
 	
 }
 
-void processor::process_authenticated_connections(
+void connection_processor::process_authenticated_connections(
 
 )
 {
@@ -208,7 +210,7 @@ void processor::process_authenticated_connections(
 		process_authenticated_connection(m_authenticated_connections.begin() + i);
 }
 
-void processor::process_authenticated_connection(
+void connection_processor::process_authenticated_connection(
 	std::vector<affix_base::data::ptr<connection>>::iterator a_authenticated_connection
 )
 {
@@ -220,7 +222,7 @@ void processor::process_authenticated_connection(
 	}
 }
 
-void processor::process_async_receive_results(
+void connection_processor::process_async_receive_results(
 
 )
 {
@@ -233,7 +235,7 @@ void processor::process_async_receive_results(
 
 }
 
-void processor::process_async_receive_result(
+void connection_processor::process_async_receive_result(
 	std::vector<affix_base::data::ptr<affix_services::networking::connection_async_receive_result>>::iterator a_async_receive_result
 )
 {
@@ -255,11 +257,7 @@ void processor::process_async_receive_result(
 		else
 		{
 			// If the connection is still active, process the inbound message
-			process_message_data(
-				(*a_async_receive_result)->m_message_header_data,
-				(*a_async_receive_result)->m_message_body_data,
-				(*a_async_receive_result)->m_owner
-			);
+			m_message_processor.process((*a_async_receive_result));
 
 			// Prime the IO context with another async receive request
 			(*l_connection)->async_receive();
@@ -268,41 +266,5 @@ void processor::process_async_receive_result(
 	}
 
 	m_connection_async_receive_results.erase(a_async_receive_result);
-
-}
-
-void processor::process_message_data(
-	const std::vector<uint8_t>& a_message_header_data,
-	const std::vector<uint8_t>& a_message_body_data,
-	const affix_base::data::ptr<affix_services::networking::connection>& a_connection
-)
-{
-	// Transmission result, which could represent different possible failure modes.
-	transmission_result l_transmission_result;
-
-	// Create the message header used to identify the type of message
-	message_header l_message_header;
-
-	// Create the byte buffer for the header
-	affix_base::data::byte_buffer l_header_byte_buffer(a_message_header_data);
-
-	// Try to deserialize the header.
-	if (!l_message_header.deserialize(l_header_byte_buffer, l_transmission_result))
-	{
-		LOG_ERROR("[ PROCESSOR ] Error: unable to deserialize message header:");
-		LOG_ERROR(transmission_result_strings[l_transmission_result]);
-		return;
-	}
-
-	switch (l_message_header.m_message_type)
-	{
-	case message_types::rqt_identity_push:
-
-		break;
-	case message_types::rsp_identity_push:
-
-		break;
-	}
-
 
 }

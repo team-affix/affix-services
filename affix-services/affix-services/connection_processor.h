@@ -8,10 +8,12 @@
 #include "authentication_attempt.h"
 #include "unauthenticated_connection.h"
 #include "authentication_attempt_result.h"
+#include "messaging.h"
+#include "message_processor.h"
 
 namespace affix_services
 {
-	class processor
+	class connection_processor
 	{
 	public:
 		/// <summary>
@@ -56,6 +58,11 @@ namespace affix_services
 		std::vector<affix_base::data::ptr<affix_services::networking::connection_async_receive_result>> m_connection_async_receive_results;
 		
 		/// <summary>
+		/// Processor responsible for handling inbound messages.
+		/// </summary>
+		message_processor& m_message_processor;
+		
+		/// <summary>
 		/// The local RSA key pair, used for all message security
 		/// </summary>
 		affix_base::cryptography::rsa_key_pair m_local_key_pair;
@@ -65,7 +72,8 @@ namespace affix_services
 		/// Constructs the processor given the local key pair.
 		/// </summary>
 		/// <param name="a_local_key_pair"></param>
-		processor(
+		connection_processor(
+			message_processor& a_message_processor,
 			const affix_base::cryptography::rsa_key_pair& a_local_key_pair
 		);
 
@@ -153,19 +161,6 @@ namespace affix_services
 		/// </summary>
 		void process_async_receive_result(
 			std::vector<affix_base::data::ptr<affix_services::networking::connection_async_receive_result>>::iterator a_async_receive_result
-		);
-
-	protected:
-		/// <summary>
-		/// Processes a single inbound message.
-		/// </summary>
-		/// <param name="a_message_header_data"></param>
-		/// <param name="a_message_body_data"></param>
-		/// <param name="a_connection"></param>
-		void process_message_data(
-			const std::vector<uint8_t>& a_message_header_data,
-			const std::vector<uint8_t>& a_message_body_data,
-			const affix_base::data::ptr<affix_services::networking::connection>& a_connection
 		);
 
 	};

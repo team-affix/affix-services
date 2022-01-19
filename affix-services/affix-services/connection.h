@@ -55,8 +55,7 @@ namespace affix_services {
 
 		public:
 			void async_send(
-				const std::vector<uint8_t>& a_message_header_data,
-				const std::vector<uint8_t>& a_message_body_data,
+				affix_base::data::byte_buffer& a_byte_buffer,
 				const std::function<void(bool)>& a_callback
 			);
 			void async_receive(

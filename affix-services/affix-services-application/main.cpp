@@ -1,6 +1,6 @@
 #include "affix-base/ptr.h"
 #include "affix-services/server.h"
-#include "affix-services/processor.h"
+#include "affix-services/connection_processor.h"
 #include <iostream>
 #include <fstream>
 #include "affix-services/outbound_connection_configuration.h"
@@ -9,9 +9,10 @@
 using affix_base::data::ptr;
 using affix_services::server_configuration;
 using affix_services::server;
-using affix_services::processor;
+using affix_services::connection_processor;
 using affix_services::outbound_connection_configuration;
 using affix_services::pending_outbound_connection;
+using affix_services::message_processor;
 using namespace asio::ip;
 
 int main()
@@ -23,9 +24,14 @@ int main()
 	// Create IO context object, which will be used for entire program's networking
 	asio::io_context l_io_context;
 
+	message_processor l_message_processor;
+
 	affix_base::cryptography::rsa_key_pair l_key_pair = affix_base::cryptography::rsa_generate_key_pair(2048);
 
-	processor l_processor(l_key_pair);
+	connection_processor l_processor(
+		l_message_processor,
+		l_key_pair
+	);
 
 	affix_base::data::ptr<server_configuration> l_server_configuration(
 		new server_configuration(l_io_context)
