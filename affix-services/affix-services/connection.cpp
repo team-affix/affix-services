@@ -88,7 +88,8 @@ void connection::async_receive(
 		// Push dynamically allocated result into vector.
 		m_receive_results.push_back(l_result);
 
-		if (!a_result) {
+		if (!a_result)
+		{
 			LOG_ERROR("[ CONNECTION ] Error receiving data.");
 			return; 
 		}

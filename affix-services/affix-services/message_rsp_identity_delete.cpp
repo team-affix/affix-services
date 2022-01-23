@@ -1,18 +1,19 @@
-#include "message_rsp_identity_push.h"
+#include "message_rsp_identity_delete.h"
 
-using namespace affix_services::messaging;
-using affix_services::networking::transmission_result;
+using namespace affix_services;
+using namespace affix_base::data;
+using namespace affix_services::networking;
 
-message_rsp_identity_push::message_rsp_identity_push(
+message_rsp_identity_delete::message_rsp_identity_delete(
 
 )
 {
 
 }
 
-message_rsp_identity_push::message_rsp_identity_push(
-	const message_rqt_identity_push::deserialization_status_response_type& a_deserialization_status_response,
-	const message_rqt_identity_push::processing_status_response_type& a_processing_status_response
+message_rsp_identity_delete::message_rsp_identity_delete(
+	const message_rqt_identity_delete::deserialization_status_response_type& a_deserialization_status_response,
+	const message_rqt_identity_delete::processing_status_response_type& a_processing_status_response
 ) :
 	m_deserialization_status_response(a_deserialization_status_response),
 	m_processing_status_response(a_processing_status_response)
@@ -20,19 +21,19 @@ message_rsp_identity_push::message_rsp_identity_push(
 
 }
 
-bool message_rsp_identity_push::serialize(
+bool message_rsp_identity_delete::serialize(
 	affix_base::data::byte_buffer& a_output,
 	serialization_status_response_type& a_result
 )
 {
-	// Push the deserialization status response onto the byte buffer.
+	// Pack deserialization status response data
 	if (!a_output.push_back(m_deserialization_status_response))
 	{
 		a_result = serialization_status_response_type::error_packing_deserialization_status_response;
 		return false;
 	}
 
-	// Push the processing status response onto the byte buffer.
+	// Pack processing status response data
 	if (!a_output.push_back(m_processing_status_response))
 	{
 		a_result = serialization_status_response_type::error_packing_processing_status_response;
@@ -43,25 +44,25 @@ bool message_rsp_identity_push::serialize(
 
 }
 
-bool message_rsp_identity_push::deserialize(
+bool message_rsp_identity_delete::deserialize(
 	affix_base::data::byte_buffer& a_input,
 	deserialization_status_response_type& a_result
 )
 {
-	// Pop the deserialization status response from the byte buffer
+	// Unpack deserialization status response data
 	if (!a_input.pop_front(m_deserialization_status_response))
 	{
 		a_result = deserialization_status_response_type::error_unpacking_deserialization_status_response;
 		return false;
 	}
 
-	// Pop the processing status response from the byte buffer
+	// Unpack processing status response data
 	if (!a_input.pop_front(m_processing_status_response))
 	{
 		a_result = deserialization_status_response_type::error_unpacking_processing_status_response;
 		return false;
 	}
-
+	
 	return true;
 
 }

@@ -7,27 +7,49 @@ namespace affix_services
 {
 	namespace messaging
 	{
-		class rsp_identity_push
+		class message_rsp_identity_push
 		{
 		public:
-			identity_push_status_response_type m_status_response = identity_push_status_response_type::unknown;
+			enum class serialization_status_response_type : uint8_t
+			{
+				unknown = 0,
+				error_packing_deserialization_status_response,
+				error_packing_processing_status_response
+			};
+			enum class deserialization_status_response_type : uint8_t
+			{
+				unknown = 0,
+				error_unpacking_deserialization_status_response,
+				error_unpacking_processing_status_response
+			};
+			enum class processing_status_response_type : uint8_t
+			{
+				unknown = 0,
+			};
 
 		public:
-			rsp_identity_push(
+			message_rqt_identity_push::deserialization_status_response_type m_deserialization_status_response =
+				message_rqt_identity_push::deserialization_status_response_type::unknown;
+			message_rqt_identity_push::processing_status_response_type m_processing_status_response =
+				message_rqt_identity_push::processing_status_response_type::unknown;
+
+		public:
+			message_rsp_identity_push(
 
 			);
-			rsp_identity_push(
-				const identity_push_status_response_type& a_status_response
+			message_rsp_identity_push(
+				const message_rqt_identity_push::deserialization_status_response_type& a_deserialization_status_response,
+				const message_rqt_identity_push::processing_status_response_type& a_processing_status_response
 			);
 
 		public:
 			bool serialize(
 				affix_base::data::byte_buffer& a_output,
-				affix_services::networking::transmission_result& a_result
+				serialization_status_response_type& a_result
 			);
 			bool deserialize(
 				affix_base::data::byte_buffer& a_input,
-				affix_services::networking::transmission_result& a_result
+				deserialization_status_response_type& a_result
 			);
 
 		};
