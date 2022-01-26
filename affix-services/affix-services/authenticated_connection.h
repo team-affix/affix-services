@@ -15,7 +15,7 @@
 namespace affix_services {
 	namespace networking {
 
-		class connection
+		class authenticated_connection
 		{
 		public:
 			affix_services::security::transmission_security_manager m_transmission_security_manager;
@@ -40,10 +40,10 @@ namespace affix_services {
 			std::vector<affix_base::data::ptr<connection_async_receive_result>>& m_receive_results;
 
 		public:
-			virtual ~connection(
+			virtual ~authenticated_connection(
 
 			);
-			connection(
+			authenticated_connection(
 				const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
 				const CryptoPP::RSA::PrivateKey& a_local_private_key,
 				const affix_services::security::rolling_token& a_local_token,

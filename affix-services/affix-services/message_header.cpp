@@ -105,6 +105,6 @@ bool message_header::deserialize(
 
 	a_result = transmission_result::success;
 
-	return false;
+	return true;
 
 }

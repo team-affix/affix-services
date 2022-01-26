@@ -3,7 +3,7 @@
 using namespace affix_services::networking;
 
 connection_async_receive_result::connection_async_receive_result(
-	const affix_base::data::ptr<connection>& a_owner,
+	const affix_base::data::ptr<authenticated_connection>& a_owner,
 	affix_base::data::byte_buffer a_byte_buffer
 ) :
 	m_owner(a_owner),

@@ -4,7 +4,7 @@
 namespace affix_services {
 	namespace messaging {
 
-		enum class message_types {
+		enum class message_types : uint8_t {
 
 			unknown = 0,
 

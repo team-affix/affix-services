@@ -3,3 +3,7 @@
 #include "message_header.h"
 #include "message_rqt_identity_push.h"
 #include "message_rsp_identity_push.h"
+#include "message_rqt_identity_delete.h"
+#include "message_rsp_identity_delete.h"
+#include "message_rqt_turn_create.h"
+#include "message_rsp_turn_create.h"

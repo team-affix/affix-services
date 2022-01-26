@@ -17,7 +17,7 @@ using namespace affix_services::messaging;
 using namespace asio::ip;
 using std::vector;
 using affix_base::data::ptr;
-using affix_services::networking::connection;
+using affix_services::networking::authenticated_connection;
 using std::lock_guard;
 using std::mutex;
 using affix_base::threading::cross_thread_mutex;
@@ -166,8 +166,8 @@ void connection_processor::process_authentication_attempt_result(
 		affix_services::security::rolling_token l_remote_token((*a_authentication_attempt_result)->m_remote_seed);
 
 		// Create authenticated connection object
-		ptr<connection> l_authenticated_connection(
-			new connection(
+		ptr<authenticated_connection> l_authenticated_connection(
+			new authenticated_connection(
 				(*a_authentication_attempt_result)->m_socket,
 				m_local_key_pair.private_key,
 				l_local_token,
@@ -211,7 +211,7 @@ void connection_processor::process_authenticated_connections(
 }
 
 void connection_processor::process_authenticated_connection(
-	std::vector<affix_base::data::ptr<connection>>::iterator a_authenticated_connection
+	std::vector<affix_base::data::ptr<authenticated_connection>>::iterator a_authenticated_connection
 )
 {
 	if (!(*a_authenticated_connection)->m_socket->is_open())
@@ -240,7 +240,7 @@ void connection_processor::process_async_receive_result(
 )
 {
 	// Get the owner connection from the vector of authenticated connections
-	std::vector<ptr<connection>>::iterator l_connection(std::find(m_authenticated_connections.begin(), m_authenticated_connections.end(), (*a_async_receive_result)->m_owner));
+	std::vector<ptr<authenticated_connection>>::iterator l_connection(std::find(m_authenticated_connections.begin(), m_authenticated_connections.end(), (*a_async_receive_result)->m_owner));
 
 	if (l_connection != m_authenticated_connections.end())
 	{
@@ -257,7 +257,7 @@ void connection_processor::process_async_receive_result(
 		else
 		{
 			// If the connection is still active, process the inbound message
-			m_message_processor.process((*a_async_receive_result));
+			m_message_processor.process_async_receive_result((*a_async_receive_result));
 
 			// Prime the IO context with another async receive request
 			(*l_connection)->async_receive();

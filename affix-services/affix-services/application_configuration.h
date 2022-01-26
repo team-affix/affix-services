@@ -1,12 +1,12 @@
 #pragma once
 #include "affix-base/pch.h"
 #include "affix-base/ptr.h"
-#include "affix-services/connection.h"
+#include "authenticated_connection.h"
 #include "affix-base/persistent_thread.h"
 #include "asio.hpp"
-#include "affix-services/server_configuration.h"
+#include "server_configuration.h"
 
-namespace affix_services_application
+namespace affix_services
 {
 	struct application_configuration
 	{

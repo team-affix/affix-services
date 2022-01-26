@@ -6,13 +6,8 @@
 #include "affix-base/nat.h"
 #include <fstream>
 
-
 int main()
 {
-	std::ofstream nullstream;
-	std::clog.rdbuf(nullstream.rdbuf());
-
-
 
 	return 0;
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include "affix-base/pch.h"
 #include "affix-base/ptr.h"
-#include "connection.h"
+#include "authenticated_connection.h"
 #include "affix-base/persistent_thread.h"
 #include "asio.hpp"
 #include "server.h"
@@ -45,7 +45,7 @@ namespace affix_services
 		/// <summary>
 		/// A vector of fully authenticated connections.
 		/// </summary>
-		std::vector<affix_base::data::ptr<affix_services::networking::connection>> m_authenticated_connections;
+		std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>> m_authenticated_connections;
 
 		/// <summary>
 		/// Mutex that prevents concurrent reads/writes to m_connection_async_receive_results.
@@ -146,7 +146,7 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_authenticated_connection"></param>
 		void process_authenticated_connection(
-			std::vector<affix_base::data::ptr<affix_services::networking::connection>>::iterator a_authenticated_connection
+			std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>>::iterator a_authenticated_connection
 		);
 
 		/// <summary>

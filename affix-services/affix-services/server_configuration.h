@@ -1,7 +1,7 @@
 #pragma once
 #include "affix-base/pch.h"
 #include "affix-base/ptr.h"
-#include "connection.h"
+#include "authenticated_connection.h"
 #include "affix-base/persistent_thread.h"
 #include "asio.hpp"
 

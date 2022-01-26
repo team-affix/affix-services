@@ -1,4 +1,4 @@
-#include "connection.h"
+#include "authenticated_connection.h"
 #include "affix-base/pch.h"
 #include "affix-base/utc_time.h"
 #include "affix-base/rsa.h"
@@ -17,21 +17,21 @@ using affix_base::timing::utc_time;
 using asio::ip::tcp;
 using namespace affix_base::networking;
 using namespace affix_base::cryptography;
-using affix_services::networking::connection;
+using affix_services::networking::authenticated_connection;
 using std::vector;
 using affix_base::data::byte_buffer;
 using affix_base::data::ptr;
 using std::lock_guard;
 using affix_base::threading::cross_thread_mutex;
 
-connection::~connection(
+authenticated_connection::~authenticated_connection(
 
 )
 {
 	m_socket_io_guard.clear_queues();
 }
 
-connection::connection(
+authenticated_connection::authenticated_connection(
 	const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
 	const CryptoPP::RSA::PrivateKey& a_local_private_key,
 	const affix_services::security::rolling_token& a_local_token,
@@ -50,7 +50,7 @@ connection::connection(
 	
 }
 
-void connection::async_send(
+void authenticated_connection::async_send(
 	affix_base::data::byte_buffer& a_byte_buffer,
 	const std::function<void(bool)>& a_callback
 )
@@ -70,7 +70,7 @@ void connection::async_send(
 
 }
 
-void connection::async_receive(
+void authenticated_connection::async_receive(
 
 )
 {
@@ -114,6 +114,6 @@ void connection::async_receive(
 
 }
 
-uint64_t connection::lifetime() const {
+uint64_t authenticated_connection::lifetime() const {
 	return utc_time() - m_start_time;
 }

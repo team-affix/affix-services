@@ -12,7 +12,15 @@ using affix_base::data::byte_buffer;
 using namespace affix_services::networking;
 using namespace affix_services::messaging;
 
-void message_processor::process(
+message_processor::message_processor(
+	const std::function<void(const std::vector<uint8_t>&)>& a_relay_received_callback
+) :
+	m_relay_received_callback(a_relay_received_callback)
+{
+
+}
+
+void message_processor::process_async_receive_result(
 	affix_base::data::ptr<affix_services::networking::connection_async_receive_result> a_connection_async_receive_result
 )
 {
@@ -56,71 +64,41 @@ void message_processor::process(
 	{
 		case affix_services::messaging::message_types::rqt_identity_push:
 		{
-			deserialize_and_process_affix_services_message<affix_services::messaging::message_rqt_identity_push>(
-				l_message_body_byte_buffer,
+			affix_services_process_message_declaration<message_rqt_identity_push> l_process_message_declaration(
 				a_connection_async_receive_result->m_owner,
-				l_message_header
+				l_message_header,
+				l_message_body_byte_buffer
 			);
+
+			process_message(l_process_message_declaration);
+
 			break;
 		}
 		case affix_services::messaging::message_types::rsp_identity_push:
 		{
-			deserialize_and_process_affix_services_message<affix_services::messaging::message_rsp_identity_push>(
-				l_message_body_byte_buffer,
+			affix_services_process_message_declaration<message_rsp_identity_push> l_process_message_declaration(
 				a_connection_async_receive_result->m_owner,
-				l_message_header
+				l_message_header,
+				l_message_body_byte_buffer
 			);
+
+			process_message(l_process_message_declaration);
+
+			break;
+		}
+		case affix_services::messaging::message_types::rqt_identity_delete:
+		{
+			affix_services_process_message_declaration<message_rqt_identity_delete> l_process_message_declaration(
+				a_connection_async_receive_result->m_owner,
+				l_message_header,
+				l_message_body_byte_buffer
+			);
+
+			process_message(l_process_message_declaration);
+
 			break;
 		}
 
 	}
-
-
-}
-
-template<typename MESSAGE_TYPE>
-void message_processor::deserialize_and_process_affix_services_message(
-	affix_base::data::byte_buffer& a_body_byte_buffer,
-	const affix_base::data::ptr<affix_services::networking::connection>& a_owner,
-	const affix_services::messaging::message_header& a_message_header
-
-)
-{
-	MESSAGE_TYPE l_message_body;
-	typename MESSAGE_TYPE::deserialization_status_response_type l_deserialization_status_response;
-
-	if (!l_message_body.deserialize(a_body_byte_buffer, l_deserialization_status_response))
-	{
-		return;
-	}
-
-	typename MESSAGE_TYPE::processing_status_response_type l_processing_status_response;
-
-	process_message_declaration<MESSAGE_TYPE> l_process_declaration({ a_owner, a_message_header, l_message_body } );
-	process_affix_services_message(l_process_declaration);
-
-}
-
-template<typename MESSAGE_TYPE>
-void message_processor::process_affix_services_message(
-	const process_message_declaration<MESSAGE_TYPE>& a_process_message_declaration
-)
-{
-
-}
-
-template<>
-void message_processor::process_affix_services_message<affix_services::messaging::message_rqt_identity_push>(
-	const process_message_declaration<affix_services::messaging::message_rqt_identity_push>& a_process_message_declaration
-)
-{
-
-}
-
-template<>
-void message_processor::process_affix_services_message<affix_services::messaging::message_rsp_identity_push>(
-	const process_message_declaration<affix_services::messaging::message_rsp_identity_push>& a_process_message_declaration
-)
-{
 
 }

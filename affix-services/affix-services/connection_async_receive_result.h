@@ -6,18 +6,18 @@ namespace affix_services
 {
 	namespace networking
 	{
-		class connection;
+		class authenticated_connection;
 
 		struct connection_async_receive_result
 		{
 		public:
-			affix_base::data::ptr<connection> m_owner;
+			affix_base::data::ptr<authenticated_connection> m_owner;
 			affix_base::data::byte_buffer m_byte_buffer;
 			bool m_successful;
 
 		public:
 			connection_async_receive_result(
-				const affix_base::data::ptr<connection>& a_owner,
+				const affix_base::data::ptr<authenticated_connection>& a_owner,
 				affix_base::data::byte_buffer a_byte_buffer = {}
 			);
 
