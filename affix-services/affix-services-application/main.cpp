@@ -58,14 +58,8 @@ int main()
 		l_server.configuration()->acceptor().local_endpoint().port()
 	);
 
-	ptr<outbound_connection_configuration> l_outbound_connection_config(
+	l_processor.start_pending_outbound_connection(
 		new outbound_connection_configuration(l_io_context, l_server_local_endpoint)
-	);
-
-	pending_outbound_connection l_pending_outbound_connection(
-		l_outbound_connection_config,
-		l_processor.m_connection_results_mutex,
-		l_processor.m_connection_results
 	);
 
 	std::thread l_context_thread(

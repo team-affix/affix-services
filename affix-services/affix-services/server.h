@@ -16,7 +16,6 @@ namespace affix_services
 		/// </summary>
 		affix_base::data::ptr<server_configuration> m_server_configuration;
 
-	public:
 		/// <summary>
 		/// Mutex preventing concurrent reads/writes to the m_unauthenticated_connections object.
 		/// </summary>

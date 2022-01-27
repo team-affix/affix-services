@@ -102,8 +102,8 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_process_message_declaration"></param>
 		template<>
-		void process_message<affix_services::messaging::message_rqt_identity_push>(
-			const affix_services_process_message_declaration<affix_services::messaging::message_rqt_identity_push>& a_process_message_declaration
+		void process_message<affix_services::message_rqt_identity_push>(
+			const affix_services_process_message_declaration<affix_services::message_rqt_identity_push>& a_process_message_declaration
 		)
 		{
 
@@ -114,8 +114,8 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_process_message_declaration"></param>
 		template<>
-		void process_message<affix_services::messaging::message_rsp_identity_push>(
-			const affix_services_process_message_declaration<affix_services::messaging::message_rsp_identity_push>& a_process_message_declaration
+		void process_message<affix_services::message_rsp_identity_push>(
+			const affix_services_process_message_declaration<affix_services::message_rsp_identity_push>& a_process_message_declaration
 		)
 		{
 

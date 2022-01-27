@@ -1,6 +1,6 @@
 #include "message_rsp_identity_push.h"
 
-using namespace affix_services::messaging;
+using namespace affix_services;
 using affix_services::networking::transmission_result;
 
 message_rsp_identity_push::message_rsp_identity_push(

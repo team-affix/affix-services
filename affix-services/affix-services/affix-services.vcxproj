@@ -160,6 +160,7 @@
     <ClInclude Include="message_processor.h" />
     <ClInclude Include="authentication_attempt.h" />
     <ClInclude Include="authentication_attempt_result.h" />
+    <ClInclude Include="message_processor_configuration.h" />
     <ClInclude Include="message_rqt_identity_delete.h" />
     <ClInclude Include="message_rqt_identity_push.h" />
     <ClInclude Include="details.h" />

@@ -18,13 +18,13 @@ namespace affix_services
 		/// <summary>
 		/// Mutex preventing concurrent reads/writes to the m_unauthenticated_connections object.
 		/// </summary>
-		affix_base::threading::cross_thread_mutex& m_unauthenticated_connections_mutex;
+		affix_base::threading::cross_thread_mutex& m_connection_results_mutex;
 
 		/// <summary>
 		/// Vector of unauthenticated connections, which is populated by the constructor method,
 		/// and is processed by an instance of the processer type.
 		/// </summary>
-		std::vector<affix_base::data::ptr<connection_result>>& m_unauthenticated_connections;
+		std::vector<affix_base::data::ptr<connection_result>>& m_connection_results;
 
 		/// <summary>
 		/// Mutex preventing concurrent reads/writes to the state of this pending_outbound_connection object.

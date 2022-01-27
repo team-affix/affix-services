@@ -126,6 +126,9 @@
     <ClInclude Include="outbound_connection_configuration.h">
       <Filter>Header Files\networking</Filter>
     </ClInclude>
+    <ClInclude Include="message_processor_configuration.h">
+      <Filter>Header Files\application</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rolling_token.cpp">

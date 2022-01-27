@@ -151,14 +151,22 @@ void connection_processor::process_connection_result(
 		// Push new authentication attempt to back of vector
 		m_authentication_attempts.push_back(l_authentication_attempt);
 
-		// Remove unauthenticated connection from vector
-		m_connection_results.erase(a_connection_result);
-
 	}
-	else
+	else if (!(*a_connection_result)->m_inbound_connection)
 	{
+		// Reconnect to the remote peer.
+		ptr<outbound_connection_configuration> l_outbound_connection_configuration = new outbound_connection_configuration(
+			*(*a_connection_result)->m_socket->get_executor().target<asio::io_context>(),
+			(*a_connection_result)->m_socket->remote_endpoint()
+		);
+
+		// Start the async connection request
+		start_pending_outbound_connection(l_outbound_connection_configuration);
 
 	}
+
+	// Remove unauthenticated connection from vector
+	m_connection_results.erase(a_connection_result);
 
 }
 

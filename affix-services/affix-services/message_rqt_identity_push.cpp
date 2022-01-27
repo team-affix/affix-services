@@ -2,7 +2,7 @@
 #include "affix-base/rsa.h"
 #include "transmission_result.h"
 
-using namespace affix_services::messaging;
+using namespace affix_services;
 using namespace affix_base::cryptography;
 using affix_services::networking::transmission_result;
 
