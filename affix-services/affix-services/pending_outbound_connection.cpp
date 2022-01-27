@@ -19,6 +19,9 @@ pending_outbound_connection::pending_outbound_connection(
 	m_outbound_connection_configuration->m_socket->async_connect(m_outbound_connection_configuration->m_remote_endpoint,
 		[&](asio::error_code a_ec)
 		{
+			// Lock the mutex preventing concurrent reads/writes to this object's state
+			lock_guard<cross_thread_mutex> l_state_lock_guard(m_state_mutex);
+
 			// Lock the mutex preventing concurrent reads/writes to the unauthenticated connections vector.
 			lock_guard<cross_thread_mutex> l_lock_guard(m_unauthenticated_connections_mutex);
 
@@ -30,6 +33,8 @@ pending_outbound_connection::pending_outbound_connection(
 					!a_ec
 				)
 			);
+
+			m_finished = true;
 
 		});
 }

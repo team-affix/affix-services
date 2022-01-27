@@ -52,10 +52,33 @@ void connection_processor::process(
 	process_async_receive_results();
 }
 
+void connection_processor::start_pending_outbound_connection(
+	const affix_base::data::ptr<outbound_connection_configuration>& a_outbound_connection_configuration
+)
+{
+	// Lock mutex preventing concurrent pushes/pops from pending outbound connections vector.
+	lock_guard<cross_thread_mutex> l_lock_guard(m_pending_outbound_connections_mutex);
+
+	ptr<pending_outbound_connection> l_pending_outbound_connection = new pending_outbound_connection(
+		a_outbound_connection_configuration,
+		m_connection_results_mutex,
+		m_connection_results
+	);
+
+	m_pending_outbound_connections.push_back(l_pending_outbound_connection);
+
+}
+
 void connection_processor::process_pending_outbound_connections(
 
 )
 {
+	// Lock the mutex, preventing changes to m_unauthenticated_connections.
+	lock_guard<cross_thread_mutex> l_lock_guard(m_pending_outbound_connections_mutex);
+
+	// Decrement through vector, since processing will erase each element
+	for (int i = m_pending_outbound_connections.size() - 1; i >= 0; i--)
+		process_pending_outbound_connection(m_pending_outbound_connections.begin() + i);
 
 }
 
@@ -63,6 +86,22 @@ void connection_processor::process_pending_outbound_connection(
 	std::vector<affix_base::data::ptr<pending_outbound_connection>>::iterator a_pending_outbound_connection
 )
 {
+	// Store local variable describing the finished/unfinished state of the pending outbound connection.
+	bool l_finished = false;
+
+	{
+		// Lock the state mutex for the pending outbound connection object
+		std::lock_guard<cross_thread_mutex> l_lock_guard((*a_pending_outbound_connection)->m_state_mutex);
+
+		// Extract state from object
+		l_finished = (*a_pending_outbound_connection)->m_finished;
+	}
+
+	if (l_finished)
+	{
+		// Erase pending outbound connection
+		m_pending_outbound_connections.erase(a_pending_outbound_connection);
+	}
 
 }
 
@@ -288,11 +327,8 @@ void connection_processor::process_async_receive_result(
 					(*l_connection)->m_socket->remote_endpoint()
 				);
 
-				ptr<pending_outbound_connection> l_pending_outbound_connection = new pending_outbound_connection(
-					l_outbound_connection_configuration,
-					m_connection_results_mutex,
-					m_connection_results
-				);
+				// Start the async connection request
+				start_pending_outbound_connection(l_outbound_connection_configuration);
 
 			}
 

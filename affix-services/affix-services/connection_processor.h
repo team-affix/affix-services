@@ -10,6 +10,7 @@
 #include "authentication_attempt_result.h"
 #include "messaging.h"
 #include "message_processor.h"
+#include "pending_outbound_connection.h"
 
 namespace affix_services
 {
@@ -94,6 +95,14 @@ namespace affix_services
 		/// </summary>
 		void process(
 
+		);
+
+		/// <summary>
+		/// Starts a single pending outbound connection to a remote peer.
+		/// </summary>
+		/// <param name="a_outbound_connection_configuration"></param>
+		void start_pending_outbound_connection(
+			const affix_base::data::ptr<outbound_connection_configuration>& a_outbound_connection_configuration
 		);
 
 	protected:

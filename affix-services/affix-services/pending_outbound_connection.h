@@ -27,6 +27,11 @@ namespace affix_services
 		std::vector<affix_base::data::ptr<connection_result>>& m_unauthenticated_connections;
 
 		/// <summary>
+		/// Mutex preventing concurrent reads/writes to the state of this pending_outbound_connection object.
+		/// </summary>
+		affix_base::threading::cross_thread_mutex m_state_mutex;
+
+		/// <summary>
 		/// Boolean describing whether or not the outbound connection attempt has finished.
 		/// </summary>
 		bool m_finished = false;
