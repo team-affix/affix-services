@@ -175,7 +175,7 @@
     <ClInclude Include="server.h" />
     <ClInclude Include="server_configuration.h" />
     <ClInclude Include="transmission_security_manager.h" />
-    <ClInclude Include="unauthenticated_connection.h" />
+    <ClInclude Include="connection_result.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="authenticated_connection.h" />
     <ClInclude Include="message_header.h" />
@@ -206,7 +206,7 @@
     <ClCompile Include="server_configuration.cpp" />
     <ClCompile Include="transmission_security_manager.cpp" />
     <ClCompile Include="rolling_token.cpp" />
-    <ClCompile Include="unauthenticated_connection.cpp" />
+    <ClCompile Include="connection_result.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

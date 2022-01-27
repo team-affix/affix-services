@@ -84,7 +84,7 @@
     <ClInclude Include="authentication_attempt_result.h">
       <Filter>Header Files\networking</Filter>
     </ClInclude>
-    <ClInclude Include="unauthenticated_connection.h">
+    <ClInclude Include="connection_result.h">
       <Filter>Header Files\networking</Filter>
     </ClInclude>
     <ClInclude Include="messaging.h">
@@ -149,7 +149,7 @@
     <ClCompile Include="authentication_attempt_result.cpp">
       <Filter>Source Files\networking</Filter>
     </ClCompile>
-    <ClCompile Include="unauthenticated_connection.cpp">
+    <ClCompile Include="connection_result.cpp">
       <Filter>Source Files\networking</Filter>
     </ClCompile>
     <ClCompile Include="message_rqt_identity_push.cpp">

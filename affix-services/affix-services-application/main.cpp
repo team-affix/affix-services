@@ -41,8 +41,8 @@ int main()
 	
 	server l_server(
 		l_server_configuration,
-		l_processor.m_unauthenticated_connections_mutex,
-		l_processor.m_unauthenticated_connections
+		l_processor.m_connection_results_mutex,
+		l_processor.m_connection_results
 	);
 
 	asio::ip::address l_local_ip_address;
@@ -64,8 +64,8 @@ int main()
 
 	pending_outbound_connection l_pending_outbound_connection(
 		l_outbound_connection_config,
-		l_processor.m_unauthenticated_connections_mutex,
-		l_processor.m_unauthenticated_connections
+		l_processor.m_connection_results_mutex,
+		l_processor.m_connection_results
 	);
 
 	std::thread l_context_thread(
