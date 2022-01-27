@@ -44,6 +44,11 @@ namespace affix_services
 		/// </summary>
 		bool m_finished = false;
 
+		/// <summary>
+		/// Boolean describing whether the connection was established in an inbound fashion.
+		/// </summary>
+		bool m_inbound_connection = false;
+
 	public:
 		/// <summary>
 		/// Constructor which receives all necessary authentication initialization data.
@@ -56,7 +61,7 @@ namespace affix_services
 			const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
 			const std::vector<uint8_t>& a_remote_seed,
 			const affix_base::cryptography::rsa_key_pair& a_local_key_pair,
-			const bool& a_authenticate_remote_first,
+			const bool& a_inbound_connection,
 			affix_base::threading::cross_thread_mutex& a_authentication_attempt_results_mutex,
 			std::vector<affix_base::data::ptr<authentication_attempt_result>>& a_authentication_attempt_results
 		);

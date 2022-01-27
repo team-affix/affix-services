@@ -17,7 +17,7 @@ server::~server(
 server::server(
 	const affix_base::data::ptr<server_configuration>& a_configuration,
 	affix_base::threading::cross_thread_mutex& a_unauthenticated_connections_mutex,
-	std::vector<affix_base::data::ptr<unauthenticated_connection>>& a_unauthenticated_connections
+	std::vector<affix_base::data::ptr<connection_result>>& a_unauthenticated_connections
 ) :
 	m_server_configuration(a_configuration),
 	m_unauthenticated_connections_mutex(a_unauthenticated_connections_mutex),
@@ -35,7 +35,13 @@ void server::async_accept_next(
 		{
 			// Store the new socket in the list of connections
 			lock_guard<cross_thread_mutex> l_lock_guard(m_unauthenticated_connections_mutex);
-			m_unauthenticated_connections.push_back(new unauthenticated_connection(new tcp::socket(std::move(a_socket)), true));
+			m_unauthenticated_connections.push_back(
+				new connection_result(
+					new tcp::socket(std::move(a_socket)),
+					true,
+					!a_ec
+				)
+			);
 
 			// If there was an error, return and do not make another async 
 			// accept request. Otherwise, try to accept another connection.

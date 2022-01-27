@@ -3,6 +3,7 @@
 #include "affix-base/vector_extensions.h"
 #include "messaging.h"
 #include "transmission_result.h"
+#include "pending_outbound_connection.h"
 
 #if 1
 #define LOG(x) std::clog << x << std::endl
@@ -26,6 +27,8 @@ using affix_base::cryptography::rsa_to_base64_string;
 using affix_base::data::to_string;
 using affix_services::networking::transmission_result;
 using affix_services::networking::transmission_result_strings;
+using affix_services::pending_outbound_connection;
+using affix_services::outbound_connection_configuration;
 
 connection_processor::connection_processor(
 	message_processor& a_message_processor,
@@ -41,59 +44,82 @@ void connection_processor::process(
 
 )
 {
-	process_unauthenticated_connections();
+	process_pending_outbound_connections();
+	process_connection_results();
 	process_authentication_attempts();
 	process_authentication_attempt_results();
 	process_authenticated_connections();
 	process_async_receive_results();
 }
 
-void connection_processor::process_unauthenticated_connections(
+void connection_processor::process_pending_outbound_connections(
+
+)
+{
+
+}
+
+void connection_processor::process_pending_outbound_connection(
+	std::vector<affix_base::data::ptr<pending_outbound_connection>>::iterator a_pending_outbound_connection
+)
+{
+
+}
+
+void connection_processor::process_connection_results(
 
 )
 {
 	// Lock the mutex, preventing changes to m_unauthenticated_connections.
-	lock_guard<cross_thread_mutex> l_lock_guard(m_unauthenticated_connections_mutex);
+	lock_guard<cross_thread_mutex> l_lock_guard(m_connection_results_mutex);
 
 	// Decrement through vector, since processing will erase each element
-	for (int i = m_unauthenticated_connections.size() - 1; i >= 0; i--)
-		process_unauthenticated_connection(m_unauthenticated_connections.begin() + i);
+	for (int i = m_connection_results.size() - 1; i >= 0; i--)
+		process_connection_result(m_connection_results.begin() + i);
 
 }
 
-void connection_processor::process_unauthenticated_connection(
-	std::vector<affix_base::data::ptr<unauthenticated_connection>>::iterator a_unauthenticated_connection
+void connection_processor::process_connection_result(
+	std::vector<affix_base::data::ptr<connection_result>>::iterator a_connection_result
 )
 {
-	// Buffer in which the remote seed lives
-	std::vector<uint8_t> l_remote_seed(affix_services::security::AS_SEED_SIZE);
+	if ((*a_connection_result)->m_successful)
+	{
+		// Buffer in which the remote seed lives
+		std::vector<uint8_t> l_remote_seed(affix_services::security::AS_SEED_SIZE);
 
-	// Generate remote seed
-	CryptoPP::AutoSeededRandomPool l_random;
-	l_random.GenerateBlock(l_remote_seed.data(), l_remote_seed.size());
+		// Generate remote seed
+		CryptoPP::AutoSeededRandomPool l_random;
+		l_random.GenerateBlock(l_remote_seed.data(), l_remote_seed.size());
 
-	// Pull out data from unauthenticated connection instance
-	ptr<tcp::socket> l_socket = (*a_unauthenticated_connection)->m_socket;
-	bool l_inbound_connection = (*a_unauthenticated_connection)->m_inbound_connection;
+		// Pull out data from unauthenticated connection instance
+		ptr<tcp::socket> l_socket = (*a_connection_result)->m_socket;
+		bool l_inbound_connection = (*a_connection_result)->m_inbound_connection;
 	
 
-	// Create authentication attempt
-	ptr<authentication_attempt> l_authentication_attempt(
-		new authentication_attempt(
-			l_socket,
-			l_remote_seed,
-			m_local_key_pair,
-			l_inbound_connection,
-			m_authentication_attempt_results_mutex,
-			m_authentication_attempt_results
-		)
-	);
+		// Create authentication attempt
+		ptr<authentication_attempt> l_authentication_attempt(
+			new authentication_attempt(
+				l_socket,
+				l_remote_seed,
+				m_local_key_pair,
+				l_inbound_connection,
+				m_authentication_attempt_results_mutex,
+				m_authentication_attempt_results
+			)
+		);
 
-	// Push new authentication attempt to back of vector
-	m_authentication_attempts.push_back(l_authentication_attempt);
+		// Push new authentication attempt to back of vector
+		m_authentication_attempts.push_back(l_authentication_attempt);
 
-	// Remove unauthenticated connection from vector
-	m_unauthenticated_connections.erase(a_unauthenticated_connection);
+		// Remove unauthenticated connection from vector
+		m_connection_results.erase(a_connection_result);
+
+	}
+	else
+	{
+
+	}
 
 }
 
@@ -174,7 +200,8 @@ void connection_processor::process_authentication_attempt_result(
 				(*a_authentication_attempt_result)->m_remote_public_key,
 				l_remote_token,
 				m_connection_async_receive_results_mutex,
-				m_connection_async_receive_results
+				m_connection_async_receive_results,
+				(*a_authentication_attempt_result)->m_inbound_connection
 			)
 		);
 
@@ -250,8 +277,28 @@ void connection_processor::process_async_receive_result(
 			LOG_ERROR("[ PROCESSOR ] Error: Failed to receive data from connection: ");
 			LOG_ERROR("Remote Identity (base64): " << std::endl << rsa_to_base64_string((*a_async_receive_result)->m_owner->m_transmission_security_manager.m_remote_public_key) << std::endl);
 
+			// Boolean describing the direction of the established connection.
+			bool l_inbound_connection = (*l_connection)->m_inbound_connection;
+
+			if (!l_inbound_connection)
+			{
+				// Reconnect to the remote peer.
+				ptr<outbound_connection_configuration> l_outbound_connection_configuration = new outbound_connection_configuration(
+					*(*l_connection)->m_socket->get_executor().target<asio::io_context>(),
+					(*l_connection)->m_socket->remote_endpoint()
+				);
+
+				ptr<pending_outbound_connection> l_pending_outbound_connection = new pending_outbound_connection(
+					l_outbound_connection_configuration,
+					m_connection_results_mutex,
+					m_connection_results
+				);
+
+			}
+
 			// Close connection
 			m_authenticated_connections.erase(l_connection);
+
 
 		}
 		else

@@ -1,6 +1,6 @@
 #pragma once
 #include "asio.hpp"
-#include "unauthenticated_connection.h"
+#include "connection_result.h"
 #include "outbound_connection_configuration.h"
 #include "affix-base/threading.h"
 
@@ -24,7 +24,12 @@ namespace affix_services
 		/// Vector of unauthenticated connections, which is populated by the constructor method,
 		/// and is processed by an instance of the processer type.
 		/// </summary>
-		std::vector<affix_base::data::ptr<unauthenticated_connection>>& m_unauthenticated_connections;
+		std::vector<affix_base::data::ptr<connection_result>>& m_unauthenticated_connections;
+
+		/// <summary>
+		/// Boolean describing whether or not the outbound connection attempt has finished.
+		/// </summary>
+		bool m_finished = false;
 
 	public:
 		/// <summary>
@@ -34,7 +39,7 @@ namespace affix_services
 		pending_outbound_connection(
 			const affix_base::data::ptr<outbound_connection_configuration>& a_outbound_connection_configuration,
 			affix_base::threading::cross_thread_mutex& a_unauthenticated_connections_mutex,
-			std::vector<affix_base::data::ptr<unauthenticated_connection>>& a_unauthenticated_connections
+			std::vector<affix_base::data::ptr<connection_result>>& a_unauthenticated_connections
 		);
 
 	};

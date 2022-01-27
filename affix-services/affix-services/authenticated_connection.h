@@ -18,15 +18,30 @@ namespace affix_services {
 		class authenticated_connection
 		{
 		public:
+			/// <summary>
+			/// Security manager, in charge of all security when sending / receiving data.
+			/// </summary>
 			affix_services::security::transmission_security_manager m_transmission_security_manager;
 
-		public:
+			/// <summary>
+			/// Actual network interface with the remote peer.
+			/// </summary>
 			affix_base::data::ptr<asio::ip::tcp::socket> m_socket;
 
-		protected:
-			affix_base::networking::socket_io_guard m_socket_io_guard;
+			/// <summary>
+			/// Boolean describing if the connection was established in an inbound fashion.
+			/// </summary>
+			bool m_inbound_connection = false;
 
 		protected:
+			/// <summary>
+			/// IO guard preventing concurrent reads/writes to the socket.
+			/// </summary>
+			affix_base::networking::socket_io_guard m_socket_io_guard;
+
+			/// <summary>
+			/// Time of creation of the authenticated_connection object.
+			/// </summary>
 			uint64_t m_start_time = 0;
 			
 			/// <summary>
@@ -40,9 +55,23 @@ namespace affix_services {
 			std::vector<affix_base::data::ptr<connection_async_receive_result>>& m_receive_results;
 
 		public:
+			/// <summary>
+			/// Destructor, handles deletion of resources.
+			/// </summary>
 			virtual ~authenticated_connection(
 
 			);
+
+			/// <summary>
+			/// Constructor taking all necessary information.
+			/// </summary>
+			/// <param name="a_socket"></param>
+			/// <param name="a_local_private_key"></param>
+			/// <param name="a_local_token"></param>
+			/// <param name="a_remote_public_key"></param>
+			/// <param name="a_remote_token"></param>
+			/// <param name="a_receive_results_mutex"></param>
+			/// <param name="a_receive_results"></param>
 			authenticated_connection(
 				const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
 				const CryptoPP::RSA::PrivateKey& a_local_private_key,
@@ -50,7 +79,8 @@ namespace affix_services {
 				const CryptoPP::RSA::PublicKey& a_remote_public_key,
 				const affix_services::security::rolling_token& a_remote_token,
 				affix_base::threading::cross_thread_mutex& a_receive_results_mutex,
-				std::vector<affix_base::data::ptr<connection_async_receive_result>>& a_receive_results
+				std::vector<affix_base::data::ptr<connection_async_receive_result>>& a_receive_results,
+				const bool& a_inbound_connection
 			);
 
 		public:

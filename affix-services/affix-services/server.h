@@ -4,7 +4,7 @@
 #include "asio.hpp"
 #include "affix-base/threading.h"
 #include "server_configuration.h"
-#include "unauthenticated_connection.h"
+#include "connection_result.h"
 
 namespace affix_services
 {
@@ -26,7 +26,7 @@ namespace affix_services
 		/// Vector of accepted connections, which is populated by the async_accept_next method,
 		/// and is cleared by an instance of the processer type.
 		/// </summary>
-		std::vector<affix_base::data::ptr<unauthenticated_connection>>& m_unauthenticated_connections;
+		std::vector<affix_base::data::ptr<connection_result>>& m_unauthenticated_connections;
 
 	public:
 		/// <summary>
@@ -44,7 +44,7 @@ namespace affix_services
 		server(
 			const affix_base::data::ptr<server_configuration>& a_configuration,
 			affix_base::threading::cross_thread_mutex& a_unauthenticated_connections_mutex,
-			std::vector<affix_base::data::ptr<unauthenticated_connection>>& a_unauthenticated_connections
+			std::vector<affix_base::data::ptr<connection_result>>& a_unauthenticated_connections
 		);
 
 	protected:

@@ -14,20 +14,21 @@ authentication_attempt::authentication_attempt(
 	const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
 	const std::vector<uint8_t>& a_remote_seed,
 	const affix_base::cryptography::rsa_key_pair& a_local_key_pair,
-	const bool& a_authenticate_remote_first,
+	const bool& a_inbound_connection,
 	affix_base::threading::cross_thread_mutex& a_authentication_attempt_results_mutex,
 	std::vector<affix_base::data::ptr<authentication_attempt_result>>& a_authentication_attempt_results
 ) :
 	m_start_time(affix_base::timing::utc_time()),
 	m_socket(a_socket),
-	m_socket_io_guard(*a_socket)
+	m_socket_io_guard(*a_socket),
+	m_inbound_connection(a_inbound_connection)
 {
 	// Instantiate async_authenticate instance, which will begin the authentication procedure.
 	m_async_authenticate = new async_authenticate(
 		m_socket_io_guard,
 		a_remote_seed,
 		a_local_key_pair,
-		a_authenticate_remote_first,
+		a_inbound_connection,
 		[&](bool a_result)
 		{
 			// Lock mutex preventing concurrent reads/writes to the state of this authentication attempt.
@@ -54,6 +55,7 @@ authentication_attempt::authentication_attempt(
 					new authentication_attempt_result(
 						m_socket,
 						true,
+						m_inbound_connection,
 						l_remote_public_key,
 						l_remote_seed,
 						l_local_seed
@@ -72,7 +74,8 @@ authentication_attempt::authentication_attempt(
 				ptr<authentication_attempt_result> l_authentication_attempt_result(
 					new authentication_attempt_result(
 						m_socket,
-						false
+						false,
+						m_inbound_connection
 					)
 				);
 

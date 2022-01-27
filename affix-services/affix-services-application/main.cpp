@@ -37,7 +37,7 @@ int main()
 		new server_configuration(l_io_context)
 	);
 
-	l_server_configuration->export_connection_information("testing123.txt");
+	l_server_configuration->export_connection_information("testing123.log");
 	
 	server l_server(
 		l_server_configuration,

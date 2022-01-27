@@ -114,17 +114,17 @@
     <ClInclude Include="server.h">
       <Filter>Header Files\application</Filter>
     </ClInclude>
-    <ClInclude Include="pending_outbound_connection.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="outbound_connection_configuration.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
     <ClInclude Include="server_configuration.h">
       <Filter>Header Files\application</Filter>
     </ClInclude>
     <ClInclude Include="application_configuration.h">
       <Filter>Header Files\application</Filter>
+    </ClInclude>
+    <ClInclude Include="pending_outbound_connection.h">
+      <Filter>Header Files\networking</Filter>
+    </ClInclude>
+    <ClInclude Include="outbound_connection_configuration.h">
+      <Filter>Header Files\networking</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

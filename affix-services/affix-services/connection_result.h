@@ -5,7 +5,7 @@
 
 namespace affix_services
 {
-	struct unauthenticated_connection
+	struct connection_result
 	{
 	public:
 		/// <summary>
@@ -16,12 +16,18 @@ namespace affix_services
 		/// <summary>
 		/// Boolean describing whether or not the connection was established in an inbound fashion (by accepting).
 		/// </summary>
-		bool m_inbound_connection;
+		bool m_inbound_connection = false;
+
+		/// <summary>
+		/// Boolean describing the success/failure of the connection attempt.
+		/// </summary>
+		bool m_successful = false;
 
 	public:
-		unauthenticated_connection(
+		connection_result(
 			const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
-			const bool& a_inbound_connection
+			const bool& a_inbound_connection,
+			const bool& a_successful
 		);
 
 	};

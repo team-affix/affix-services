@@ -34,6 +34,11 @@ namespace affix_services
 		/// </summary>
 		std::vector<uint8_t> m_local_seed;
 
+		/// <summary>
+		/// Boolean describing whether the connection was established in an inbound fashion.
+		/// </summary>
+		bool m_inbound_connection = false;
+
 	public:
 		/// <summary>
 		/// Initializes the structure with all necessary information regarding the authentication.
@@ -46,6 +51,7 @@ namespace affix_services
 		authentication_attempt_result(
 			const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
 			const bool& a_successful,
+			const bool& a_inbound_connection,
 			const CryptoPP::RSA::PublicKey& a_remote_public_key = {},
 			const std::vector<uint8_t>& a_remote_seed = {},
 			const std::vector<uint8_t>& a_local_seed = {}

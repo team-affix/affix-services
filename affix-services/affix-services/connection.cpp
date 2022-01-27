@@ -38,14 +38,16 @@ authenticated_connection::authenticated_connection(
 	const CryptoPP::RSA::PublicKey& a_remote_public_key,
 	const affix_services::security::rolling_token& a_remote_token,
 	affix_base::threading::cross_thread_mutex& a_receive_results_mutex,
-	std::vector<affix_base::data::ptr<connection_async_receive_result>>& a_receive_results
+	std::vector<affix_base::data::ptr<connection_async_receive_result>>& a_receive_results,
+	const bool& a_inbound_connection
 ) :
 	m_transmission_security_manager(a_local_private_key, a_local_token, a_remote_public_key, a_remote_token),
 	m_socket(a_socket),
     m_socket_io_guard(*a_socket),
 	m_start_time(utc_time()),
 	m_receive_results_mutex(a_receive_results_mutex),
-	m_receive_results(a_receive_results)
+	m_receive_results(a_receive_results),
+	m_inbound_connection(a_inbound_connection)
 {
 	
 }

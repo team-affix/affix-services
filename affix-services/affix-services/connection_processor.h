@@ -6,7 +6,7 @@
 #include "asio.hpp"
 #include "server.h"
 #include "authentication_attempt.h"
-#include "unauthenticated_connection.h"
+#include "connection_result.h"
 #include "authentication_attempt_result.h"
 #include "messaging.h"
 #include "message_processor.h"
@@ -17,14 +17,24 @@ namespace affix_services
 	{
 	public:
 		/// <summary>
+		/// Mutex guarding m_pending_outbound_connections.
+		/// </summary>
+		affix_base::threading::cross_thread_mutex m_pending_outbound_connections_mutex;
+
+		/// <summary>
+		/// A vector of all pending outbound connections.
+		/// </summary>
+		std::vector<affix_base::data::ptr<pending_outbound_connection>> m_pending_outbound_connections;
+
+		/// <summary>
 		/// A mutex guarding m_unauthenticated_connecitons.
 		/// </summary>
-		affix_base::threading::cross_thread_mutex m_unauthenticated_connections_mutex;
+		affix_base::threading::cross_thread_mutex m_connection_results_mutex;
 
 		/// <summary>
 		/// A vector of all newly established connections.
 		/// </summary>
-		std::vector<affix_base::data::ptr<unauthenticated_connection>> m_unauthenticated_connections;
+		std::vector<affix_base::data::ptr<connection_result>> m_connection_results;
 
 	protected:
 		/// <summary>
@@ -88,9 +98,23 @@ namespace affix_services
 
 	protected:
 		/// <summary>
+		/// Processes all pending outbound connections.
+		/// </summary>
+		void process_pending_outbound_connections(
+
+		);
+
+		/// <summary>
+		/// Processes a single pending outbound connection.
+		/// </summary>
+		void process_pending_outbound_connection(
+			std::vector<affix_base::data::ptr<pending_outbound_connection>>::iterator a_pending_outbound_connection
+		);
+
+		/// <summary>
 		/// Processes all new (unauthenticated) connections.
 		/// </summary>
-		void process_unauthenticated_connections(
+		void process_connection_results(
 
 		);
 
@@ -98,8 +122,8 @@ namespace affix_services
 		/// Processes a single unauthenticated connection.
 		/// </summary>
 		/// <param name="a_unauthenticated_connection"></param>
-		void process_unauthenticated_connection(
-			std::vector<affix_base::data::ptr<unauthenticated_connection>>::iterator a_unauthenticated_connection
+		void process_connection_result(
+			std::vector<affix_base::data::ptr<connection_result>>::iterator a_connection_result
 		);
 
 		/// <summary>
