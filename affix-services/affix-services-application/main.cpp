@@ -22,6 +22,7 @@ int main()
 	std::clog.rdbuf(l_nullstream.rdbuf());*/
 
 	// Create IO context object, which will be used for entire program's networking
+
 	asio::io_context l_io_context;
 
 	message_processor l_message_processor;
@@ -80,6 +81,7 @@ int main()
 
 	if (l_context_thread.joinable())
 		l_context_thread.join();
+
 
 	return 0;
 }

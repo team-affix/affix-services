@@ -43,8 +43,8 @@ namespace affix_services
 		/// <param name="a_outbound_connection_configuration"></param>
 		pending_outbound_connection(
 			const affix_base::data::ptr<outbound_connection_configuration>& a_outbound_connection_configuration,
-			affix_base::threading::cross_thread_mutex& a_unauthenticated_connections_mutex,
-			std::vector<affix_base::data::ptr<connection_result>>& a_unauthenticated_connections
+			affix_base::threading::cross_thread_mutex& a_connection_results_mutex,
+			std::vector<affix_base::data::ptr<connection_result>>& a_connection_results
 		);
 
 	};
