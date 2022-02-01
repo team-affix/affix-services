@@ -53,11 +53,13 @@ namespace affix_services
 		/// </summary>
 		std::vector<affix_base::data::ptr<authentication_attempt_result>> m_authentication_attempt_results;
 
+	public:
 		/// <summary>
 		/// A vector of fully authenticated connections.
 		/// </summary>
 		std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>> m_authenticated_connections;
 
+	protected:
 		/// <summary>
 		/// Mutex that prevents concurrent reads/writes to m_connection_async_receive_results.
 		/// </summary>

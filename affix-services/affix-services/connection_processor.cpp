@@ -44,11 +44,17 @@ void connection_processor::process(
 
 )
 {
+	std::cout << "PROCESSING OUTBOUND CONNECTIONS" << std::endl;
 	process_pending_outbound_connections();
+	std::cout << "PROCESSING CONNECTION RESULTS" << std::endl;
 	process_connection_results();
+	std::cout << "PROCESSING AUTHENTICATION ATTEMPTS" << std::endl;
 	process_authentication_attempts();
+	std::cout << "PROCESSING AUTH ATTEMPT RESULTS" << std::endl;
 	process_authentication_attempt_results();
+	std::cout << "PROCESSING AUTHENTICATED CONNECTIONS" << std::endl;
 	process_authenticated_connections();
+	std::cout << "PROCESSING OUTBOUND CONNECTIONS" << std::endl;
 	process_async_receive_results();
 }
 
@@ -56,6 +62,8 @@ void connection_processor::start_pending_outbound_connection(
 	const affix_base::data::ptr<outbound_connection_configuration>& a_outbound_connection_configuration
 )
 {
+	std::cout << "STARTING PENDING OUTBOUND CONNECTION" << std::endl;
+
 	// Lock mutex preventing concurrent pushes/pops from pending outbound connections vector.
 	lock_guard<cross_thread_mutex> l_lock_guard(m_pending_outbound_connections_mutex);
 
@@ -86,6 +94,8 @@ void connection_processor::process_pending_outbound_connection(
 	std::vector<affix_base::data::ptr<pending_outbound_connection>>::iterator a_pending_outbound_connection
 )
 {
+	std::cout << "PROCESSING OUTBOUND CONNECTION" << std::endl;
+
 	// Store local variable describing the finished/unfinished state of the pending outbound connection.
 	bool l_finished = false;
 
@@ -122,6 +132,7 @@ void connection_processor::process_connection_result(
 	std::vector<affix_base::data::ptr<connection_result>>::iterator a_connection_result
 )
 {
+	std::cout << "PROCESSING CONNECTION RESULT" << std::endl;
 	if ((*a_connection_result)->m_successful)
 	{
 		// Buffer in which the remote seed lives
@@ -131,29 +142,35 @@ void connection_processor::process_connection_result(
 		CryptoPP::AutoSeededRandomPool l_random;
 		l_random.GenerateBlock(l_remote_seed.data(), l_remote_seed.size());
 
-		// Pull out data from unauthenticated connection instance
-		ptr<tcp::socket> l_socket = (*a_connection_result)->m_socket;
-		bool l_inbound_connection = (*a_connection_result)->m_inbound_connection;
-	
+		std::cout << "CREATING AUTH ATTEMPT OBJECT" << std::endl;
 
-		// Create authentication attempt
-		ptr<authentication_attempt> l_authentication_attempt(
-			new authentication_attempt(
-				l_socket,
-				l_remote_seed,
-				m_local_key_pair,
-				l_inbound_connection,
-				m_authentication_attempt_results_mutex,
-				m_authentication_attempt_results
-			)
-		);
+		try
+		{
+			// Create authentication attempt
+			ptr<authentication_attempt> l_authentication_attempt(
+				new authentication_attempt(
+					(*a_connection_result)->m_socket,
+					l_remote_seed,
+					m_local_key_pair,
+					(*a_connection_result)->m_inbound_connection,
+					m_authentication_attempt_results_mutex,
+					m_authentication_attempt_results
+				)
+			);
 
-		// Push new authentication attempt to back of vector
-		m_authentication_attempts.push_back(l_authentication_attempt);
+			std::cout << "FINISHED CREATING AUTH ATTEMPT OBJECT" << std::endl;
 
+			// Push new authentication attempt to back of vector
+			m_authentication_attempts.push_back(l_authentication_attempt);
+		}
+		catch (...)
+		{
+			int a = 10;
+		}
 	}
 	else if (!(*a_connection_result)->m_inbound_connection)
 	{
+		std::cout << "RECONNECTING TO REMOTE PEER" << std::endl;
 		// Reconnect to the remote peer.
 		ptr<outbound_connection_configuration> l_outbound_connection_configuration = new outbound_connection_configuration(
 			*(*a_connection_result)->m_socket->get_executor().target<asio::io_context>(),
@@ -183,6 +200,8 @@ void connection_processor::process_authentication_attempt(
 	std::vector<affix_base::data::ptr<authentication_attempt>>::iterator a_authentication_attempt
 )
 {
+	std::cout << "PROCESSING AUTHENTICATION ATTEMPT" << std::endl;
+
 	// Local variable outside of unnamed scope
 	// describing the finished state of the authentication attempt
 	bool l_finished = false;
@@ -190,20 +209,27 @@ void connection_processor::process_authentication_attempt(
 	// Should stay its own scope because of std::lock_guard
 	{
 		// Lock the authentication attempt's state mutex while we read it
-		lock_guard<cross_thread_mutex> l_lock_guard((*a_authentication_attempt)->m_state_mutex);
+		std::cout << "LOCKING MUTEX" << std::endl;
+		std::cout << "LOCKING MUTEX" << std::endl;
+		lock_guard<affix_base::threading::cross_thread_mutex> l_lock_guard((*a_authentication_attempt)->m_state_mutex);
+		std::cout << "FINISHED LOCKING MUTEX" << std::endl;
 
 		// Extract the finished state of the authentication attempt
 		l_finished = (*a_authentication_attempt)->m_finished;
+		std::cout << "UNLOCKING MUTEX" << std::endl;
 	}
+	std::cout << "FINISHED UNLOCKING MUTEX" << std::endl;
 
 	// Utilize the extracted information
 	if (l_finished)
 	{
+		std::cout << "ERASING AUTHENTICATION ATTEMPT" << std::endl;
 		// Just erase the authentication attempt
 		m_authentication_attempts.erase(a_authentication_attempt);
 
 	}
 
+	std::cout << "FINISHED PROCESSING AUTHENTICATION ATTEMPT" << std::endl;
 }
 
 void connection_processor::process_authentication_attempt_results(
@@ -223,6 +249,7 @@ void connection_processor::process_authentication_attempt_result(
 	std::vector<affix_base::data::ptr<authentication_attempt_result>>::iterator a_authentication_attempt_result
 )
 {
+	std::cout << "PROCESSING AUTHENTICATION ATTEMPT RESULT" << std::endl;
 	if ((*a_authentication_attempt_result)->m_successful)
 	{
 		// Log the success of the authentication attempt.
@@ -288,6 +315,8 @@ void connection_processor::process_authenticated_connection(
 	std::vector<affix_base::data::ptr<authenticated_connection>>::iterator a_authenticated_connection
 )
 {
+	std::cout << "PROCESSING AUTHENTICATED CONNECTION" << std::endl;
+
 	if (!(*a_authenticated_connection)->m_socket->is_open())
 	{
 		// If socket is closed, dispose of the connection object
@@ -313,6 +342,8 @@ void connection_processor::process_async_receive_result(
 	std::vector<affix_base::data::ptr<affix_services::networking::connection_async_receive_result>>::iterator a_async_receive_result
 )
 {
+	std::cout << "PROCESSING ASYNC RECEIVE RESULT" << std::endl;
+
 	// Get the owner connection from the vector of authenticated connections
 	std::vector<ptr<authenticated_connection>>::iterator l_connection(std::find(m_authenticated_connections.begin(), m_authenticated_connections.end(), (*a_async_receive_result)->m_owner));
 

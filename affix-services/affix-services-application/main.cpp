@@ -23,64 +23,84 @@ int main()
 
 	// Create IO context object, which will be used for entire program's networking
 
-	asio::io_context l_io_context;
-
-	message_processor l_message_processor;
-
 	affix_base::cryptography::rsa_key_pair l_key_pair = affix_base::cryptography::rsa_generate_key_pair(2048);
 
-	connection_processor l_processor(
-		l_message_processor,
-		l_key_pair
-	);
+	while(true)
+	{
+		asio::io_context l_io_context;
 
-	affix_base::data::ptr<server_configuration> l_server_configuration(
-		new server_configuration(l_io_context)
-	);
+		message_processor l_message_processor;
 
-	l_server_configuration->export_connection_information("testing123.log");
+
+		connection_processor l_processor(
+			l_message_processor,
+			l_key_pair
+		);
+
+		affix_base::data::ptr<server_configuration> l_server_configuration(
+			new server_configuration(l_io_context)
+		);
+
+		l_server_configuration->export_connection_information("testing123.log");
 	
-	server l_server(
-		l_server_configuration,
-		l_processor.m_connection_results_mutex,
-		l_processor.m_connection_results
-	);
+		server l_server(
+			l_server_configuration,
+			l_processor.m_connection_results_mutex,
+			l_processor.m_connection_results
+		);
 
-	asio::ip::address l_local_ip_address;
+		asio::ip::address l_local_ip_address;
 
-	if (!affix_base::networking::socket_internal_ip_address(l_local_ip_address))
-	{
-		std::cerr << "Unable to get the local ip address." << std::endl;
-		return 1;
-	}
-
-	tcp::endpoint l_server_local_endpoint(
-		l_local_ip_address,
-		l_server.configuration()->acceptor().local_endpoint().port()
-	);
-
-	l_processor.start_pending_outbound_connection(
-		new outbound_connection_configuration(l_io_context, l_server_local_endpoint)
-	);
-
-	std::thread l_context_thread(
-		[&]
+		if (!affix_base::networking::socket_internal_ip_address(l_local_ip_address))
 		{
-			while (true)
+			std::cerr << "Unable to get the local ip address." << std::endl;
+			return 1;
+		}
+
+		tcp::endpoint l_server_local_endpoint(
+			l_local_ip_address,
+			l_server.configuration()->acceptor().local_endpoint().port()
+		);
+
+		l_processor.start_pending_outbound_connection(
+			new outbound_connection_configuration(l_io_context, l_server_local_endpoint)
+		);
+
+		bool l_context_thread_continue = true;
+
+		std::thread l_context_thread(
+			[&]
 			{
-				asio::io_context::work l_idle_work(l_io_context);
-				l_io_context.run();
-				l_io_context.reset();
+				while (l_context_thread_continue)
+				{
+					asio::io_context::work l_idle_work(l_io_context);
+					l_io_context.run();
+					l_io_context.reset();
+				}
+			});
+
+		while (true)
+		{
+			try
+			{
+				l_processor.process();
 			}
-		});
+			catch (std::exception a_ex)
+			{
+				std::cerr << a_ex.what() << std::endl;
+			}
+			if (l_processor.m_authenticated_connections.size() == 2)
+				break;
+			Sleep(100);
+		}
 
-	while (true)
-	{
-		l_processor.process();
+		l_context_thread_continue = false;
+
+		l_io_context.stop();
+
+		if (l_context_thread.joinable())
+			l_context_thread.join();
 	}
-
-	if (l_context_thread.joinable())
-		l_context_thread.join();
 
 
 	return 0;

@@ -13,23 +13,12 @@ namespace affix_services
 		static uint64_t s_expire_time;
 
 		/// <summary>
-		/// Guard for IO operations on the socket, prevents concurrent async read/write requests.
-		/// </summary>
-		affix_base::networking::socket_io_guard m_socket_io_guard;
-
-		/// <summary>
 		/// Holds the UTC time for when this authentication request was created.
 		/// </summary>
 		uint64_t m_start_time = 0;
 
-	public:
 		/// <summary>
-		/// Socket, the connection interface.
-		/// </summary>
-		affix_base::data::ptr<asio::ip::tcp::socket> m_socket;
-
-		/// <summary>
-		/// Actual asynchronous authentication object. Handles authenticating the local and the remote.
+		/// From affix-base, object which performs actual asynchronous authentication of both the local and the remote.
 		/// </summary>
 		affix_base::data::ptr<affix_base::networking::async_authenticate> m_async_authenticate;
 

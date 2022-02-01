@@ -12,8 +12,6 @@ pending_outbound_connection::pending_outbound_connection(
 	affix_base::threading::cross_thread_mutex& a_connection_results_mutex,
 	std::vector<affix_base::data::ptr<connection_result>>& a_connection_results
 ) :
-	m_connection_results_mutex(a_connection_results_mutex),
-	m_connection_results(a_connection_results),
 	m_outbound_connection_configuration(a_outbound_connection_configuration)
 {
 	m_outbound_connection_configuration->m_socket->async_connect(m_outbound_connection_configuration->m_remote_endpoint,
@@ -26,7 +24,7 @@ pending_outbound_connection::pending_outbound_connection(
 			lock_guard<cross_thread_mutex> l_lock_guard(a_connection_results_mutex);
 
 			// Push new unauthenticated connection onto vector
-			m_connection_results.push_back(
+			a_connection_results.push_back(
 				new connection_result(
 					m_outbound_connection_configuration->m_socket,
 					false,

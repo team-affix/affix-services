@@ -18,24 +18,24 @@ authentication_attempt::authentication_attempt(
 	affix_base::threading::cross_thread_mutex& a_authentication_attempt_results_mutex,
 	std::vector<affix_base::data::ptr<authentication_attempt_result>>& a_authentication_attempt_results
 ) :
-	m_start_time(affix_base::timing::utc_time()),
-	m_socket(a_socket),
-	m_socket_io_guard(*a_socket),
-	m_inbound_connection(a_inbound_connection)
+	m_inbound_connection(a_inbound_connection),
+	m_start_time(affix_base::timing::utc_time())
 {
+	ptr<affix_base::networking::socket_io_guard> l_socket_io_guard(new affix_base::networking::socket_io_guard(*a_socket));
+
 	// Instantiate async_authenticate instance, which will begin the authentication procedure.
 	m_async_authenticate = new async_authenticate(
-		m_socket_io_guard,
+		*l_socket_io_guard,
 		a_remote_seed,
 		a_local_key_pair,
 		a_inbound_connection,
-		[&](bool a_result)
+		[&,l_socket_io_guard,a_socket,a_inbound_connection](bool a_result)
 		{
-			// Lock mutex preventing concurrent reads/writes to the state of this authentication attempt.
-			lock_guard<cross_thread_mutex> l_state_lock_guard(m_state_mutex);
-
 			// Lock mutex preventing concurrent reads/writes to a vector of authentication attempt results.
 			lock_guard<cross_thread_mutex> l_lock_guard(a_authentication_attempt_results_mutex);
+
+			// Lock mutex preventing concurrent reads/writes to the state of this authentication attempt.
+			lock_guard<affix_base::threading::cross_thread_mutex> l_state_lock_guard(m_state_mutex);
 
 			if (a_result && !expired())
 			{
@@ -53,9 +53,9 @@ authentication_attempt::authentication_attempt(
 				// Create success result.
 				ptr<authentication_attempt_result> l_authentication_attempt_result(
 					new authentication_attempt_result(
-						m_socket,
+						a_socket,
 						true,
-						m_inbound_connection,
+						a_inbound_connection,
 						l_remote_public_key,
 						l_remote_seed,
 						l_local_seed
@@ -73,9 +73,9 @@ authentication_attempt::authentication_attempt(
 				// Create failure result.
 				ptr<authentication_attempt_result> l_authentication_attempt_result(
 					new authentication_attempt_result(
-						m_socket,
+						a_socket,
 						false,
-						m_inbound_connection
+						a_inbound_connection
 					)
 				);
 
