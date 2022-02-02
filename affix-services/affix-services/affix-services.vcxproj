@@ -191,7 +191,7 @@
     <ClCompile Include="message_processor.cpp" />
     <ClCompile Include="authentication_attempt.cpp" />
     <ClCompile Include="authentication_attempt_result.cpp" />
-    <ClCompile Include="connection.cpp" />
+    <ClCompile Include="authenticated_connection.cpp" />
     <ClCompile Include="connection_async_receive_result.cpp" />
     <ClCompile Include="message_header.cpp" />
     <ClCompile Include="message_rqt_identity_push.cpp" />

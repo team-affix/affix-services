@@ -11,6 +11,13 @@ using namespace affix_base::threading;
 
 uint64_t authentication_attempt::s_expire_time(3);
 
+authentication_attempt::~authentication_attempt(
+
+)
+{
+
+}
+
 authentication_attempt::authentication_attempt(
 	affix_base::data::ptr<asio::ip::tcp::socket> a_socket,
 	const std::vector<uint8_t>& a_remote_seed,
@@ -19,17 +26,16 @@ authentication_attempt::authentication_attempt(
 	affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_attempt_result>>, affix_base::threading::cross_thread_mutex>& a_authentication_attempt_results
 ) :
 	m_inbound_connection(a_inbound_connection),
-	m_start_time(affix_base::timing::utc_time())
+	m_start_time(affix_base::timing::utc_time()),
+	m_socket_io_guard(*a_socket)
 {
-	ptr<affix_base::networking::socket_io_guard> l_socket_io_guard(new affix_base::networking::socket_io_guard(*a_socket));
-
 	// Instantiate async_authenticate instance, which will begin the authentication procedure.
 	m_async_authenticate = new async_authenticate(
-		*l_socket_io_guard,
+		m_socket_io_guard,
 		a_remote_seed,
 		a_local_key_pair,
 		a_inbound_connection,
-		[&,l_socket_io_guard,a_socket,a_inbound_connection](bool a_result)
+		[&,a_socket,a_inbound_connection](bool a_result)
 		{
 			// Lock mutex preventing concurrent reads/writes to a vector of authentication attempt results.
 			locked_resource l_authentication_attempt_results = a_authentication_attempt_results.lock();

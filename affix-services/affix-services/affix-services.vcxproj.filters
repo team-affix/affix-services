@@ -134,7 +134,7 @@
     <ClCompile Include="rolling_token.cpp">
       <Filter>Source Files\security</Filter>
     </ClCompile>
-    <ClCompile Include="connection.cpp">
+    <ClCompile Include="authenticated_connection.cpp">
       <Filter>Source Files\networking</Filter>
     </ClCompile>
     <ClCompile Include="message_header.cpp">

@@ -25,6 +25,11 @@ namespace affix_services
 
 	public:
 		/// <summary>
+		/// Guard preventing concurrent reads/writes to the socket.
+		/// </summary>
+		affix_base::networking::socket_io_guard m_socket_io_guard;
+
+		/// <summary>
 		/// Boolean describing whether the asynchronous authenticate request has finished.
 		/// </summary>
 		affix_base::threading::guarded_resource<bool, affix_base::threading::cross_thread_mutex> m_finished = false;
@@ -35,6 +40,9 @@ namespace affix_services
 		bool m_inbound_connection = false;
 
 	public:
+		virtual ~authentication_attempt(
+
+		);
 		/// <summary>
 		/// Constructor which receives all necessary authentication initialization data.
 		/// </summary>

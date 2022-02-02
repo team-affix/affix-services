@@ -1,4 +1,4 @@
-#include "affix-services/connection.h"
+#include "affix-services/authenticated_connection.h"
 #include "affix-base/async_authenticate.h"
 #include "affix-base/rsa.h"
 #include "affix-base/networking.h"
