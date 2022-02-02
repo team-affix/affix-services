@@ -5,6 +5,7 @@
 #include "affix-base/threading.h"
 #include "server_configuration.h"
 #include "connection_result.h"
+#include "affix-base/threading.h"
 
 namespace affix_services
 {
@@ -17,15 +18,10 @@ namespace affix_services
 		affix_base::data::ptr<server_configuration> m_server_configuration;
 
 		/// <summary>
-		/// Mutex preventing concurrent reads/writes to the m_unauthenticated_connections object.
-		/// </summary>
-		affix_base::threading::cross_thread_mutex& m_unauthenticated_connections_mutex;
-
-		/// <summary>
 		/// Vector of accepted connections, which is populated by the async_accept_next method,
 		/// and is cleared by an instance of the processer type.
 		/// </summary>
-		std::vector<affix_base::data::ptr<connection_result>>& m_unauthenticated_connections;
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>, affix_base::threading::cross_thread_mutex>& m_connection_results;
 
 	public:
 		/// <summary>
@@ -42,8 +38,7 @@ namespace affix_services
 		/// <param name="a_configuration"></param>
 		server(
 			const affix_base::data::ptr<server_configuration>& a_configuration,
-			affix_base::threading::cross_thread_mutex& a_unauthenticated_connections_mutex,
-			std::vector<affix_base::data::ptr<connection_result>>& a_unauthenticated_connections
+			affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>, affix_base::threading::cross_thread_mutex>& a_connection_results
 		);
 
 	protected:

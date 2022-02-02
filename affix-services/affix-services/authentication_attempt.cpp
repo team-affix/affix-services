@@ -7,16 +7,16 @@ using namespace asio::ip;
 using std::lock_guard;
 using affix_base::threading::cross_thread_mutex;
 using affix_base::data::ptr;
+using namespace affix_base::threading;
 
 uint64_t authentication_attempt::s_expire_time(3);
 
 authentication_attempt::authentication_attempt(
-	const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
+	affix_base::data::ptr<asio::ip::tcp::socket> a_socket,
 	const std::vector<uint8_t>& a_remote_seed,
 	const affix_base::cryptography::rsa_key_pair& a_local_key_pair,
 	const bool& a_inbound_connection,
-	affix_base::threading::cross_thread_mutex& a_authentication_attempt_results_mutex,
-	std::vector<affix_base::data::ptr<authentication_attempt_result>>& a_authentication_attempt_results
+	affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_attempt_result>>, affix_base::threading::cross_thread_mutex>& a_authentication_attempt_results
 ) :
 	m_inbound_connection(a_inbound_connection),
 	m_start_time(affix_base::timing::utc_time())
@@ -32,10 +32,13 @@ authentication_attempt::authentication_attempt(
 		[&,l_socket_io_guard,a_socket,a_inbound_connection](bool a_result)
 		{
 			// Lock mutex preventing concurrent reads/writes to a vector of authentication attempt results.
-			lock_guard<cross_thread_mutex> l_lock_guard(a_authentication_attempt_results_mutex);
+			locked_resource l_authentication_attempt_results = a_authentication_attempt_results.lock();
 
 			// Lock mutex preventing concurrent reads/writes to the state of this authentication attempt.
-			lock_guard<affix_base::threading::cross_thread_mutex> l_state_lock_guard(m_state_mutex);
+			locked_resource l_finished = m_finished.lock();
+
+			// Cancel async operations on socket
+			(*a_socket).cancel();
 
 			if (a_result && !expired())
 			{
@@ -49,7 +52,7 @@ authentication_attempt::authentication_attempt(
 
 				// Get local seed.
 				std::vector<uint8_t> l_local_seed = m_async_authenticate->m_authenticate_local->m_local_seed;
-
+				
 				// Create success result.
 				ptr<authentication_attempt_result> l_authentication_attempt_result(
 					new authentication_attempt_result(
@@ -63,7 +66,7 @@ authentication_attempt::authentication_attempt(
 				);
 
 				// Push success result into vector.
-				a_authentication_attempt_results.push_back(l_authentication_attempt_result);
+				l_authentication_attempt_results->push_back(l_authentication_attempt_result);
 
 			}
 			else
@@ -80,12 +83,12 @@ authentication_attempt::authentication_attempt(
 				);
 
 				// Push failure result into vector.
-				a_authentication_attempt_results.push_back(l_authentication_attempt_result);
+				l_authentication_attempt_results->push_back(l_authentication_attempt_result);
 
 			}
 
 			// Store the finished state of the authentication process.
-			m_finished = true;
+			(*l_finished) = true;
 
 		});
 

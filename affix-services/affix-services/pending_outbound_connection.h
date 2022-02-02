@@ -16,14 +16,9 @@ namespace affix_services
 
 	public:
 		/// <summary>
-		/// Mutex preventing concurrent reads/writes to the state of this pending_outbound_connection object.
-		/// </summary>
-		affix_base::threading::cross_thread_mutex m_state_mutex;
-
-		/// <summary>
 		/// Boolean describing whether or not the outbound connection attempt has finished.
 		/// </summary>
-		bool m_finished = false;
+		affix_base::threading::guarded_resource<bool, affix_base::threading::cross_thread_mutex> m_finished = false;
 
 	public:
 		/// <summary>
@@ -31,9 +26,8 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_outbound_connection_configuration"></param>
 		pending_outbound_connection(
-			const affix_base::data::ptr<outbound_connection_configuration>& a_outbound_connection_configuration,
-			affix_base::threading::cross_thread_mutex& a_connection_results_mutex,
-			std::vector<affix_base::data::ptr<connection_result>>& a_connection_results
+			affix_base::data::ptr<outbound_connection_configuration> a_outbound_connection_configuration,
+			affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>, affix_base::threading::cross_thread_mutex>& a_connection_results
 		);
 
 	};

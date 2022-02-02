@@ -5,6 +5,7 @@ using namespace asio::ip;
 using std::lock_guard;
 using affix_base::threading::cross_thread_mutex;
 using affix_base::data::ptr;
+using namespace affix_base::threading;
 
 server::~server(
 
@@ -16,12 +17,10 @@ server::~server(
 
 server::server(
 	const affix_base::data::ptr<server_configuration>& a_configuration,
-	affix_base::threading::cross_thread_mutex& a_unauthenticated_connections_mutex,
-	std::vector<affix_base::data::ptr<connection_result>>& a_unauthenticated_connections
+	affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>, affix_base::threading::cross_thread_mutex>& a_connection_results
 ) :
 	m_server_configuration(a_configuration),
-	m_unauthenticated_connections_mutex(a_unauthenticated_connections_mutex),
-	m_unauthenticated_connections(a_unauthenticated_connections)
+	m_connection_results(a_connection_results)
 {
 	async_accept_next();
 }
@@ -34,8 +33,9 @@ void server::async_accept_next(
 		[&](asio::error_code a_ec, tcp::socket a_socket)
 		{
 			// Store the new socket in the list of connections
-			lock_guard<cross_thread_mutex> l_lock_guard(m_unauthenticated_connections_mutex);
-			m_unauthenticated_connections.push_back(
+			locked_resource l_connection_results = m_connection_results.lock();
+
+			l_connection_results->push_back(
 				new connection_result(
 					new tcp::socket(std::move(a_socket)),
 					true,

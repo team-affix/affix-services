@@ -23,6 +23,7 @@ using affix_base::data::byte_buffer;
 using affix_base::data::ptr;
 using std::lock_guard;
 using affix_base::threading::cross_thread_mutex;
+using namespace affix_base::threading;
 
 authenticated_connection::~authenticated_connection(
 
@@ -37,15 +38,13 @@ authenticated_connection::authenticated_connection(
 	const affix_services::security::rolling_token& a_local_token,
 	const CryptoPP::RSA::PublicKey& a_remote_public_key,
 	const affix_services::security::rolling_token& a_remote_token,
-	affix_base::threading::cross_thread_mutex& a_receive_results_mutex,
-	std::vector<affix_base::data::ptr<connection_async_receive_result>>& a_receive_results,
+	affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_async_receive_result>>, affix_base::threading::cross_thread_mutex>& a_receive_results,
 	const bool& a_inbound_connection
 ) :
 	m_transmission_security_manager(a_local_private_key, a_local_token, a_remote_public_key, a_remote_token),
 	m_socket(a_socket),
     m_socket_io_guard(*a_socket),
 	m_start_time(utc_time()),
-	m_receive_results_mutex(a_receive_results_mutex),
 	m_receive_results(a_receive_results),
 	m_inbound_connection(a_inbound_connection)
 {
@@ -82,13 +81,13 @@ void authenticated_connection::async_receive(
 	m_socket_io_guard.async_receive(l_data.val(), [&, l_data](bool a_result) {
 
 		// Lock the mutex preventing concurrent reads/writes to the vector
-		lock_guard<cross_thread_mutex> l_lock_guard(m_receive_results_mutex);
+		locked_resource l_receive_results = m_receive_results.lock();
 
 		// Dynamically allocate result
 		ptr<connection_async_receive_result> l_result(new connection_async_receive_result(this));
 
 		// Push dynamically allocated result into vector.
-		m_receive_results.push_back(l_result);
+		l_receive_results->push_back(l_result);
 
 		if (!a_result)
 		{

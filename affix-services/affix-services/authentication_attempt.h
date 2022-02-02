@@ -1,6 +1,7 @@
 #pragma once
 #include "affix-base/async_authenticate.h"
 #include "authentication_attempt_result.h"
+#include "affix-base/threading.h"
 
 namespace affix_services
 {
@@ -24,14 +25,9 @@ namespace affix_services
 
 	public:
 		/// <summary>
-		/// Mutex preventing concurrent access to the m_finished boolean.
-		/// </summary>
-		affix_base::threading::cross_thread_mutex m_state_mutex;
-
-		/// <summary>
 		/// Boolean describing whether the asynchronous authenticate request has finished.
 		/// </summary>
-		bool m_finished = false;
+		affix_base::threading::guarded_resource<bool, affix_base::threading::cross_thread_mutex> m_finished = false;
 
 		/// <summary>
 		/// Boolean describing whether the connection was established in an inbound fashion.
@@ -47,12 +43,11 @@ namespace affix_services
 		/// <param name="a_local_key_pair"></param>
 		/// <param name="a_authenticate_remote_first"></param>
 		authentication_attempt(
-			const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
+			affix_base::data::ptr<asio::ip::tcp::socket> a_socket,
 			const std::vector<uint8_t>& a_remote_seed,
 			const affix_base::cryptography::rsa_key_pair& a_local_key_pair,
 			const bool& a_inbound_connection,
-			affix_base::threading::cross_thread_mutex& a_authentication_attempt_results_mutex,
-			std::vector<affix_base::data::ptr<authentication_attempt_result>>& a_authentication_attempt_results
+			affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_attempt_result>>, affix_base::threading::cross_thread_mutex>& a_authentication_attempt_results
 		);
 
 	public:

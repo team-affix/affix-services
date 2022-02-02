@@ -18,57 +18,37 @@ namespace affix_services
 	{
 	public:
 		/// <summary>
-		/// Mutex guarding m_pending_outbound_connections.
-		/// </summary>
-		affix_base::threading::cross_thread_mutex m_pending_outbound_connections_mutex;
-
-		/// <summary>
 		/// A vector of all pending outbound connections.
 		/// </summary>
-		std::vector<affix_base::data::ptr<pending_outbound_connection>> m_pending_outbound_connections;
-
-		/// <summary>
-		/// A mutex guarding m_unauthenticated_connecitons.
-		/// </summary>
-		affix_base::threading::cross_thread_mutex m_connection_results_mutex;
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<pending_outbound_connection>>, affix_base::threading::cross_thread_mutex> m_pending_outbound_connections;
 
 		/// <summary>
 		/// A vector of all newly established connections.
 		/// </summary>
-		std::vector<affix_base::data::ptr<connection_result>> m_connection_results;
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>, affix_base::threading::cross_thread_mutex> m_connection_results;
 
 	protected:
 		/// <summary>
 		/// A vector of all current authentication attempts, which holds those for both inbound and outbound connections.
 		/// </summary>
-		std::vector<affix_base::data::ptr<authentication_attempt>> m_authentication_attempts;
-
-		/// <summary>
-		/// Mutex guarding m_authentication_attempt_results from concurrent actions.
-		/// </summary>
-		affix_base::threading::cross_thread_mutex m_authentication_attempt_results_mutex;
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_attempt>>, affix_base::threading::cross_thread_mutex> m_authentication_attempts;
 
 		/// <summary>
 		/// Vector holding results from authentication attempts.
 		/// </summary>
-		std::vector<affix_base::data::ptr<authentication_attempt_result>> m_authentication_attempt_results;
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_attempt_result>>, affix_base::threading::cross_thread_mutex> m_authentication_attempt_results;
 
 	public:
 		/// <summary>
 		/// A vector of fully authenticated connections.
 		/// </summary>
-		std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>> m_authenticated_connections;
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>>, affix_base::threading::cross_thread_mutex> m_authenticated_connections;
 
 	protected:
 		/// <summary>
-		/// Mutex that prevents concurrent reads/writes to m_connection_async_receive_results.
-		/// </summary>
-		affix_base::threading::cross_thread_mutex m_connection_async_receive_results_mutex;
-
-		/// <summary>
 		/// Receive results for all authenticated connections.
 		/// </summary>
-		std::vector<affix_base::data::ptr<affix_services::networking::connection_async_receive_result>> m_connection_async_receive_results;
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::connection_async_receive_result>>, affix_base::threading::cross_thread_mutex> m_connection_async_receive_results;
 		
 		/// <summary>
 		/// Processor responsible for handling inbound messages.
@@ -119,6 +99,7 @@ namespace affix_services
 		/// Processes a single pending outbound connection.
 		/// </summary>
 		void process_pending_outbound_connection(
+			std::vector<affix_base::data::ptr<pending_outbound_connection>>& a_pending_outbound_connections,
 			std::vector<affix_base::data::ptr<pending_outbound_connection>>::iterator a_pending_outbound_connection
 		);
 
@@ -134,6 +115,7 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_unauthenticated_connection"></param>
 		void process_connection_result(
+			std::vector<affix_base::data::ptr<connection_result>>& a_connection_results,
 			std::vector<affix_base::data::ptr<connection_result>>::iterator a_connection_result
 		);
 
@@ -150,6 +132,7 @@ namespace affix_services
 		/// However, if it has authenticated successfully, the connection is bumped into m_authenticated_connections.
 		/// </summary>
 		void process_authentication_attempt(
+			std::vector<affix_base::data::ptr<authentication_attempt>>& a_authentication_attempts,
 			std::vector<affix_base::data::ptr<authentication_attempt>>::iterator a_authentication_attempt
 		);
 
@@ -165,6 +148,7 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_authentication_attempt_result"></param>
 		void process_authentication_attempt_result(
+			std::vector<affix_base::data::ptr<authentication_attempt_result>>& a_authentication_attempt_results,
 			std::vector<affix_base::data::ptr<authentication_attempt_result>>::iterator a_authentication_attempt_result
 		);
 
@@ -181,6 +165,7 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_authenticated_connection"></param>
 		void process_authenticated_connection(
+			std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>>& a_authenticated_connections,
 			std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>>::iterator a_authenticated_connection
 		);
 
@@ -195,6 +180,7 @@ namespace affix_services
 		/// Processes a single async_receive_result from the vector.
 		/// </summary>
 		void process_async_receive_result(
+			std::vector<affix_base::data::ptr<affix_services::networking::connection_async_receive_result>>& a_async_receive_results,
 			std::vector<affix_base::data::ptr<affix_services::networking::connection_async_receive_result>>::iterator a_async_receive_result
 		);
 

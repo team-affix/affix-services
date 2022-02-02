@@ -11,6 +11,7 @@
 #include "message_header.h"
 #include "connection_async_receive_result.h"
 #include "affix-base/cross_thread_mutex.h"
+#include "affix-base/threading.h"
 
 namespace affix_services {
 	namespace networking {
@@ -45,14 +46,9 @@ namespace affix_services {
 			uint64_t m_start_time = 0;
 			
 			/// <summary>
-			/// Mutex preventing concurrent reads/writes to m_received_messages.
-			/// </summary>
-			affix_base::threading::cross_thread_mutex& m_receive_results_mutex;
-
-			/// <summary>
 			/// Vector of async_receive results.
 			/// </summary>
-			std::vector<affix_base::data::ptr<connection_async_receive_result>>& m_receive_results;
+			affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_async_receive_result>>, affix_base::threading::cross_thread_mutex>& m_receive_results;
 
 		public:
 			/// <summary>
@@ -78,8 +74,7 @@ namespace affix_services {
 				const affix_services::security::rolling_token& a_local_token,
 				const CryptoPP::RSA::PublicKey& a_remote_public_key,
 				const affix_services::security::rolling_token& a_remote_token,
-				affix_base::threading::cross_thread_mutex& a_receive_results_mutex,
-				std::vector<affix_base::data::ptr<connection_async_receive_result>>& a_receive_results,
+				affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_async_receive_result>>, affix_base::threading::cross_thread_mutex>& a_receive_results,
 				const bool& a_inbound_connection
 			);
 
