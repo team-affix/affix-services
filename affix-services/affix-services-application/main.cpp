@@ -93,7 +93,7 @@ int main()
 		{
 			std::cerr << a_ex.what() << std::endl;
 		}
-		Sleep(100);
+		Sleep(1000);
 	}
 
 	l_context_thread_continue = false;
