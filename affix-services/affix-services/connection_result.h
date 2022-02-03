@@ -19,6 +19,11 @@ namespace affix_services
 		asio::ip::tcp::endpoint m_remote_endpoint;
 
 		/// <summary>
+		/// Endpoint the socket is bound to.
+		/// </summary>
+		asio::ip::tcp::endpoint m_local_endpoint;
+
+		/// <summary>
 		/// Boolean describing whether or not the connection was established in an inbound fashion (by accepting).
 		/// </summary>
 		bool m_inbound_connection = false;
@@ -32,6 +37,7 @@ namespace affix_services
 		connection_result(
 			const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
 			const asio::ip::tcp::endpoint& a_remote_endpoint,
+			const asio::ip::tcp::endpoint& a_local_endpoint,
 			const bool& a_inbound_connection,
 			const bool& a_successful
 		);

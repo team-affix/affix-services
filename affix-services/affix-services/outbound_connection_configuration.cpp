@@ -9,6 +9,7 @@ outbound_connection_configuration::outbound_connection_configuration(
 	const uint16_t& a_port
 ) :
 	m_remote_endpoint(a_remote_endpoint),
+	m_local_endpoint(tcp::v4(), a_port),
 	m_socket(new tcp::socket(a_io_context, tcp::endpoint(tcp::v4(), a_port)))
 {
 

@@ -28,6 +28,11 @@ namespace affix_services
 		/// </summary>
 		asio::ip::tcp::endpoint m_remote_endpoint;
 
+		/// <summary>
+		/// The endpoint which the socket is bound to.
+		/// </summary>
+		asio::ip::tcp::endpoint m_local_endpoint;
+
 	public:
 		/// <summary>
 		/// Guard preventing concurrent reads/writes to the socket.
@@ -58,6 +63,7 @@ namespace affix_services
 		authentication_attempt(
 			affix_base::data::ptr<asio::ip::tcp::socket> a_socket,
 			const asio::ip::tcp::endpoint& a_remote_endpoint,
+			const asio::ip::tcp::endpoint& a_local_endpoint,
 			const std::vector<uint8_t>& a_remote_seed,
 			const affix_base::cryptography::rsa_key_pair& a_local_key_pair,
 			const bool& a_inbound_connection,

@@ -21,6 +21,7 @@ authentication_attempt::~authentication_attempt(
 authentication_attempt::authentication_attempt(
 	affix_base::data::ptr<asio::ip::tcp::socket> a_socket,
 	const asio::ip::tcp::endpoint& a_remote_endpoint,
+	const asio::ip::tcp::endpoint& a_local_endpoint,
 	const std::vector<uint8_t>& a_remote_seed,
 	const affix_base::cryptography::rsa_key_pair& a_local_key_pair,
 	const bool& a_inbound_connection,
@@ -28,6 +29,7 @@ authentication_attempt::authentication_attempt(
 ) :
 	m_inbound_connection(a_inbound_connection),
 	m_remote_endpoint(a_remote_endpoint),
+	m_local_endpoint(a_local_endpoint),
 	m_start_time(affix_base::timing::utc_time()),
 	m_socket_io_guard(*a_socket)
 {
@@ -66,6 +68,7 @@ authentication_attempt::authentication_attempt(
 					new authentication_attempt_result(
 						a_socket,
 						m_remote_endpoint,
+						m_local_endpoint,
 						true,
 						a_inbound_connection,
 						l_remote_public_key,
@@ -87,6 +90,7 @@ authentication_attempt::authentication_attempt(
 					new authentication_attempt_result(
 						a_socket,
 						m_remote_endpoint,
+						m_local_endpoint,
 						false,
 						a_inbound_connection
 					)

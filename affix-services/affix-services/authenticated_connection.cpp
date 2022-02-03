@@ -35,6 +35,7 @@ authenticated_connection::~authenticated_connection(
 authenticated_connection::authenticated_connection(
 	const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
 	const asio::ip::tcp::endpoint& a_remote_endpoint,
+	const asio::ip::tcp::endpoint& a_local_endpoint,
 	const CryptoPP::RSA::PrivateKey& a_local_private_key,
 	const affix_services::security::rolling_token& a_local_token,
 	const CryptoPP::RSA::PublicKey& a_remote_public_key,
@@ -45,6 +46,7 @@ authenticated_connection::authenticated_connection(
 	m_transmission_security_manager(a_local_private_key, a_local_token, a_remote_public_key, a_remote_token),
 	m_socket(a_socket),
 	m_remote_endpoint(a_remote_endpoint),
+	m_local_endpoint(a_local_endpoint),
     m_socket_io_guard(*a_socket),
 	m_start_time(utc_time()),
 	m_receive_results(a_receive_results),
@@ -68,18 +70,8 @@ void authenticated_connection::async_send(
 		return;
 	}
 
-	try
-	{
-		// SEND TRANSMISSION
-		m_socket_io_guard.async_send(l_exported_transmission_data, a_callback);
-	}
-	catch (std::exception a_exception)
-	{
-		LOG_ERROR("[ CONNECTION ] Error sending data: " << a_exception.what());
-
-		// Most likely the connection is no longer valid.
-		m_connected = false;
-	}
+	// SEND TRANSMISSION
+	m_socket_io_guard.async_send(l_exported_transmission_data, a_callback);
 
 }
 
@@ -90,57 +82,48 @@ void authenticated_connection::async_receive(
 	// ALLOCATE DYNAMIC VECTOR FOR CALLBACK LAMBDA FUNCTION TO ACCESS AFTER PROGRAM EXITS THIS FUNCTION'S SCOPE
 	ptr<vector<uint8_t>> l_data = new vector<uint8_t>();
 
-	try
-	{
-		// Try to receive data asynchronously
-		m_socket_io_guard.async_receive(l_data.val(), [&, l_data](bool a_result) {
+	// Try to receive data asynchronously
+	m_socket_io_guard.async_receive(l_data.val(), [&, l_data](bool a_result) {
 
-			// Lock the mutex preventing concurrent reads/writes to the vector
-			locked_resource l_receive_results = m_receive_results.lock();
+		// Lock the mutex preventing concurrent reads/writes to the vector
+		locked_resource l_receive_results = m_receive_results.lock();
 
-			// Dynamically allocate result
-			ptr<connection_async_receive_result> l_result(new connection_async_receive_result(this));
+		// Lock mutex for m_connected boolean
+		locked_resource l_connected = m_connected.lock();
 
-			// Push dynamically allocated result into vector.
-			l_receive_results->push_back(l_result);
+		// Dynamically allocate result
+		ptr<connection_async_receive_result> l_result(new connection_async_receive_result(this));
 
-			if (!a_result)
-			{
-				LOG_ERROR("[ CONNECTION ] Error receiving data.");
+		// Push dynamically allocated result into vector.
+		l_receive_results->push_back(l_result);
 
-				// Record the fact that the connection is no longer valid.
-				m_connected = false;
+		if (!a_result)
+		{
+			LOG_ERROR("[ CONNECTION ] Error receiving data.");
 
-				return; 
-			}
+			// Record the fact that the connection is no longer valid.
+			(*l_connected) = false;
 
-			transmission_result l_transmission_result = transmission_result::unknown;
+			return; 
+		}
 
-			vector<uint8_t> l_message_data;
+		transmission_result l_transmission_result = transmission_result::unknown;
 
-			// TRY TO "IMPORT" THE TRANSMISSION DATA
-			if (!m_transmission_security_manager.import_transmission(l_data.val(), l_message_data, l_transmission_result))
-			{
-				LOG_ERROR("[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result]);
-				return;
-			}
+		vector<uint8_t> l_message_data;
 
-			byte_buffer l_message_data_buffer(l_message_data);
+		// TRY TO "IMPORT" THE TRANSMISSION DATA
+		if (!m_transmission_security_manager.import_transmission(l_data.val(), l_message_data, l_transmission_result))
+		{
+			LOG_ERROR("[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result]);
+			return;
+		}
 
-			// Save byte buffer for future use.
-			l_result->m_byte_buffer = l_message_data_buffer;
+		byte_buffer l_message_data_buffer(l_message_data);
 
-		});
+		// Save byte buffer for future use.
+		l_result->m_byte_buffer = l_message_data_buffer;
 
-	}
-	catch (std::exception a_exception)
-	{
-		LOG_ERROR("[ CONNECTION ] Error receiving data: " << a_exception.what());
-
-		// Most likely the connection is no longer valid.
-		m_connected = false;
-	}
-
+	});
 
 }
 

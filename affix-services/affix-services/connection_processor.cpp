@@ -43,6 +43,27 @@ connection_processor::connection_processor(
 
 }
 
+void connection_processor::start_pending_outbound_connection(
+	const asio::ip::tcp::endpoint& a_remote_endpoint,
+	const uint16_t& a_local_port
+)
+{
+	// Lock mutex preventing concurrent pushes/pops from pending outbound connections vector.
+	affix_base::threading::locked_resource l_locked_resource = m_pending_outbound_connections.lock();
+
+	ptr<pending_outbound_connection> l_pending_outbound_connection = new pending_outbound_connection(
+		new outbound_connection_configuration(
+			m_io_context,
+			a_remote_endpoint,
+			a_local_port
+		),
+		m_connection_results
+	);
+
+	l_locked_resource->push_back(l_pending_outbound_connection);
+
+}
+
 void connection_processor::process(
 
 )
@@ -55,21 +76,6 @@ void connection_processor::process(
 	process_async_receive_results();
 }
 
-void connection_processor::start_pending_outbound_connection(
-	const affix_base::data::ptr<outbound_connection_configuration>& a_outbound_connection_configuration
-)
-{
-	// Lock mutex preventing concurrent pushes/pops from pending outbound connections vector.
-	affix_base::threading::locked_resource l_locked_resource = m_pending_outbound_connections.lock();
-
-	ptr<pending_outbound_connection> l_pending_outbound_connection = new pending_outbound_connection(
-		a_outbound_connection_configuration,
-		m_connection_results
-	);
-
-	l_locked_resource->push_back(l_pending_outbound_connection);
-
-}
 
 void connection_processor::process_pending_outbound_connections(
 
@@ -143,6 +149,7 @@ void connection_processor::process_connection_result(
 			new authentication_attempt(
 				(*a_connection_result)->m_socket,
 				(*a_connection_result)->m_remote_endpoint,
+				(*a_connection_result)->m_local_endpoint,
 				l_remote_seed,
 				m_local_key_pair,
 				(*a_connection_result)->m_inbound_connection,
@@ -156,14 +163,11 @@ void connection_processor::process_connection_result(
 	}
 	else if (!(*a_connection_result)->m_inbound_connection)
 	{
-		// Reconnect to the remote peer.
-		ptr<outbound_connection_configuration> l_outbound_connection_configuration = new outbound_connection_configuration(
-			m_io_context,
-			(*a_connection_result)->m_remote_endpoint
+		// Reconnect to the remote peer
+		start_pending_outbound_connection(
+			(*a_connection_result)->m_remote_endpoint,
+			(*a_connection_result)->m_local_endpoint.port()
 		);
-
-		// Start the async connection request
-		start_pending_outbound_connection(l_outbound_connection_configuration);
 
 	}
 
@@ -255,6 +259,7 @@ void connection_processor::process_authentication_attempt_result(
 			new authenticated_connection(
 				(*a_authentication_attempt_result)->m_socket,
 				(*a_authentication_attempt_result)->m_remote_endpoint,
+				(*a_authentication_attempt_result)->m_local_endpoint,
 				m_local_key_pair.private_key,
 				l_local_token,
 				(*a_authentication_attempt_result)->m_remote_public_key,
@@ -304,21 +309,10 @@ void connection_processor::process_authenticated_connection(
 	std::vector<affix_base::data::ptr<authenticated_connection>>::iterator a_authenticated_connection
 )
 {
-	if (!(*a_authenticated_connection)->m_connected)
+	if ((*a_authenticated_connection)->lifetime() > 3)
 	{
-		// If socket is disconnected, dispose of the connection object
-		// (we do not reconnect to the remote peer here, since that will be done in the
-		//  process receive results function)
-
-		a_authenticated_connections.erase(a_authenticated_connection);
-
-	}
-	else if ((*a_authenticated_connection)->lifetime() > 3)
-	{
-		(*a_authenticated_connection)->m_socket->cancel();
 		(*a_authenticated_connection)->m_socket->close();
 	}
-
 }
 
 void connection_processor::process_async_receive_results(
@@ -358,14 +352,12 @@ void connection_processor::process_async_receive_result(
 
 			if (!l_inbound_connection)
 			{
-				// Reconnect to the remote peer.
-				ptr<outbound_connection_configuration> l_outbound_connection_configuration = new outbound_connection_configuration(
-					m_io_context,
-					(*l_connection)->m_remote_endpoint
+				LOG("[ PROCESSOR ] Reconnecting to remote peer.");
+				// Reconnect to the remote peer
+				start_pending_outbound_connection(
+					(*l_connection)->m_remote_endpoint,
+					(*l_connection)->m_local_endpoint.port()
 				);
-
-				// Start the async connection request
-				start_pending_outbound_connection(l_outbound_connection_configuration);
 
 			}
 

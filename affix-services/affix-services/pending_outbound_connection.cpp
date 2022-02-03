@@ -30,6 +30,7 @@ pending_outbound_connection::pending_outbound_connection(
 				new connection_result(
 					m_outbound_connection_configuration->m_socket,
 					m_outbound_connection_configuration->m_remote_endpoint,
+					m_outbound_connection_configuration->m_local_endpoint,
 					false,
 					!a_ec
 				)

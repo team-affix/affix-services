@@ -70,10 +70,6 @@ int main()
 				l_io_context.run();
 			}
 		});
-	
-	l_processor.start_pending_outbound_connection(
-		new outbound_connection_configuration(l_io_context, l_server_local_endpoint)
-	);
 		
 	uint64_t l_start_time = affix_base::timing::utc_time();
 
@@ -81,9 +77,7 @@ int main()
 	{
 		if (i < 3)
 		{
-			l_processor.start_pending_outbound_connection(
-				new outbound_connection_configuration(l_io_context, l_server_local_endpoint)
-			);
+			l_processor.start_pending_outbound_connection(l_server_local_endpoint);
 		}
 		try
 		{

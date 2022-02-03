@@ -5,6 +5,7 @@ using namespace affix_services;
 authentication_attempt_result::authentication_attempt_result(
 	const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
 	const asio::ip::tcp::endpoint& a_remote_endpoint,
+	const asio::ip::tcp::endpoint& a_local_endpoint,
 	const bool& a_successful,
 	const bool& a_inbound_connection,
 	const CryptoPP::RSA::PublicKey& a_remote_public_key,
@@ -16,7 +17,9 @@ authentication_attempt_result::authentication_attempt_result(
 	m_remote_public_key(a_remote_public_key),
 	m_remote_seed(a_remote_seed),
 	m_local_seed(a_local_seed),
-	m_inbound_connection(a_inbound_connection)
+	m_inbound_connection(a_inbound_connection),
+	m_remote_endpoint(a_remote_endpoint),
+	m_local_endpoint(a_local_endpoint)
 {
 	
 }

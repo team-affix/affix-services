@@ -44,12 +44,16 @@ void server::async_accept_next(
 			try
 			{
 				// Extract remote endpoint from socket object
-				asio::ip::tcp::endpoint l_endpoint = a_socket.remote_endpoint();
+				asio::ip::tcp::endpoint l_remote_endpoint = a_socket.remote_endpoint();
+
+				// Extract local endpoint from socket object
+				asio::ip::tcp::endpoint l_local_endpoint = a_socket.local_endpoint();
 
 				l_connection_results->push_back(
 					new connection_result(
 						new tcp::socket(std::move(a_socket)),
-						l_endpoint,
+						l_remote_endpoint,
+						l_local_endpoint,
 						true,
 						!a_ec
 					)

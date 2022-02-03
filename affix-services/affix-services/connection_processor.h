@@ -78,19 +78,20 @@ namespace affix_services
 
 	public:
 		/// <summary>
+		/// Starts a single pending outbound connection to a remote peer.
+		/// </summary>
+		/// <param name="a_outbound_connection_configuration"></param>
+		void start_pending_outbound_connection(
+			const asio::ip::tcp::endpoint& a_remote_endpoint,
+			const uint16_t& a_local_port = 0
+		);
+
+		/// <summary>
 		/// Processes all unauthenticated, authentication-in-progress, and fully
 		/// authenticated connections, as well as all received messages.
 		/// </summary>
 		void process(
 
-		);
-
-		/// <summary>
-		/// Starts a single pending outbound connection to a remote peer.
-		/// </summary>
-		/// <param name="a_outbound_connection_configuration"></param>
-		void start_pending_outbound_connection(
-			const affix_base::data::ptr<outbound_connection_configuration>& a_outbound_connection_configuration
 		);
 
 	protected:

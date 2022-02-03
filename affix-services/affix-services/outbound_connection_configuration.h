@@ -17,6 +17,11 @@ namespace affix_services
 		/// </summary>
 		asio::ip::tcp::endpoint m_remote_endpoint;
 
+		/// <summary>
+		/// Endpoint the socket is bound to.
+		/// </summary>
+		asio::ip::tcp::endpoint m_local_endpoint;
+
 	public:
 		/// <summary>
 		/// Constructs the outbound connection configuration, with the socket being assigned the

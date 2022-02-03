@@ -37,12 +37,17 @@ namespace affix_services {
 			/// <summary>
 			/// Boolean describing if the connection is still valid.
 			/// </summary>
-			bool m_connected = true;
+			affix_base::threading::guarded_resource<bool, affix_base::threading::cross_thread_mutex> m_connected = true;
 
 			/// <summary>
 			/// The endpoint which the socket is connected to.
 			/// </summary>
 			asio::ip::tcp::endpoint m_remote_endpoint;
+
+			/// <summary>
+			/// The endpoint which the socket is bound to.
+			/// </summary>
+			asio::ip::tcp::endpoint m_local_endpoint;
 
 		protected:
 			/// <summary>
@@ -81,6 +86,7 @@ namespace affix_services {
 			authenticated_connection(
 				const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
 				const asio::ip::tcp::endpoint& a_remote_endpoint,
+				const asio::ip::tcp::endpoint& a_local_endpoint,
 				const CryptoPP::RSA::PrivateKey& a_local_private_key,
 				const affix_services::security::rolling_token& a_local_token,
 				const CryptoPP::RSA::PublicKey& a_remote_public_key,
