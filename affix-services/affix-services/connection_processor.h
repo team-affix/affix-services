@@ -5,9 +5,9 @@
 #include "affix-base/persistent_thread.h"
 #include "asio.hpp"
 #include "server.h"
-#include "authentication_attempt.h"
+#include "pending_authentication.h"
 #include "connection_result.h"
-#include "authentication_attempt_result.h"
+#include "authentication_result.h"
 #include "messaging.h"
 #include "message_processor.h"
 #include "pending_connection.h"
@@ -36,12 +36,12 @@ namespace affix_services
 		/// <summary>
 		/// A vector of all current authentication attempts, which holds those for both inbound and outbound connections.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_attempt>>, affix_base::threading::cross_thread_mutex> m_authentication_attempts;
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<pending_authentication>>, affix_base::threading::cross_thread_mutex> m_authentication_attempts;
 
 		/// <summary>
 		/// Vector holding results from authentication attempts.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_attempt_result>>, affix_base::threading::cross_thread_mutex> m_authentication_attempt_results;
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_result>>, affix_base::threading::cross_thread_mutex> m_authentication_attempt_results;
 
 	public:
 		/// <summary>
@@ -139,8 +139,8 @@ namespace affix_services
 		/// However, if it has authenticated successfully, the connection is bumped into m_authenticated_connections.
 		/// </summary>
 		void process_authentication_attempt(
-			std::vector<affix_base::data::ptr<authentication_attempt>>& a_authentication_attempts,
-			std::vector<affix_base::data::ptr<authentication_attempt>>::iterator a_authentication_attempt
+			std::vector<affix_base::data::ptr<pending_authentication>>& a_authentication_attempts,
+			std::vector<affix_base::data::ptr<pending_authentication>>::iterator a_authentication_attempt
 		);
 
 		/// <summary>
@@ -155,8 +155,8 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_authentication_attempt_result"></param>
 		void process_authentication_attempt_result(
-			std::vector<affix_base::data::ptr<authentication_attempt_result>>& a_authentication_attempt_results,
-			std::vector<affix_base::data::ptr<authentication_attempt_result>>::iterator a_authentication_attempt_result
+			std::vector<affix_base::data::ptr<authentication_result>>& a_authentication_attempt_results,
+			std::vector<affix_base::data::ptr<authentication_result>>::iterator a_authentication_attempt_result
 		);
 
 		/// <summary>

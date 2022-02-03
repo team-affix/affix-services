@@ -1,8 +1,8 @@
-#include "authentication_attempt_result.h"
+#include "authentication_result.h"
 
 using namespace affix_services;
 
-authentication_attempt_result::authentication_attempt_result(
+authentication_result::authentication_result(
 	affix_base::data::ptr<connection_information> a_connection_information,
 	const bool& a_successful,
 	const CryptoPP::RSA::PublicKey& a_remote_public_key,

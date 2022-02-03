@@ -78,10 +78,10 @@
     <ClInclude Include="connection_async_receive_result.h">
       <Filter>Header Files\networking</Filter>
     </ClInclude>
-    <ClInclude Include="authentication_attempt.h">
+    <ClInclude Include="pending_authentication.h">
       <Filter>Header Files\networking</Filter>
     </ClInclude>
-    <ClInclude Include="authentication_attempt_result.h">
+    <ClInclude Include="authentication_result.h">
       <Filter>Header Files\networking</Filter>
     </ClInclude>
     <ClInclude Include="connection_result.h">
@@ -146,10 +146,10 @@
     <ClCompile Include="connection_async_receive_result.cpp">
       <Filter>Source Files\networking</Filter>
     </ClCompile>
-    <ClCompile Include="authentication_attempt.cpp">
+    <ClCompile Include="pending_authentication.cpp">
       <Filter>Source Files\networking</Filter>
     </ClCompile>
-    <ClCompile Include="authentication_attempt_result.cpp">
+    <ClCompile Include="authentication_result.cpp">
       <Filter>Source Files\networking</Filter>
     </ClCompile>
     <ClCompile Include="connection_result.cpp">

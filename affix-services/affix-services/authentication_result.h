@@ -7,7 +7,7 @@
 
 namespace affix_services
 {
-	struct authentication_attempt_result
+	struct authentication_result
 	{
 	public:
 		/// <summary>
@@ -44,7 +44,7 @@ namespace affix_services
 		/// <param name="a_remote_public_key"></param>
 		/// <param name="a_remote_seed"></param>
 		/// <param name="a_local_seed"></param>
-		authentication_attempt_result(
+		authentication_result(
 			affix_base::data::ptr<connection_information> a_connection_information,
 			const bool& a_successful,
 			const CryptoPP::RSA::PublicKey& a_remote_public_key = {},

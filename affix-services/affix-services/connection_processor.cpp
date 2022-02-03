@@ -150,8 +150,8 @@ void connection_processor::process_connection_result(
 		l_random.GenerateBlock(l_remote_seed.data(), l_remote_seed.size());
 
 		// Create authentication attempt
-		ptr<authentication_attempt> l_authentication_attempt(
-			new authentication_attempt(
+		ptr<pending_authentication> l_authentication_attempt(
+			new pending_authentication(
 				(*a_connection_result)->m_connection_information,
 				l_remote_seed,
 				m_local_key_pair,
@@ -192,8 +192,8 @@ void connection_processor::process_authentication_attempts(
 }
 
 void connection_processor::process_authentication_attempt(
-	std::vector<affix_base::data::ptr<authentication_attempt>>& a_authentication_attempts,
-	std::vector<affix_base::data::ptr<authentication_attempt>>::iterator a_authentication_attempt
+	std::vector<affix_base::data::ptr<pending_authentication>>& a_authentication_attempts,
+	std::vector<affix_base::data::ptr<pending_authentication>>::iterator a_authentication_attempt
 )
 {
 	// Local variable outside of unnamed scope
@@ -234,8 +234,8 @@ void connection_processor::process_authentication_attempt_results(
 }
 
 void connection_processor::process_authentication_attempt_result(
-	std::vector<affix_base::data::ptr<authentication_attempt_result>>& a_authentication_attempt_results,
-	std::vector<affix_base::data::ptr<authentication_attempt_result>>::iterator a_authentication_attempt_result
+	std::vector<affix_base::data::ptr<authentication_result>>& a_authentication_attempt_results,
+	std::vector<affix_base::data::ptr<authentication_result>>::iterator a_authentication_attempt_result
 )
 {
 	if ((*a_authentication_attempt_result)->m_successful)

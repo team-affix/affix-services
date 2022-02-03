@@ -1,12 +1,12 @@
 #pragma once
 #include "affix-base/async_authenticate.h"
-#include "authentication_attempt_result.h"
+#include "authentication_result.h"
 #include "affix-base/threading.h"
 #include "connection_information.h"
 
 namespace affix_services
 {
-	struct authentication_attempt
+	struct pending_authentication
 	{
 	protected:
 		/// <summary>
@@ -41,7 +41,7 @@ namespace affix_services
 		affix_base::data::ptr<connection_information> m_connection_information;
 
 	public:
-		virtual ~authentication_attempt(
+		virtual ~pending_authentication(
 
 		);
 
@@ -52,11 +52,11 @@ namespace affix_services
 		/// <param name="a_remote_seed"></param>
 		/// <param name="a_local_key_pair"></param>
 		/// <param name="a_authentication_attempt_results"></param>
-		authentication_attempt(
+		pending_authentication(
 			affix_base::data::ptr<connection_information> a_connection_information,
 			const std::vector<uint8_t>& a_remote_seed,
 			const affix_base::cryptography::rsa_key_pair& a_local_key_pair,
-			affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_attempt_result>>, affix_base::threading::cross_thread_mutex>& a_authentication_attempt_results
+			affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_result>>, affix_base::threading::cross_thread_mutex>& a_authentication_attempt_results
 		);
 
 	public:

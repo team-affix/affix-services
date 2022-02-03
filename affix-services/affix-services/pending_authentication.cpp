@@ -1,4 +1,4 @@
-#include "authentication_attempt.h"
+#include "pending_authentication.h"
 #include "affix-base/timing.h"
 
 using namespace affix_services;
@@ -9,20 +9,20 @@ using affix_base::threading::cross_thread_mutex;
 using affix_base::data::ptr;
 using namespace affix_base::threading;
 
-uint64_t authentication_attempt::s_expire_time(3);
+uint64_t pending_authentication::s_expire_time(3);
 
-authentication_attempt::~authentication_attempt(
+pending_authentication::~pending_authentication(
 
 )
 {
 
 }
 
-authentication_attempt::authentication_attempt(
+pending_authentication::pending_authentication(
 	affix_base::data::ptr<connection_information> a_connection_information,
 	const std::vector<uint8_t>& a_remote_seed,
 	const affix_base::cryptography::rsa_key_pair& a_local_key_pair,
-	affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_attempt_result>>, affix_base::threading::cross_thread_mutex>& a_authentication_attempt_results
+	affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_result>>, affix_base::threading::cross_thread_mutex>& a_authentication_attempt_results
 ) :
 	m_connection_information(a_connection_information),
 	m_start_time(affix_base::timing::utc_time()),
@@ -59,8 +59,8 @@ authentication_attempt::authentication_attempt(
 				std::vector<uint8_t> l_local_seed = m_async_authenticate->m_authenticate_local->m_local_seed;
 				
 				// Create success result.
-				ptr<authentication_attempt_result> l_authentication_attempt_result(
-					new authentication_attempt_result(
+				ptr<authentication_result> l_authentication_attempt_result(
+					new authentication_result(
 						a_connection_information,
 						true,
 						l_remote_public_key,
@@ -78,8 +78,8 @@ authentication_attempt::authentication_attempt(
 				// This scope represents if authentication failed.
 
 				// Create failure result.
-				ptr<authentication_attempt_result> l_authentication_attempt_result(
-					new authentication_attempt_result(
+				ptr<authentication_result> l_authentication_attempt_result(
+					new authentication_result(
 						a_connection_information,
 						false
 					)
@@ -97,14 +97,14 @@ authentication_attempt::authentication_attempt(
 
 }
 
-bool authentication_attempt::expired(
+bool pending_authentication::expired(
 
 ) const
 {
 	return lifetime() >= s_expire_time;
 }
 
-uint64_t authentication_attempt::lifetime(
+uint64_t pending_authentication::lifetime(
 
 ) const
 {
