@@ -1,5 +1,11 @@
 #include "server.h"
 
+#if 1
+#define LOG_ERROR(x) std::cerr << x << std::endl;
+#else
+#define LOG_ERROR(x)
+#endif
+
 using namespace affix_services;
 using namespace asio::ip;
 using std::lock_guard;
@@ -35,13 +41,26 @@ void server::async_accept_next(
 			// Store the new socket in the list of connections
 			locked_resource l_connection_results = m_connection_results.lock();
 
-			l_connection_results->push_back(
-				new connection_result(
-					new tcp::socket(std::move(a_socket)),
-					true,
-					!a_ec
-				)
-			);
+			try
+			{
+				// Extract remote endpoint from socket object
+				asio::ip::tcp::endpoint l_endpoint = a_socket.remote_endpoint();
+
+				l_connection_results->push_back(
+					new connection_result(
+						new tcp::socket(std::move(a_socket)),
+						l_endpoint,
+						true,
+						!a_ec
+					)
+				);
+
+			}
+			catch (std::exception a_exception)
+			{
+				LOG_ERROR("[ SERVER ] Error: " << a_exception.what());
+				return;
+			}
 
 			// If there was an error, return and do not make another async 
 			// accept request. Otherwise, try to accept another connection.

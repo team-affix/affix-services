@@ -18,6 +18,11 @@ namespace affix_services
 	{
 	public:
 		/// <summary>
+		/// IO context which runs all the asynchronous networking functions.
+		/// </summary>
+		asio::io_context& m_io_context;
+
+		/// <summary>
 		/// A vector of all pending outbound connections.
 		/// </summary>
 		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<pending_outbound_connection>>, affix_base::threading::cross_thread_mutex> m_pending_outbound_connections;
@@ -66,6 +71,7 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_local_key_pair"></param>
 		connection_processor(
+			asio::io_context& a_io_context,
 			message_processor& a_message_processor,
 			const affix_base::cryptography::rsa_key_pair& a_local_key_pair
 		);

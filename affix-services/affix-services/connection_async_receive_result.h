@@ -13,13 +13,16 @@ namespace affix_services
 		public:
 			affix_base::data::ptr<authenticated_connection> m_owner;
 			affix_base::data::byte_buffer m_byte_buffer;
-			bool m_successful;
 
 		public:
 			connection_async_receive_result(
 				const affix_base::data::ptr<authenticated_connection>& a_owner,
 				affix_base::data::byte_buffer a_byte_buffer = {}
 			);
+
+			bool successful(
+
+			) const;
 
 		};
 

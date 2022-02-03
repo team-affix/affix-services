@@ -29,8 +29,8 @@ int main()
 
 	message_processor l_message_processor;
 
-
 	connection_processor l_processor(
+		l_io_context,
 		l_message_processor,
 		l_key_pair
 	);
@@ -79,7 +79,7 @@ int main()
 
 	for(int i = 0; true; i++)
 	{
-		if (i % 1 == 0)
+		if (i < 3)
 		{
 			l_processor.start_pending_outbound_connection(
 				new outbound_connection_configuration(l_io_context, l_server_local_endpoint)
@@ -100,8 +100,6 @@ int main()
 
 	if (l_context_thread.joinable())
 		l_context_thread.join();
-
-
 
 	return 0;
 }

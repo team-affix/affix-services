@@ -15,6 +15,11 @@ namespace affix_services
 		affix_base::data::ptr<asio::ip::tcp::socket> m_socket;
 
 		/// <summary>
+		/// The endpoint which the socket is connected to.
+		/// </summary>
+		asio::ip::tcp::endpoint m_remote_endpoint;
+
+		/// <summary>
 		/// Boolean describing whether the asynchronous authentication attempt was successful.
 		/// </summary>
 		bool m_successful;
@@ -50,6 +55,7 @@ namespace affix_services
 		/// <param name="a_local_seed"></param>
 		authentication_attempt_result(
 			const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
+			const asio::ip::tcp::endpoint& a_remote_endpoint,
 			const bool& a_successful,
 			const bool& a_inbound_connection,
 			const CryptoPP::RSA::PublicKey& a_remote_public_key = {},

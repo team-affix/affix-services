@@ -29,6 +29,7 @@ pending_outbound_connection::pending_outbound_connection(
 			l_connection_results->push_back(
 				new connection_result(
 					m_outbound_connection_configuration->m_socket,
+					m_outbound_connection_configuration->m_remote_endpoint,
 					false,
 					!a_ec
 				)

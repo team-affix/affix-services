@@ -4,6 +4,7 @@ using namespace affix_services;
 
 authentication_attempt_result::authentication_attempt_result(
 	const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
+	const asio::ip::tcp::endpoint& a_remote_endpoint,
 	const bool& a_successful,
 	const bool& a_inbound_connection,
 	const CryptoPP::RSA::PublicKey& a_remote_public_key,

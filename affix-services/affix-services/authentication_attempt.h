@@ -23,6 +23,11 @@ namespace affix_services
 		/// </summary>
 		affix_base::data::ptr<affix_base::networking::async_authenticate> m_async_authenticate;
 
+		/// <summary>
+		/// The endpoint which the socket is connected to.
+		/// </summary>
+		asio::ip::tcp::endpoint m_remote_endpoint;
+
 	public:
 		/// <summary>
 		/// Guard preventing concurrent reads/writes to the socket.
@@ -52,6 +57,7 @@ namespace affix_services
 		/// <param name="a_authenticate_remote_first"></param>
 		authentication_attempt(
 			affix_base::data::ptr<asio::ip::tcp::socket> a_socket,
+			const asio::ip::tcp::endpoint& a_remote_endpoint,
 			const std::vector<uint8_t>& a_remote_seed,
 			const affix_base::cryptography::rsa_key_pair& a_local_key_pair,
 			const bool& a_inbound_connection,

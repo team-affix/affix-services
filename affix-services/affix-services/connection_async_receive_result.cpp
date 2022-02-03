@@ -9,5 +9,12 @@ connection_async_receive_result::connection_async_receive_result(
 	m_owner(a_owner),
 	m_byte_buffer(a_byte_buffer)
 {
-	m_successful = a_byte_buffer.size() > 0;
+
+}
+
+bool connection_async_receive_result::successful(
+
+) const
+{
+	return m_byte_buffer.size() > 0;
 }

@@ -32,9 +32,11 @@ using affix_services::outbound_connection_configuration;
 using namespace affix_base::threading;
 
 connection_processor::connection_processor(
+	asio::io_context& a_io_context,
 	message_processor& a_message_processor,
 	const rsa_key_pair& a_local_key_pair
 ) :
+	m_io_context(a_io_context),
 	m_message_processor(a_message_processor),
 	m_local_key_pair(a_local_key_pair)
 {
@@ -120,7 +122,7 @@ void connection_processor::process_connection_results(
 }
 
 void connection_processor::process_connection_result(
-			std::vector<affix_base::data::ptr<connection_result>>& a_connection_results,
+	std::vector<affix_base::data::ptr<connection_result>>& a_connection_results,
 	std::vector<affix_base::data::ptr<connection_result>>::iterator a_connection_result
 )
 {
@@ -140,6 +142,7 @@ void connection_processor::process_connection_result(
 		ptr<authentication_attempt> l_authentication_attempt(
 			new authentication_attempt(
 				(*a_connection_result)->m_socket,
+				(*a_connection_result)->m_remote_endpoint,
 				l_remote_seed,
 				m_local_key_pair,
 				(*a_connection_result)->m_inbound_connection,
@@ -149,13 +152,14 @@ void connection_processor::process_connection_result(
 
 		// Push new authentication attempt to back of vector
 		l_authentication_attempts->push_back(l_authentication_attempt);
+		
 	}
 	else if (!(*a_connection_result)->m_inbound_connection)
 	{
 		// Reconnect to the remote peer.
 		ptr<outbound_connection_configuration> l_outbound_connection_configuration = new outbound_connection_configuration(
-			*(*a_connection_result)->m_socket->get_executor().target<asio::io_context>(),
-			(*a_connection_result)->m_socket->remote_endpoint()
+			m_io_context,
+			(*a_connection_result)->m_remote_endpoint
 		);
 
 		// Start the async connection request
@@ -250,6 +254,7 @@ void connection_processor::process_authentication_attempt_result(
 		ptr<authenticated_connection> l_authenticated_connection(
 			new authenticated_connection(
 				(*a_authentication_attempt_result)->m_socket,
+				(*a_authentication_attempt_result)->m_remote_endpoint,
 				m_local_key_pair.private_key,
 				l_local_token,
 				(*a_authentication_attempt_result)->m_remote_public_key,
@@ -299,12 +304,21 @@ void connection_processor::process_authenticated_connection(
 	std::vector<affix_base::data::ptr<authenticated_connection>>::iterator a_authenticated_connection
 )
 {
-	if (!(*a_authenticated_connection)->m_socket->is_open())
+	if (!(*a_authenticated_connection)->m_connected)
 	{
-		// If socket is closed, dispose of the connection object
+		// If socket is disconnected, dispose of the connection object
+		// (we do not reconnect to the remote peer here, since that will be done in the
+		//  process receive results function)
+
 		a_authenticated_connections.erase(a_authenticated_connection);
 
 	}
+	else if ((*a_authenticated_connection)->lifetime() > 3)
+	{
+		(*a_authenticated_connection)->m_socket->cancel();
+		(*a_authenticated_connection)->m_socket->close();
+	}
+
 }
 
 void connection_processor::process_async_receive_results(
@@ -333,7 +347,7 @@ void connection_processor::process_async_receive_result(
 
 	if (l_connection != l_authenticated_connections->end())
 	{
-		if (!(*a_async_receive_result)->m_successful)
+		if (!(*a_async_receive_result)->successful())
 		{
 			// Log that there was an error receiving data.
 			LOG_ERROR("[ PROCESSOR ] Error: Failed to receive data from connection: ");
@@ -346,8 +360,8 @@ void connection_processor::process_async_receive_result(
 			{
 				// Reconnect to the remote peer.
 				ptr<outbound_connection_configuration> l_outbound_connection_configuration = new outbound_connection_configuration(
-					*(*l_connection)->m_socket->get_executor().target<asio::io_context>(),
-					(*l_connection)->m_socket->remote_endpoint()
+					m_io_context,
+					(*l_connection)->m_remote_endpoint
 				);
 
 				// Start the async connection request
