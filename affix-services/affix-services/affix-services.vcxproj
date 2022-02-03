@@ -169,8 +169,8 @@
     <ClInclude Include="message_rsp_identity_delete.h" />
     <ClInclude Include="message_rsp_turn_create.h" />
     <ClInclude Include="messaging.h" />
-    <ClInclude Include="outbound_connection_configuration.h" />
-    <ClInclude Include="pending_outbound_connection.h" />
+    <ClInclude Include="connection_information.h" />
+    <ClInclude Include="pending_connection.h" />
     <ClInclude Include="connection_processor.h" />
     <ClInclude Include="message_rsp_identity_push.h" />
     <ClInclude Include="server.h" />
@@ -199,8 +199,8 @@
     <ClCompile Include="message_rsp_identity_delete.cpp" />
     <ClCompile Include="message_rsp_identity_push.cpp" />
     <ClCompile Include="message_rsp_turn_create.cpp" />
-    <ClCompile Include="outbound_connection_configuration.cpp" />
-    <ClCompile Include="pending_outbound_connection.cpp" />
+    <ClCompile Include="connection_information.cpp" />
+    <ClCompile Include="pending_connection.cpp" />
     <ClCompile Include="connection_processor.cpp" />
     <ClCompile Include="message_rqt_identity_delete.cpp" />
     <ClCompile Include="server.cpp" />

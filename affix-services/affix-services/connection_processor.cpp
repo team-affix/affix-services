@@ -3,7 +3,7 @@
 #include "affix-base/vector_extensions.h"
 #include "messaging.h"
 #include "transmission_result.h"
-#include "pending_outbound_connection.h"
+#include "pending_connection.h"
 
 #if 1
 #define LOG(x) std::clog << x << std::endl
@@ -27,8 +27,8 @@ using affix_base::cryptography::rsa_to_base64_string;
 using affix_base::data::to_string;
 using affix_services::networking::transmission_result;
 using affix_services::networking::transmission_result_strings;
-using affix_services::pending_outbound_connection;
-using affix_services::outbound_connection_configuration;
+using affix_services::pending_connection;
+using affix_services::connection_information;
 using namespace affix_base::threading;
 
 connection_processor::connection_processor(
@@ -51,11 +51,16 @@ void connection_processor::start_pending_outbound_connection(
 	// Lock mutex preventing concurrent pushes/pops from pending outbound connections vector.
 	affix_base::threading::locked_resource l_locked_resource = m_pending_outbound_connections.lock();
 
-	ptr<pending_outbound_connection> l_pending_outbound_connection = new pending_outbound_connection(
-		new outbound_connection_configuration(
-			m_io_context,
+	// Instantiate local endpoint object.
+	tcp::endpoint l_local_endpoint(tcp::v4(), a_local_port);
+
+	ptr<pending_connection> l_pending_outbound_connection = new pending_connection(
+		new connection_information(
+			new tcp::socket(m_io_context, l_local_endpoint),
 			a_remote_endpoint,
-			a_local_port
+			l_local_endpoint,
+			false,
+			false
 		),
 		m_connection_results
 	);
@@ -91,8 +96,8 @@ void connection_processor::process_pending_outbound_connections(
 }
 
 void connection_processor::process_pending_outbound_connection(
-	std::vector<affix_base::data::ptr<pending_outbound_connection>>& a_pending_outbound_connections,
-	std::vector<affix_base::data::ptr<pending_outbound_connection>>::iterator a_pending_outbound_connection
+	std::vector<affix_base::data::ptr<pending_connection>>& a_pending_outbound_connections,
+	std::vector<affix_base::data::ptr<pending_connection>>::iterator a_pending_outbound_connection
 )
 {
 	// Store local variable describing the finished/unfinished state of the pending outbound connection.
@@ -147,12 +152,9 @@ void connection_processor::process_connection_result(
 		// Create authentication attempt
 		ptr<authentication_attempt> l_authentication_attempt(
 			new authentication_attempt(
-				(*a_connection_result)->m_socket,
-				(*a_connection_result)->m_remote_endpoint,
-				(*a_connection_result)->m_local_endpoint,
+				(*a_connection_result)->m_connection_information,
 				l_remote_seed,
 				m_local_key_pair,
-				(*a_connection_result)->m_inbound_connection,
 				m_authentication_attempt_results
 			)
 		);
@@ -161,12 +163,12 @@ void connection_processor::process_connection_result(
 		l_authentication_attempts->push_back(l_authentication_attempt);
 		
 	}
-	else if (!(*a_connection_result)->m_inbound_connection)
+	else if (!(*a_connection_result)->m_connection_information->m_inbound)
 	{
 		// Reconnect to the remote peer
 		start_pending_outbound_connection(
-			(*a_connection_result)->m_remote_endpoint,
-			(*a_connection_result)->m_local_endpoint.port()
+			(*a_connection_result)->m_connection_information->m_remote_endpoint,
+			(*a_connection_result)->m_connection_information->m_local_endpoint.port()
 		);
 
 	}
@@ -244,7 +246,7 @@ void connection_processor::process_authentication_attempt_result(
 		// Log the success of the authentication attempt.
 		LOG("============================================================");
 		LOG("[ PROCESSOR ] Success: authentication attempt successful: " << std::endl);
-		LOG("Remote IPv4: " << (*a_authentication_attempt_result)->m_socket->remote_endpoint().address().to_string() << ":" << (*a_authentication_attempt_result)->m_socket->remote_endpoint().port());
+		LOG("Remote IPv4: " << (*a_authentication_attempt_result)->m_connection_information->m_socket->remote_endpoint().address().to_string() << ":" << (*a_authentication_attempt_result)->m_connection_information->m_socket->remote_endpoint().port());
 		LOG("Remote Identity (base64): " << std::endl << rsa_to_base64_string((*a_authentication_attempt_result)->m_remote_public_key) << std::endl);
 		LOG("Remote Seed: " << to_string((*a_authentication_attempt_result)->m_remote_seed, "-"));
 		LOG("Local Seed:  " << to_string((*a_authentication_attempt_result)->m_local_seed, "-"));
@@ -257,15 +259,12 @@ void connection_processor::process_authentication_attempt_result(
 		// Create authenticated connection object
 		ptr<authenticated_connection> l_authenticated_connection(
 			new authenticated_connection(
-				(*a_authentication_attempt_result)->m_socket,
-				(*a_authentication_attempt_result)->m_remote_endpoint,
-				(*a_authentication_attempt_result)->m_local_endpoint,
+				(*a_authentication_attempt_result)->m_connection_information,
 				m_local_key_pair.private_key,
 				l_local_token,
 				(*a_authentication_attempt_result)->m_remote_public_key,
 				l_remote_token,
-				m_connection_async_receive_results,
-				(*a_authentication_attempt_result)->m_inbound_connection
+				m_connection_async_receive_results
 			)
 		);
 
@@ -283,7 +282,7 @@ void connection_processor::process_authentication_attempt_result(
 	{
 		// Log the success of the authentication attempt.
 		LOG("[ PROCESSOR ] Error: authentication attempt failed: ");
-		LOG("Remote IPv4: " << (*a_authentication_attempt_result)->m_socket->remote_endpoint().address().to_string() << ":" << (*a_authentication_attempt_result)->m_socket->remote_endpoint().port());
+		LOG("Remote IPv4: " << (*a_authentication_attempt_result)->m_connection_information->m_socket->remote_endpoint().address().to_string() << ":" << (*a_authentication_attempt_result)->m_connection_information->m_socket->remote_endpoint().port());
 		
 		// Erase authentication attempt result object
 		a_authentication_attempt_results.erase(a_authentication_attempt_result);
@@ -311,7 +310,7 @@ void connection_processor::process_authenticated_connection(
 {
 	if ((*a_authenticated_connection)->lifetime() > 3)
 	{
-		(*a_authenticated_connection)->m_socket->close();
+		(*a_authenticated_connection)->m_connection_information->m_socket->close();
 	}
 }
 
@@ -348,15 +347,15 @@ void connection_processor::process_async_receive_result(
 			LOG_ERROR("Remote Identity (base64): " << std::endl << rsa_to_base64_string((*a_async_receive_result)->m_owner->m_transmission_security_manager.m_remote_public_key) << std::endl);
 
 			// Boolean describing the direction of the established connection.
-			bool l_inbound_connection = (*l_connection)->m_inbound_connection;
+			bool l_inbound_connection = (*l_connection)->m_connection_information->m_inbound;
 
 			if (!l_inbound_connection)
 			{
 				LOG("[ PROCESSOR ] Reconnecting to remote peer.");
 				// Reconnect to the remote peer
 				start_pending_outbound_connection(
-					(*l_connection)->m_remote_endpoint,
-					(*l_connection)->m_local_endpoint.port()
+					(*l_connection)->m_connection_information->m_remote_endpoint,
+					(*l_connection)->m_connection_information->m_local_endpoint.port()
 				);
 
 			}

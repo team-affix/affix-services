@@ -2,6 +2,7 @@
 #include "affix-base/async_authenticate.h"
 #include "authentication_attempt_result.h"
 #include "affix-base/threading.h"
+#include "connection_information.h"
 
 namespace affix_services
 {
@@ -23,16 +24,6 @@ namespace affix_services
 		/// </summary>
 		affix_base::data::ptr<affix_base::networking::async_authenticate> m_async_authenticate;
 
-		/// <summary>
-		/// The endpoint which the socket is connected to.
-		/// </summary>
-		asio::ip::tcp::endpoint m_remote_endpoint;
-
-		/// <summary>
-		/// The endpoint which the socket is bound to.
-		/// </summary>
-		asio::ip::tcp::endpoint m_local_endpoint;
-
 	public:
 		/// <summary>
 		/// Guard preventing concurrent reads/writes to the socket.
@@ -45,28 +36,26 @@ namespace affix_services
 		affix_base::threading::guarded_resource<bool, affix_base::threading::cross_thread_mutex> m_finished = false;
 
 		/// <summary>
-		/// Boolean describing whether the connection was established in an inbound fashion.
+		/// Holds relevant information about the connection.
 		/// </summary>
-		bool m_inbound_connection = false;
+		affix_base::data::ptr<connection_information> m_connection_information;
 
 	public:
 		virtual ~authentication_attempt(
 
 		);
+
 		/// <summary>
 		/// Constructor which receives all necessary authentication initialization data.
 		/// </summary>
-		/// <param name="a_socket"></param>
+		/// <param name="a_connection_information"></param>
 		/// <param name="a_remote_seed"></param>
 		/// <param name="a_local_key_pair"></param>
-		/// <param name="a_authenticate_remote_first"></param>
+		/// <param name="a_authentication_attempt_results"></param>
 		authentication_attempt(
-			affix_base::data::ptr<asio::ip::tcp::socket> a_socket,
-			const asio::ip::tcp::endpoint& a_remote_endpoint,
-			const asio::ip::tcp::endpoint& a_local_endpoint,
+			affix_base::data::ptr<connection_information> a_connection_information,
 			const std::vector<uint8_t>& a_remote_seed,
 			const affix_base::cryptography::rsa_key_pair& a_local_key_pair,
-			const bool& a_inbound_connection,
 			affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_attempt_result>>, affix_base::threading::cross_thread_mutex>& a_authentication_attempt_results
 		);
 

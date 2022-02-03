@@ -3,16 +3,16 @@
 #include "affix-services/connection_processor.h"
 #include <iostream>
 #include <fstream>
-#include "affix-services/outbound_connection_configuration.h"
-#include "affix-services/pending_outbound_connection.h"
+#include "affix-services/connection_information.h"
+#include "affix-services/pending_connection.h"
 #include "affix-base/timing.h"
 
 using affix_base::data::ptr;
 using affix_services::server_configuration;
 using affix_services::server;
 using affix_services::connection_processor;
-using affix_services::outbound_connection_configuration;
-using affix_services::pending_outbound_connection;
+using affix_services::connection_information;
+using affix_services::pending_connection;
 using affix_services::message_processor;
 using namespace asio::ip;
 

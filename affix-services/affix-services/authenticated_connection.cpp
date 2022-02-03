@@ -33,24 +33,18 @@ authenticated_connection::~authenticated_connection(
 }
 
 authenticated_connection::authenticated_connection(
-	const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
-	const asio::ip::tcp::endpoint& a_remote_endpoint,
-	const asio::ip::tcp::endpoint& a_local_endpoint,
+	affix_base::data::ptr<connection_information> a_connection_information,
 	const CryptoPP::RSA::PrivateKey& a_local_private_key,
 	const affix_services::security::rolling_token& a_local_token,
 	const CryptoPP::RSA::PublicKey& a_remote_public_key,
 	const affix_services::security::rolling_token& a_remote_token,
-	affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_async_receive_result>>, affix_base::threading::cross_thread_mutex>& a_receive_results,
-	const bool& a_inbound_connection
+	affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_async_receive_result>>, affix_base::threading::cross_thread_mutex>& a_receive_results
 ) :
 	m_transmission_security_manager(a_local_private_key, a_local_token, a_remote_public_key, a_remote_token),
-	m_socket(a_socket),
-	m_remote_endpoint(a_remote_endpoint),
-	m_local_endpoint(a_local_endpoint),
-    m_socket_io_guard(*a_socket),
+	m_connection_information(a_connection_information),
+    m_socket_io_guard(*a_connection_information->m_socket),
 	m_start_time(utc_time()),
-	m_receive_results(a_receive_results),
-	m_inbound_connection(a_inbound_connection)
+	m_receive_results(a_receive_results)
 {
 	
 }

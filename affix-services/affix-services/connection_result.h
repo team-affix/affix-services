@@ -2,6 +2,7 @@
 #include "affix-base/pch.h"
 #include "affix-base/ptr.h"
 #include "asio.hpp"
+#include "connection_information.h"
 
 namespace affix_services
 {
@@ -9,24 +10,9 @@ namespace affix_services
 	{
 	public:
 		/// <summary>
-		/// Socket which holds the actual connection interface.
+		/// This holds the socket, and relevant information for connection.
 		/// </summary>
-		affix_base::data::ptr<asio::ip::tcp::socket> m_socket;
-
-		/// <summary>
-		/// The endpoint which the socket is connected to.
-		/// </summary>
-		asio::ip::tcp::endpoint m_remote_endpoint;
-
-		/// <summary>
-		/// Endpoint the socket is bound to.
-		/// </summary>
-		asio::ip::tcp::endpoint m_local_endpoint;
-
-		/// <summary>
-		/// Boolean describing whether or not the connection was established in an inbound fashion (by accepting).
-		/// </summary>
-		bool m_inbound_connection = false;
+		affix_base::data::ptr<connection_information> m_connection_information;
 
 		/// <summary>
 		/// Boolean describing the success/failure of the connection attempt.
@@ -35,10 +21,7 @@ namespace affix_services
 
 	public:
 		connection_result(
-			const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
-			const asio::ip::tcp::endpoint& a_remote_endpoint,
-			const asio::ip::tcp::endpoint& a_local_endpoint,
-			const bool& a_inbound_connection,
+			const affix_base::data::ptr<connection_information>& a_connection_information,
 			const bool& a_successful
 		);
 

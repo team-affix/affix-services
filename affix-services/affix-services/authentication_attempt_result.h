@@ -3,6 +3,7 @@
 #include "affix-base/ptr.h"
 #include "asio.hpp"
 #include "affix-base/rsa.h"
+#include "connection_information.h"
 
 namespace affix_services
 {
@@ -10,24 +11,9 @@ namespace affix_services
 	{
 	public:
 		/// <summary>
-		/// The actual network interface.
+		/// Holds relevant information about the connection.
 		/// </summary>
-		affix_base::data::ptr<asio::ip::tcp::socket> m_socket;
-
-		/// <summary>
-		/// The endpoint which the socket is connected to.
-		/// </summary>
-		asio::ip::tcp::endpoint m_remote_endpoint;
-
-		/// <summary>
-		/// The endpoint which the socket is bound to.
-		/// </summary>
-		asio::ip::tcp::endpoint m_local_endpoint;
-
-		/// <summary>
-		/// Boolean describing whether the asynchronous authentication attempt was successful.
-		/// </summary>
-		bool m_successful;
+		affix_base::data::ptr<connection_information> m_connection_information;
 
 		/// <summary>
 		/// RSA key holding the public parameters for communication with the remote peer.
@@ -45,25 +31,22 @@ namespace affix_services
 		std::vector<uint8_t> m_local_seed;
 
 		/// <summary>
-		/// Boolean describing whether the connection was established in an inbound fashion.
+		/// Boolean describing whether the asynchronous authentication attempt was successful.
 		/// </summary>
-		bool m_inbound_connection = false;
+		bool m_successful;
 
 	public:
 		/// <summary>
 		/// Initializes the structure with all necessary information regarding the authentication.
 		/// </summary>
-		/// <param name="a_socket"></param>
+		/// <param name="a_connection_information"></param>
 		/// <param name="a_successful"></param>
 		/// <param name="a_remote_public_key"></param>
 		/// <param name="a_remote_seed"></param>
 		/// <param name="a_local_seed"></param>
 		authentication_attempt_result(
-			const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
-			const asio::ip::tcp::endpoint& a_remote_endpoint,
-			const asio::ip::tcp::endpoint& a_local_endpoint,
+			affix_base::data::ptr<connection_information> a_connection_information,
 			const bool& a_successful,
-			const bool& a_inbound_connection,
 			const CryptoPP::RSA::PublicKey& a_remote_public_key = {},
 			const std::vector<uint8_t>& a_remote_seed = {},
 			const std::vector<uint8_t>& a_local_seed = {}

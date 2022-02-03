@@ -10,7 +10,7 @@
 #include "authentication_attempt_result.h"
 #include "messaging.h"
 #include "message_processor.h"
-#include "pending_outbound_connection.h"
+#include "pending_connection.h"
 
 namespace affix_services
 {
@@ -25,7 +25,7 @@ namespace affix_services
 		/// <summary>
 		/// A vector of all pending outbound connections.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<pending_outbound_connection>>, affix_base::threading::cross_thread_mutex> m_pending_outbound_connections;
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<pending_connection>>, affix_base::threading::cross_thread_mutex> m_pending_outbound_connections;
 
 		/// <summary>
 		/// A vector of all newly established connections.
@@ -106,8 +106,8 @@ namespace affix_services
 		/// Processes a single pending outbound connection.
 		/// </summary>
 		void process_pending_outbound_connection(
-			std::vector<affix_base::data::ptr<pending_outbound_connection>>& a_pending_outbound_connections,
-			std::vector<affix_base::data::ptr<pending_outbound_connection>>::iterator a_pending_outbound_connection
+			std::vector<affix_base::data::ptr<pending_connection>>& a_pending_outbound_connections,
+			std::vector<affix_base::data::ptr<pending_connection>>::iterator a_pending_outbound_connection
 		);
 
 		/// <summary>

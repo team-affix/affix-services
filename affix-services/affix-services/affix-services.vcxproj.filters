@@ -120,10 +120,10 @@
     <ClInclude Include="application_configuration.h">
       <Filter>Header Files\application</Filter>
     </ClInclude>
-    <ClInclude Include="pending_outbound_connection.h">
+    <ClInclude Include="pending_connection.h">
       <Filter>Header Files\networking</Filter>
     </ClInclude>
-    <ClInclude Include="outbound_connection_configuration.h">
+    <ClInclude Include="connection_information.h">
       <Filter>Header Files\networking</Filter>
     </ClInclude>
     <ClInclude Include="message_processor_configuration.h">
@@ -179,10 +179,7 @@
     <ClCompile Include="connection_processor.cpp">
       <Filter>Source Files\application</Filter>
     </ClCompile>
-    <ClCompile Include="pending_outbound_connection.cpp">
-      <Filter>Source Files\application</Filter>
-    </ClCompile>
-    <ClCompile Include="outbound_connection_configuration.cpp">
+    <ClCompile Include="pending_connection.cpp">
       <Filter>Source Files\application</Filter>
     </ClCompile>
     <ClCompile Include="server.cpp">
@@ -193,6 +190,9 @@
     </ClCompile>
     <ClCompile Include="application_configuration.cpp">
       <Filter>Source Files\application</Filter>
+    </ClCompile>
+    <ClCompile Include="connection_information.cpp">
+      <Filter>Source Files\networking</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -19,27 +19,22 @@ authentication_attempt::~authentication_attempt(
 }
 
 authentication_attempt::authentication_attempt(
-	affix_base::data::ptr<asio::ip::tcp::socket> a_socket,
-	const asio::ip::tcp::endpoint& a_remote_endpoint,
-	const asio::ip::tcp::endpoint& a_local_endpoint,
+	affix_base::data::ptr<connection_information> a_connection_information,
 	const std::vector<uint8_t>& a_remote_seed,
 	const affix_base::cryptography::rsa_key_pair& a_local_key_pair,
-	const bool& a_inbound_connection,
 	affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_attempt_result>>, affix_base::threading::cross_thread_mutex>& a_authentication_attempt_results
 ) :
-	m_inbound_connection(a_inbound_connection),
-	m_remote_endpoint(a_remote_endpoint),
-	m_local_endpoint(a_local_endpoint),
+	m_connection_information(a_connection_information),
 	m_start_time(affix_base::timing::utc_time()),
-	m_socket_io_guard(*a_socket)
+	m_socket_io_guard(*a_connection_information->m_socket)
 {
 	// Instantiate async_authenticate instance, which will begin the authentication procedure.
 	m_async_authenticate = new async_authenticate(
 		m_socket_io_guard,
 		a_remote_seed,
 		a_local_key_pair,
-		a_inbound_connection,
-		[&,a_socket,a_inbound_connection](bool a_result)
+		m_connection_information->m_inbound,
+		[&,a_connection_information](bool a_result)
 		{
 			// Lock mutex preventing concurrent reads/writes to a vector of authentication attempt results.
 			locked_resource l_authentication_attempt_results = a_authentication_attempt_results.lock();
@@ -48,7 +43,7 @@ authentication_attempt::authentication_attempt(
 			locked_resource l_finished = m_finished.lock();
 
 			// Cancel async operations on socket
-			(*a_socket).cancel();
+			(*a_connection_information->m_socket).cancel();
 
 			if (a_result && !expired())
 			{
@@ -66,11 +61,8 @@ authentication_attempt::authentication_attempt(
 				// Create success result.
 				ptr<authentication_attempt_result> l_authentication_attempt_result(
 					new authentication_attempt_result(
-						a_socket,
-						m_remote_endpoint,
-						m_local_endpoint,
+						a_connection_information,
 						true,
-						a_inbound_connection,
 						l_remote_public_key,
 						l_remote_seed,
 						l_local_seed
@@ -88,11 +80,8 @@ authentication_attempt::authentication_attempt(
 				// Create failure result.
 				ptr<authentication_attempt_result> l_authentication_attempt_result(
 					new authentication_attempt_result(
-						a_socket,
-						m_remote_endpoint,
-						m_local_endpoint,
-						false,
-						a_inbound_connection
+						a_connection_information,
+						false
 					)
 				);
 
