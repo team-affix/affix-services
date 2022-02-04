@@ -32,10 +32,12 @@ using affix_services::connection_information;
 using namespace affix_base::threading;
 
 connection_processor::connection_processor(
+	affix_base::data::ptr<connection_processor_configuration> a_connection_processor_configuration,
 	asio::io_context& a_io_context,
 	message_processor& a_message_processor,
 	const rsa_key_pair& a_local_key_pair
 ) :
+	m_connection_processor_configuration(a_connection_processor_configuration),
 	m_io_context(a_io_context),
 	m_message_processor(a_message_processor),
 	m_local_key_pair(a_local_key_pair)
@@ -247,23 +249,16 @@ void connection_processor::process_authentication_attempt_result(
 		LOG("============================================================");
 		LOG("[ PROCESSOR ] Success: authentication attempt successful: " << std::endl);
 		LOG("Remote IPv4: " << (*a_authentication_attempt_result)->m_connection_information->m_socket->remote_endpoint().address().to_string() << ":" << (*a_authentication_attempt_result)->m_connection_information->m_socket->remote_endpoint().port());
-		LOG("Remote Identity (base64): " << std::endl << rsa_to_base64_string((*a_authentication_attempt_result)->m_remote_public_key) << std::endl);
-		LOG("Remote Seed: " << to_string((*a_authentication_attempt_result)->m_remote_seed, "-"));
-		LOG("Local Seed:  " << to_string((*a_authentication_attempt_result)->m_local_seed, "-"));
+		LOG("Remote Identity (base64): " << std::endl << rsa_to_base64_string((*a_authentication_attempt_result)->m_security_information->m_remote_public_key) << std::endl);
+		LOG("Remote Seed: " << to_string((*a_authentication_attempt_result)->m_security_information->m_remote_token.m_seed, "-"));
+		LOG("Local Seed:  " << to_string((*a_authentication_attempt_result)->m_security_information->m_local_token.m_seed, "-"));
 		LOG("============================================================");
-
-		// Get local and remote tokens
-		affix_services::security::rolling_token l_local_token((*a_authentication_attempt_result)->m_local_seed);
-		affix_services::security::rolling_token l_remote_token((*a_authentication_attempt_result)->m_remote_seed);
 
 		// Create authenticated connection object
 		ptr<authenticated_connection> l_authenticated_connection(
 			new authenticated_connection(
 				(*a_authentication_attempt_result)->m_connection_information,
-				m_local_key_pair.private_key,
-				l_local_token,
-				(*a_authentication_attempt_result)->m_remote_public_key,
-				l_remote_token,
+				(*a_authentication_attempt_result)->m_security_information,
 				m_connection_async_receive_results
 			)
 		);
@@ -308,7 +303,8 @@ void connection_processor::process_authenticated_connection(
 	std::vector<affix_base::data::ptr<authenticated_connection>>::iterator a_authenticated_connection
 )
 {
-	if ((*a_authenticated_connection)->lifetime() > 3)
+	if ((*a_authenticated_connection)->lifetime() > 
+		m_connection_processor_configuration->m_connection_maximum_idle_time_in_seconds)
 	{
 		(*a_authenticated_connection)->m_connection_information->m_socket->close();
 	}
@@ -344,7 +340,7 @@ void connection_processor::process_async_receive_result(
 		{
 			// Log that there was an error receiving data.
 			LOG_ERROR("[ PROCESSOR ] Error: Failed to receive data from connection: ");
-			LOG_ERROR("Remote Identity (base64): " << std::endl << rsa_to_base64_string((*a_async_receive_result)->m_owner->m_transmission_security_manager.m_remote_public_key) << std::endl);
+			LOG_ERROR("Remote Identity (base64): " << std::endl << rsa_to_base64_string((*a_async_receive_result)->m_owner->m_transmission_security_manager.m_security_information->m_remote_public_key) << std::endl);
 
 			// Boolean describing the direction of the established connection.
 			bool l_inbound_connection = (*l_connection)->m_connection_information->m_inbound;

@@ -34,19 +34,18 @@ authenticated_connection::~authenticated_connection(
 
 authenticated_connection::authenticated_connection(
 	affix_base::data::ptr<connection_information> a_connection_information,
-	const CryptoPP::RSA::PrivateKey& a_local_private_key,
-	const affix_services::security::rolling_token& a_local_token,
-	const CryptoPP::RSA::PublicKey& a_remote_public_key,
-	const affix_services::security::rolling_token& a_remote_token,
+	affix_base::data::ptr<security_information> a_security_information,
 	affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_async_receive_result>>, affix_base::threading::cross_thread_mutex>& a_receive_results
 ) :
-	m_transmission_security_manager(a_local_private_key, a_local_token, a_remote_public_key, a_remote_token),
+	m_transmission_security_manager(a_security_information),
 	m_connection_information(a_connection_information),
     m_socket_io_guard(*a_connection_information->m_socket),
 	m_start_time(utc_time()),
 	m_receive_results(a_receive_results)
 {
-	
+	// Set the last interaction time to the current utc time, to avoid having it ever be set to zero.
+	locked_resource l_last_interaction_time = m_last_interaction_time.lock();
+	(*l_last_interaction_time) = utc_time();
 }
 
 void authenticated_connection::async_send(
@@ -54,6 +53,10 @@ void authenticated_connection::async_send(
 	const std::function<void(bool)>& a_callback
 )
 {
+	// Set the last interaction time to the current utc time.
+	locked_resource l_last_interaction_time = m_last_interaction_time.lock();
+	(*l_last_interaction_time) = utc_time();
+
 	vector<uint8_t> l_exported_transmission_data;
 
 	transmission_result l_transmission_result = transmission_result::unknown;
@@ -78,6 +81,10 @@ void authenticated_connection::async_receive(
 
 	// Try to receive data asynchronously
 	m_socket_io_guard.async_receive(l_data.val(), [&, l_data](bool a_result) {
+
+		// Set the last interaction time to the current utc time.
+		locked_resource l_last_interaction_time = m_last_interaction_time.lock();
+		(*l_last_interaction_time) = utc_time();
 
 		// Lock the mutex preventing concurrent reads/writes to the vector
 		locked_resource l_receive_results = m_receive_results.lock();

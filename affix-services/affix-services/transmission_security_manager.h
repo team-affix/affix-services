@@ -4,24 +4,20 @@
 #include "affix-base/rsa.h"
 #include "affix-base/byte_buffer.h"
 #include "transmission_result.h"
+#include "security_information.h"
 
 namespace affix_services {
 	namespace security {
 		class transmission_security_manager {
 		public:
-			CryptoPP::RSA::PrivateKey m_local_private_key;
-			affix_services::security::rolling_token m_local_token;
-
-		public:
-			CryptoPP::RSA::PublicKey m_remote_public_key;
-			affix_services::security::rolling_token m_remote_token;
+			/// <summary>
+			/// Structure which holds all necessary connection security information.
+			/// </summary>
+			affix_base::data::ptr<security_information> m_security_information;
 
 		public:
 			transmission_security_manager(
-				const CryptoPP::RSA::PrivateKey& a_local_private_key,
-				const affix_services::security::rolling_token& a_local_token,
-				const CryptoPP::RSA::PublicKey& a_remote_public_key,
-				const affix_services::security::rolling_token& a_remote_token
+				affix_base::data::ptr<security_information> a_security_information
 			);
 
 		public:

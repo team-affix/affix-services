@@ -4,6 +4,7 @@
 #include "asio.hpp"
 #include "affix-base/rsa.h"
 #include "connection_information.h"
+#include "security_information.h"
 
 namespace affix_services
 {
@@ -16,19 +17,9 @@ namespace affix_services
 		affix_base::data::ptr<connection_information> m_connection_information;
 
 		/// <summary>
-		/// RSA key holding the public parameters for communication with the remote peer.
+		/// Holds relevant information about the security for the connection.
 		/// </summary>
-		CryptoPP::RSA::PublicKey m_remote_public_key;
-
-		/// <summary>
-		/// Vector of bytes which holds the seed that the peer will use in all further correspondance with us.
-		/// </summary>
-		std::vector<uint8_t> m_remote_seed;
-
-		/// <summary>
-		/// Vector of bytes which holds the seed that we will use in all further correspondance with the peer.
-		/// </summary>
-		std::vector<uint8_t> m_local_seed;
+		affix_base::data::ptr<security_information> m_security_information;
 
 		/// <summary>
 		/// Boolean describing whether the asynchronous authentication attempt was successful.
@@ -40,16 +31,12 @@ namespace affix_services
 		/// Initializes the structure with all necessary information regarding the authentication.
 		/// </summary>
 		/// <param name="a_connection_information"></param>
+		/// <param name="a_security_information"></param>
 		/// <param name="a_successful"></param>
-		/// <param name="a_remote_public_key"></param>
-		/// <param name="a_remote_seed"></param>
-		/// <param name="a_local_seed"></param>
 		authentication_result(
 			affix_base::data::ptr<connection_information> a_connection_information,
-			const bool& a_successful,
-			const CryptoPP::RSA::PublicKey& a_remote_public_key = {},
-			const std::vector<uint8_t>& a_remote_seed = {},
-			const std::vector<uint8_t>& a_local_seed = {}
+			affix_base::data::ptr<security_information> a_security_information,
+			const bool& a_successful
 		);
 
 	};

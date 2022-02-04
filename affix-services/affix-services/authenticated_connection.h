@@ -45,6 +45,11 @@ namespace affix_services {
 			/// Time of creation of the authenticated_connection object.
 			/// </summary>
 			uint64_t m_start_time = 0;
+
+			/// <summary>
+			/// Time of last interaction between either of the parties.
+			/// </summary>
+			affix_base::threading::guarded_resource<uint64_t, affix_base::threading::cross_thread_mutex> m_last_interaction_time = 0;
 			
 			/// <summary>
 			/// Vector of async_receive results.
@@ -71,10 +76,7 @@ namespace affix_services {
 			/// <param name="a_receive_results"></param>
 			authenticated_connection(
 				affix_base::data::ptr<connection_information> a_connection_information,
-				const CryptoPP::RSA::PrivateKey& a_local_private_key,
-				const affix_services::security::rolling_token& a_local_token,
-				const CryptoPP::RSA::PublicKey& a_remote_public_key,
-				const affix_services::security::rolling_token& a_remote_token,
+				affix_base::data::ptr<security_information> a_security_information,
 				affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_async_receive_result>>, affix_base::threading::cross_thread_mutex>& a_receive_results
 			);
 

@@ -58,14 +58,20 @@ pending_authentication::pending_authentication(
 				// Get local seed.
 				std::vector<uint8_t> l_local_seed = m_async_authenticate->m_authenticate_local->m_local_seed;
 				
+				// Generate the security information structure
+				ptr<security_information> l_security_information = new security_information(
+					a_local_key_pair.private_key,
+					affix_services::security::rolling_token(l_local_seed),
+					l_remote_public_key,
+					affix_services::security::rolling_token(l_remote_seed)
+				);
+
 				// Create success result.
 				ptr<authentication_result> l_authentication_attempt_result(
 					new authentication_result(
 						a_connection_information,
-						true,
-						l_remote_public_key,
-						l_remote_seed,
-						l_local_seed
+						l_security_information,
+						true
 					)
 				);
 
@@ -81,6 +87,7 @@ pending_authentication::pending_authentication(
 				ptr<authentication_result> l_authentication_attempt_result(
 					new authentication_result(
 						a_connection_information,
+						nullptr,
 						false
 					)
 				);

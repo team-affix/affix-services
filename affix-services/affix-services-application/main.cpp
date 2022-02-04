@@ -71,14 +71,10 @@ int main()
 			}
 		});
 		
-	uint64_t l_start_time = affix_base::timing::utc_time();
+	l_processor.start_pending_outbound_connection(l_server_local_endpoint);
 
 	for(int i = 0; true; i++)
 	{
-		if (i < 3)
-		{
-			l_processor.start_pending_outbound_connection(l_server_local_endpoint);
-		}
 		try
 		{
 			l_processor.process();

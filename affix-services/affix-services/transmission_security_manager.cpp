@@ -10,15 +10,9 @@ using std::vector;
 using affix_services::security::rolling_token;
 
 transmission_security_manager::transmission_security_manager(
-	const CryptoPP::RSA::PrivateKey& a_local_private_key,
-	const affix_services::security::rolling_token& a_local_token,
-	const CryptoPP::RSA::PublicKey& a_remote_public_key,
-	const affix_services::security::rolling_token& a_remote_token
+	affix_base::data::ptr<security_information> a_security_information
 ) :
-	m_local_private_key(a_local_private_key),
-	m_local_token(a_local_token),
-	m_remote_public_key(a_remote_public_key),
-	m_remote_token(a_remote_token)
+	m_security_information(a_security_information)
 {
 
 }
@@ -41,10 +35,10 @@ bool transmission_security_manager::export_transmission(
 	// PUSH TOKEN AND SIGNATURE INTO BUFFER
 	if (!pack_token(l_byte_buffer, a_result)) return false;
 	if (!pack_signature(l_byte_buffer, a_result)) return false;
-	m_local_token++;
+	m_security_information->m_local_token++;
 
 	// ENCRYPT BUFFER
-	if (!rsa_try_encrypt_in_chunks(l_byte_buffer.data(), m_remote_public_key, a_output)) {
+	if (!rsa_try_encrypt_in_chunks(l_byte_buffer.data(), m_security_information->m_remote_public_key, a_output)) {
 		a_result = transmission_result::error_encrypting_data;
 		return false;
 	}
@@ -62,7 +56,7 @@ bool transmission_security_manager::import_transmission(
 
 	// DECRYPT DATA
 	vector<uint8_t> l_decrypted_data;
-	if (!rsa_try_decrypt_in_chunks(a_data, m_local_private_key, l_decrypted_data)) {
+	if (!rsa_try_decrypt_in_chunks(a_data, m_security_information->m_local_private_key, l_decrypted_data)) {
 		a_result = transmission_result::error_decrypting_data;
 		return false;
 	}
@@ -77,7 +71,7 @@ bool transmission_security_manager::import_transmission(
 		return false;
 
 	// INCREMENT REMOTE TOKEN ONLY IF AUTHENTIC MESSAGE
-	m_remote_token++;
+	m_security_information->m_remote_token++;
 
 	// STORE DATA IN OUTPUT VECTOR
 	l_byte_buffer.pop_back(a_output);
@@ -94,7 +88,7 @@ bool transmission_security_manager::pack_signature(
 	vector<uint8_t> l_signature;
 
 	// TRY TO SIGN DATA
-	if (!rsa_try_sign(a_data.data(), m_local_private_key, l_signature)) {
+	if (!rsa_try_sign(a_data.data(), m_security_information->m_local_private_key, l_signature)) {
 		a_result = transmission_result::error_signing_data;
 		return false;
 	}
@@ -128,7 +122,7 @@ bool transmission_security_manager::unpack_signature(
 
 	// TRY TO VERIFY SIGNATURE ASSOCIATED WITH MESSAGE
 	bool l_signature_valid = false;
-	if (!rsa_try_verify(l_signed_data, l_signature, m_remote_public_key, l_signature_valid))
+	if (!rsa_try_verify(l_signed_data, l_signature, m_security_information->m_remote_public_key, l_signature_valid))
 	{
 		a_result = transmission_result::error_unpacking_signature;
 		return false;
@@ -151,7 +145,7 @@ bool transmission_security_manager::pack_token(
 {
 
 	// TRY TO PUSH TOKEN TO BUFFER
-	if (!a_data.push_back(m_local_token.serialize())) { 
+	if (!a_data.push_back(m_security_information->m_local_token.serialize())) { 
 		a_result = transmission_result::error_packing_token;
 		return false; 
 	}
@@ -166,7 +160,7 @@ bool transmission_security_manager::unpack_token(
 )
 {
 	// GET EXPECTED REMOTE TOKEN
-	vector<uint8_t> l_expected_remote_token = m_remote_token.serialize();
+	vector<uint8_t> l_expected_remote_token = m_security_information->m_remote_token.serialize();
 
 	vector<uint8_t> l_remote_token;
 
