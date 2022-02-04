@@ -14,6 +14,7 @@ using affix_services::connection_processor;
 using affix_services::connection_information;
 using affix_services::pending_connection;
 using affix_services::message_processor;
+using namespace affix_services;
 using namespace asio::ip;
 
 int main()
@@ -29,7 +30,17 @@ int main()
 
 	message_processor l_message_processor;
 
+	ptr<connection_processor_configuration> l_connection_processor_configuration(
+		new connection_processor_configuration(
+			true,
+			3,
+			true,
+			21600
+		)
+	);
+
 	connection_processor l_processor(
+		l_connection_processor_configuration,
 		l_io_context,
 		l_message_processor,
 		l_key_pair

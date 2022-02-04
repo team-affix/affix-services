@@ -91,6 +91,7 @@ namespace affix_services {
 
 		public:
 			uint64_t lifetime() const;
+			uint64_t idletime();
 
 		};
 

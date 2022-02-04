@@ -132,6 +132,9 @@
     <ClInclude Include="security_information.h">
       <Filter>Header Files\security</Filter>
     </ClInclude>
+    <ClInclude Include="connection_processor_configuration.h">
+      <Filter>Header Files\application</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rolling_token.cpp">
@@ -199,6 +202,9 @@
     </ClCompile>
     <ClCompile Include="security_information.cpp">
       <Filter>Source Files\security</Filter>
+    </ClCompile>
+    <ClCompile Include="connection_processor_configuration.cpp">
+      <Filter>Source Files\application</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

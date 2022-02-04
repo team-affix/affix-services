@@ -131,3 +131,8 @@ void authenticated_connection::async_receive(
 uint64_t authenticated_connection::lifetime() const {
 	return utc_time() - m_start_time;
 }
+
+uint64_t authenticated_connection::idletime() {
+	locked_resource l_last_interaction_time = m_last_interaction_time.lock();
+	return utc_time() - (*l_last_interaction_time);
+}
