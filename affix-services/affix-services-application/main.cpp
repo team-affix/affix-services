@@ -6,6 +6,7 @@
 #include "affix-services/connection_information.h"
 #include "affix-services/pending_connection.h"
 #include "affix-base/timing.h"
+#include "json.hpp"
 
 using affix_base::data::ptr;
 using affix_services::server_configuration;
@@ -23,7 +24,7 @@ int main()
 	/*std::ofstream l_nullstream;
 	std::clog.rdbuf(l_nullstream.rdbuf());*/
 	// Create IO context object, which will be used for entire program's networking
-
+	
 	affix_base::cryptography::rsa_key_pair l_key_pair = affix_base::cryptography::rsa_generate_key_pair(2048);
 
 	asio::io_context l_io_context;
@@ -46,15 +47,13 @@ int main()
 		l_key_pair
 	);
 
-	affix_base::data::ptr<server_configuration> l_server_configuration(
-		new server_configuration(l_io_context)
-	);
+	affix_base::data::ptr<server_configuration> l_server_configuration(new server_configuration("server_configuration.json"));
+	l_server_configuration->import_from_file();
 
-	l_server_configuration->export_connection_information("testing123.log");
-	
 	server l_server(
-		l_server_configuration,
-		l_processor.m_connection_results
+		l_io_context,
+		l_processor.m_connection_results,
+		l_server_configuration
 	);
 
 	asio::ip::address l_local_ip_address;
@@ -67,7 +66,7 @@ int main()
 
 	tcp::endpoint l_server_local_endpoint(
 		l_local_ip_address,
-		l_server.configuration()->acceptor().local_endpoint().port()
+		l_server.m_acceptor->local_endpoint().port()
 	);
 
 	bool l_context_thread_continue = true;

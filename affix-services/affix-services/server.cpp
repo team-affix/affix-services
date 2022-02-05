@@ -22,20 +22,34 @@ server::~server(
 }
 
 server::server(
-	const affix_base::data::ptr<server_configuration>& a_configuration,
-	affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>, affix_base::threading::cross_thread_mutex>& a_connection_results
+	asio::io_context& a_io_context,
+	affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>, affix_base::threading::cross_thread_mutex>& a_connection_results,
+	affix_base::data::ptr<server_configuration> a_configuration
 ) :
-	m_server_configuration(a_configuration),
-	m_connection_results(a_connection_results)
+	m_connection_results(a_connection_results),
+	m_server_configuration(a_configuration)
 {
-	async_accept_next();
+	if (a_configuration->m_enable)
+	{
+		// Create acceptor object using the specified endpoint
+		m_acceptor = new tcp::acceptor(a_io_context, a_configuration->m_bind_endpoint);
+
+		// Save bound endpoint and write it to the config file
+		a_configuration->m_bound_endpoint = m_acceptor->local_endpoint();
+		a_configuration->export_to_file();
+
+		// Begin accepting connections
+		async_accept_next();
+
+	}
+
 }
 
 void server::async_accept_next(
 
 )
 {
-	m_server_configuration->m_acceptor.async_accept(
+	m_acceptor->async_accept(
 		[&](asio::error_code a_ec, tcp::socket a_socket)
 		{
 			// Store the new socket in the list of connections
@@ -78,11 +92,4 @@ void server::async_accept_next(
 				async_accept_next();
 
 		});
-}
-
-const ptr<server_configuration>& server::configuration(
-
-) const
-{
-	return m_server_configuration;
 }

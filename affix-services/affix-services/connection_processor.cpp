@@ -303,9 +303,9 @@ void connection_processor::process_authenticated_connection(
 	std::vector<affix_base::data::ptr<authenticated_connection>>::iterator a_authenticated_connection
 )
 {
-	if (m_connection_processor_configuration->m_connection_enable_disconnect_after_maximum_idle_time &&
+	if (m_connection_processor_configuration->m_authenticated_connection_enable_disconnect_after_maximum_idle_time &&
 		(*a_authenticated_connection)->idletime() > 
-		m_connection_processor_configuration->m_connection_maximum_idle_time_in_seconds)
+		m_connection_processor_configuration->m_authenticated_connection_maximum_idle_time_in_seconds)
 	{
 		// Erase connection, since it has timed out.
 		(*a_authenticated_connection)->m_connection_information->m_socket->close();

@@ -11,7 +11,7 @@ namespace affix_services
 {
 	class server
 	{
-	protected:
+	public:
 		/// <summary>
 		/// The configuration for this server.
 		/// </summary>
@@ -22,6 +22,12 @@ namespace affix_services
 		/// and is cleared by an instance of the processer type.
 		/// </summary>
 		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>, affix_base::threading::cross_thread_mutex>& m_connection_results;
+
+		/// <summary>
+		/// If the server has a dedicated port, the endpoint for this acceptor should include that port.
+		/// If the server doesn't have a dedicated port, the endpoint should have port set to 0.
+		/// </summary>
+		affix_base::data::ptr<asio::ip::tcp::acceptor> m_acceptor;
 
 	public:
 		/// <summary>
@@ -37,8 +43,9 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_configuration"></param>
 		server(
-			const affix_base::data::ptr<server_configuration>& a_configuration,
-			affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>, affix_base::threading::cross_thread_mutex>& a_connection_results
+			asio::io_context& a_io_context,
+			affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>, affix_base::threading::cross_thread_mutex>& a_connection_results,
+			affix_base::data::ptr<server_configuration> a_configuration
 		);
 
 	protected:
@@ -50,15 +57,6 @@ namespace affix_services
 		void async_accept_next(
 
 		);
-
-	public:
-		/// <summary>
-		/// Get a const reference to the configuration of the server.
-		/// </summary>
-		/// <returns></returns>
-		const affix_base::data::ptr<server_configuration>& configuration(
-			
-		) const;
 
 	};
 }

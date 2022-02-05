@@ -11,11 +11,25 @@ namespace affix_services
 	{
 	public:
 		/// <summary>
-		/// If the server has a dedicated port, the endpoint for this acceptor should include that port.
-		/// If the server doesn't have a dedicated port, the endpoint should have port set to 0.
+		/// JSON file path where the exported configuration lives.
 		/// </summary>
-		asio::ip::tcp::acceptor m_acceptor;
-		
+		std::string m_server_configuration_file_path;
+
+		/// <summary>
+		/// Boolean describing whether or not the server should be enabled.
+		/// </summary>
+		bool m_enable = true;
+
+		/// <summary>
+		/// Endpoint to which the acceptor is bound.
+		/// </summary>
+		asio::ip::tcp::endpoint m_bind_endpoint;
+
+		/// <summary>
+		/// Endpoint to which the acceptor is bound.
+		/// </summary>
+		asio::ip::tcp::endpoint m_bound_endpoint;
+
 	public:
 		/// <summary>
 		/// Initializes all member variables, including the acceptor, with port defaulting to zero.
@@ -23,39 +37,22 @@ namespace affix_services
 		/// <param name="a_callback"></param>
 		/// <param name="a_port"></param>
 		server_configuration(
-			asio::io_context& a_io_context,
-			const uint16_t& a_port = 0
+			const std::string& a_server_configuration_file_path
 		);
 
-	public:
 		/// <summary>
-		/// Exports configuration, (including the current assigned port number) to a file,
-		/// so other applications wishing to connect on this local machine are able to.
+		/// Exports the current configuration to the JSON file.
 		/// </summary>
-		void export_connection_information(
-			const std::string& a_file_path
-		) const;
+		void export_to_file(
 
-		/// <summary>
-		/// Tries to import all information regarding how a server will be configured from a file.
-		/// </summary>
-		/// <param name="a_istream"></param>
-		/// <param name="a_result"></param>
-		/// <returns></returns>
-		static bool try_import(
-			asio::io_context& a_io_context,
-			const std::string& a_file_path,
-			affix_base::data::ptr<server_configuration> a_result
 		);
 
-	public:
 		/// <summary>
-		/// Get a const reference to the acceptor.
+		/// Imports the configuration from the JSON file.
 		/// </summary>
-		/// <returns></returns>
-		const asio::ip::tcp::acceptor& acceptor(
+		void import_from_file(
 
-		) const;
+		);
 
 	};
 }
