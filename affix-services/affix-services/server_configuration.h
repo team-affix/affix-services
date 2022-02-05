@@ -13,7 +13,7 @@ namespace affix_services
 		/// <summary>
 		/// JSON file path where the exported configuration lives.
 		/// </summary>
-		std::string m_server_configuration_file_path;
+		std::string m_json_file_path;
 
 		/// <summary>
 		/// Boolean describing whether or not the server should be enabled.

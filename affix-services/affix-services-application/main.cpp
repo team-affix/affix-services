@@ -25,26 +25,17 @@ int main()
 	std::clog.rdbuf(l_nullstream.rdbuf());*/
 	// Create IO context object, which will be used for entire program's networking
 	
-	affix_base::cryptography::rsa_key_pair l_key_pair = affix_base::cryptography::rsa_generate_key_pair(2048);
-
 	asio::io_context l_io_context;
 
 	message_processor l_message_processor;
 
-	ptr<connection_processor_configuration> l_connection_processor_configuration(
-		new connection_processor_configuration(
-			true,
-			3,
-			true,
-			21600
-		)
-	);
+	ptr<connection_processor_configuration> l_connection_processor_configuration(new connection_processor_configuration("connection_processor_configuration.json"));
+	l_connection_processor_configuration->import_from_file();
 
 	connection_processor l_processor(
-		l_connection_processor_configuration,
 		l_io_context,
 		l_message_processor,
-		l_key_pair
+		l_connection_processor_configuration
 	);
 
 	affix_base::data::ptr<server_configuration> l_server_configuration(new server_configuration("server_configuration.json"));

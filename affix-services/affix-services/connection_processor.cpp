@@ -32,15 +32,13 @@ using affix_services::connection_information;
 using namespace affix_base::threading;
 
 connection_processor::connection_processor(
-	affix_base::data::ptr<connection_processor_configuration> a_connection_processor_configuration,
 	asio::io_context& a_io_context,
 	message_processor& a_message_processor,
-	const rsa_key_pair& a_local_key_pair
+	affix_base::data::ptr<connection_processor_configuration> a_connection_processor_configuration
 ) :
 	m_connection_processor_configuration(a_connection_processor_configuration),
 	m_io_context(a_io_context),
-	m_message_processor(a_message_processor),
-	m_local_key_pair(a_local_key_pair)
+	m_message_processor(a_message_processor)
 {
 
 }
@@ -156,7 +154,7 @@ void connection_processor::process_connection_result(
 			new pending_authentication(
 				(*a_connection_result)->m_connection_information,
 				l_remote_seed,
-				m_local_key_pair,
+				m_connection_processor_configuration->m_local_key_pair,
 				m_authentication_attempt_results
 			)
 		);
@@ -303,7 +301,7 @@ void connection_processor::process_authenticated_connection(
 	std::vector<affix_base::data::ptr<authenticated_connection>>::iterator a_authenticated_connection
 )
 {
-	if (m_connection_processor_configuration->m_authenticated_connection_enable_disconnect_after_maximum_idle_time &&
+	if (m_connection_processor_configuration->m_enable_authenticated_connection_disconnect_after_maximum_idle_time &&
 		(*a_authenticated_connection)->idletime() > 
 		m_connection_processor_configuration->m_authenticated_connection_maximum_idle_time_in_seconds)
 	{

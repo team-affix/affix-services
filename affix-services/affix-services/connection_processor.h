@@ -65,11 +65,6 @@ namespace affix_services
 		/// Processor responsible for handling inbound messages.
 		/// </summary>
 		message_processor& m_message_processor;
-		
-		/// <summary>
-		/// The local RSA key pair, used for all message security
-		/// </summary>
-		affix_base::cryptography::rsa_key_pair m_local_key_pair;
 
 	public:
 		/// <summary>
@@ -77,10 +72,9 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_local_key_pair"></param>
 		connection_processor(
-			affix_base::data::ptr<connection_processor_configuration> a_connection_processor_configuration,
 			asio::io_context& a_io_context,
 			message_processor& a_message_processor,
-			const affix_base::cryptography::rsa_key_pair& a_local_key_pair
+			affix_base::data::ptr<connection_processor_configuration> a_connection_processor_configuration
 		);
 
 	public:
