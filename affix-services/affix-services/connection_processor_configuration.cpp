@@ -23,9 +23,9 @@ connection_processor_configuration::connection_processor_configuration(
 
 }
 
-connection_processor_configuration connection_processor_configuration::import_from_file(
+bool connection_processor_configuration::import_from_file(
 	const std::string& a_file_path
 )
 {
-	return connection_processor_configuration{};
+	return false;
 }

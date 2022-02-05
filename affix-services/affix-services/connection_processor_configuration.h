@@ -23,7 +23,7 @@ namespace affix_services
 
 		/// <summary>
 		/// Maximum time after which connections should be closed if they been idling.
-		/// (if m_connection_enable_disconnect_after_maximum_idle_time is false, this will not take effect)
+		/// (if m_authenticated_connection_enable_disconnect_after_maximum_idle_time is false, this will not take effect)
 		/// </summary>
 		uint64_t m_authenticated_connection_maximum_idle_time_in_seconds;
 
@@ -52,7 +52,7 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_file_path"></param>
 		/// <returns></returns>
-		static connection_processor_configuration import_from_file(
+		static bool import_from_file(
 			const std::string& a_file_path
 		);
 
