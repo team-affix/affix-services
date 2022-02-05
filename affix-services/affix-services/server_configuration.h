@@ -4,6 +4,7 @@
 #include "authenticated_connection.h"
 #include "affix-base/persistent_thread.h"
 #include "asio.hpp"
+#include "json.hpp"
 
 namespace affix_services
 {
@@ -53,6 +54,37 @@ namespace affix_services
 		void import_from_file(
 
 		);
+
+	protected:
+		/// <summary>
+		/// Exports the m_enable field to JSON.
+		/// </summary>
+		/// <param name="a_json"></param>
+		/// <returns></returns>
+		bool export_enable(
+			nlohmann::json& a_json
+		);
+
+		/// <summary>
+		/// Imports the m_enable field from JSON.
+		/// </summary>
+		/// <param name="a_json"></param>
+		/// <returns></returns>
+		bool import_enable(
+			nlohmann::json& a_json
+		);
+
+		/// <summary>
+		/// Initializes the m_enable field in the JSON structure.
+		/// </summary>
+		/// <param name="a_json"></param>
+		void init_enable(
+			nlohmann::json& a_json
+		);
+
+		bool export_bind_endpoint(
+
+		)
 
 	};
 }

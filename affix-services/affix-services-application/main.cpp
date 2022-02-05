@@ -7,6 +7,7 @@
 #include "affix-services/pending_connection.h"
 #include "affix-base/timing.h"
 #include "json.hpp"
+#include <filesystem>
 
 using affix_base::data::ptr;
 using affix_services::server_configuration;
@@ -26,10 +27,9 @@ int main()
 	// Create IO context object, which will be used for entire program's networking
 	
 	asio::io_context l_io_context;
-
 	message_processor l_message_processor;
 
-	ptr<connection_processor_configuration> l_connection_processor_configuration(new connection_processor_configuration("connection_processor_configuration.json"));
+	ptr<connection_processor_configuration> l_connection_processor_configuration(new connection_processor_configuration("configuration/connection_processor_configuration.json"));
 	l_connection_processor_configuration->import_from_file();
 
 	connection_processor l_processor(
@@ -38,7 +38,7 @@ int main()
 		l_connection_processor_configuration
 	);
 
-	affix_base::data::ptr<server_configuration> l_server_configuration(new server_configuration("server_configuration.json"));
+	affix_base::data::ptr<server_configuration> l_server_configuration(new server_configuration("configuration/server_configuration.json"));
 	l_server_configuration->import_from_file();
 
 	server l_server(

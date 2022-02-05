@@ -59,7 +59,7 @@ namespace affix_services
 		/// Exports the configuration to a JSON file.
 		/// </summary>
 		/// <param name="a_file_path"></param>
-		void export_to_file(
+		bool export_to_file(
 
 		);
 
@@ -68,7 +68,7 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_file_path"></param>
 		/// <returns></returns>
-		void import_from_file(
+		bool import_from_file(
 
 		);
 
