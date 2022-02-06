@@ -4,102 +4,152 @@
 #include <iostream>
 
 using namespace affix_services;
-
-connection_processor_configuration::connection_processor_configuration(
-
-)
-{
-
-}
+using affix_base::data::cache;
+using affix_base::cryptography::rsa_key_pair;
 
 connection_processor_configuration::connection_processor_configuration(
 	const std::string& a_json_file_path
 ) :
-	m_json_file_path(a_json_file_path)
-{
-
-}
-
-bool connection_processor_configuration::export_to_file(
-
-)
-{
-	// Write fields to JSON structure
-	nlohmann::json l_json;
-	l_json["enable_pending_authentication_timeout"] = m_enable_pending_authentication_timeout;
-	l_json["pending_authentication_maximum_idle_time_in_seconds"] = m_pending_authentication_maximum_idle_time_in_seconds;
-	l_json["enable_authenticated_connection_disconnect_after_maximum_idle_time"] = m_enable_authenticated_connection_disconnect_after_maximum_idle_time;
-	l_json["authenticated_connection_maximum_idle_time_in_seconds"] = m_authenticated_connection_maximum_idle_time_in_seconds;
-	l_json["local_private_key"] = affix_base::cryptography::rsa_to_base64_string(m_local_key_pair.private_key);
-	l_json["local_public_key"] = affix_base::cryptography::rsa_to_base64_string(m_local_key_pair.public_key);
-
-	try
-	{
-		// Write JSON to file
-		std::ofstream l_ofstream(m_json_file_path, std::ios::out | std::ios::trunc);
-		l_ofstream << l_json.dump(1, '\t');
-		l_ofstream.close();
-		return true;
-	}
-	catch (std::exception a_exception)
-	{
-		std::cerr << a_exception.what() << std::endl;
-		return false;
-	}
-
-}
-
-bool connection_processor_configuration::import_from_file(
-
-)
-{
-	// Read JSON from file
-	std::ifstream l_ifstream(m_json_file_path, std::ios::in);
-
-	if (!l_ifstream.is_open())
-	{
-		// Generate RSA key pair
-		m_local_key_pair = affix_base::cryptography::rsa_generate_key_pair(4096);
-
-		// Export the configuration to a JSON file.
-		return export_to_file();
-
-	}
-	else
-	{
-		try
+	m_json_file_path(a_json_file_path),
+	cache<nlohmann::json>(
+		[&](nlohmann::json& a_local)
 		{
-			nlohmann::json l_json;
-			l_ifstream >> l_json;
+			// Pull method
+			std::ifstream l_ifstream(m_json_file_path);
+			l_ifstream >> a_local;
 			l_ifstream.close();
-
-			// Read fields from JSON structure
-			m_enable_pending_authentication_timeout = l_json["enable_pending_authentication_timeout"].get<bool>();
-			m_pending_authentication_maximum_idle_time_in_seconds = l_json["pending_authentication_maximum_idle_time_in_seconds"].get<uint64_t>();
-			m_enable_authenticated_connection_disconnect_after_maximum_idle_time = l_json["enable_authenticated_connection_disconnect_after_maximum_idle_time"].get<bool>();
-			m_authenticated_connection_maximum_idle_time_in_seconds = l_json["authenticated_connection_maximum_idle_time_in_seconds"].get<uint64_t>();
-
-			// Try to import RSA key pair
-			if (!affix_base::cryptography::rsa_from_base64_string(m_local_key_pair.private_key, l_json["local_private_key"].get<std::string>()))
-			{
-				std::cerr << "[ CONNECTION PROCESSOR CONFIGURATION ] Error reading RSA Private Key from JSON file." << std::endl;
-				return false;
-			}
-			if (!affix_base::cryptography::rsa_from_base64_string(m_local_key_pair.public_key, l_json["local_public_key"].get<std::string>()))
-			{
-				std::cerr << "[ CONNECTION PROCESSOR CONFIGURATION ] Error reading RSA Public Key from JSON file." << std::endl;
-				return false;
-			}
-
-			return true;
-
-		}
-		catch (std::exception a_exception)
+		},
+		[&](nlohmann::json& a_local)
 		{
+			// Push method
+			std::ofstream l_ofstream(m_json_file_path);
+			l_ofstream << a_local;
+			l_ofstream.close();
+		},
+		[&](nlohmann::json& a_local)
+		{
+			// Validate method
+		},
+		nlohmann::json(),
+		[&](nlohmann::json& a_local, std::exception a_exception)
+		{
+			// Pull error callback
 			std::cerr << a_exception.what() << std::endl;
-			return false;
-		}
+		},
+		[&](nlohmann::json& a_local, std::exception a_exception)
+		{
+			// Push error callback
+			std::cerr << a_exception.what() << std::endl;
+		})
+{
+	m_enable_pending_authentication_timeout = new cache<bool>(
+		[&](auto& a_local)
+		{
+			// Pull
+			a_local = m_local["enable_pending_authentication_timeout"].get<bool>();
+		},
+		[&](auto& a_local)
+		{
+			// Push
+			m_local["enable_pending_authentication_timeout"] = a_local;
+		},
+		[&](auto& a_local)
+		{
+			// Validate
+		},
+		true,
+		[&](auto& a_local, std::exception a_exception)
+		{
+			// Import error
+			m_local["enable_pending_authentication_timeout"] = m_enable_pending_authentication_timeout;
+		});
 
-	}
+	m_pending_authentication_timeout_in_seconds = new cache<uint64_t>(
+		[&](auto& a_local)
+		{
+			// Pull
+			a_local = m_local["pending_authentication_timeout"].get<uint64_t>();
+		},
+		[&](auto& a_local)
+		{
+			// Push
+			m_local["pending_authentication_timeout"] = a_local;
+		},
+		[&](auto& a_local)
+		{
+			// Validate
+		},
+		10,
+		[&](auto& a_local, std::exception a_exception)
+		{
+			// Import error
+			m_local["pending_authentication_timeout"] = a_local;
+		});
+
+	m_enable_authenticated_connection_timeout = new cache<bool>(
+		[&](auto& a_local)
+		{
+			// Pull
+			a_local = m_local["enable_authenticated_connection_timeout"].get<bool>();
+		},
+		[&](auto& a_local)
+		{
+			// Push
+			m_local["enable_authenticated_connection_timeout"] = a_local;
+		},
+		[&](auto& a_local)
+		{
+			// Validate
+		},
+		true,
+		[&](auto& a_local, std::exception a_exception)
+		{
+			// Import error
+			m_local["enable_authenticated_connection_timeout"] = a_local;
+		});
+
+	m_authenticated_connection_timeout_in_seconds = new cache<uint64_t>(
+		[&](auto& a_local)
+		{
+			// Pull
+			a_local = m_local["authenticated_connection_timeout_in_seconds"].get<uint64_t>();
+		},
+		[&](auto& a_local)
+		{
+			// Push
+			m_local["authenticated_connection_timeout_in_seconds"] = a_local;
+		},
+		[&](auto& a_local)
+		{
+			// Validate
+		},
+		21600,
+		[&](auto& a_local, std::exception a_exception)
+		{
+			// Import error
+			m_local["authenticated_connection_timeout_in_seconds"] = a_local;
+		});
+
+	m_local_key_pair = new cache<rsa_key_pair>(
+		[&](auto& a_local)
+		{
+			// Pull
+			a_local = m_local["local_private_key"].get<std::string>();
+		},
+		[&](auto& a_local)
+		{
+			// Push
+			m_local["authenticated_connection_timeout_in_seconds"] = a_local;
+		},
+		[&](auto& a_local)
+		{
+			// Validate
+		},
+		rsa_key_pair(),
+		[&](auto& a_local, std::exception a_exception)
+		{
+			// Import error
+			m_local["authenticated_connection_timeout_in_seconds"] = a_local;
+		});
 
 }

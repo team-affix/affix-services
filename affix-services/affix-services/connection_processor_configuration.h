@@ -1,10 +1,13 @@
 #pragma once
 #include "affix-base/pch.h"
 #include "affix-base/rsa.h"
+#include "affix-base/cache.h"
+#include "affix-base/ptr.h"
+#include "json.hpp"
 
 namespace affix_services
 {
-	struct connection_processor_configuration
+	struct connection_processor_configuration : affix_base::data::cache<nlohmann::json>
 	{
 	public:
 		/// <summary>
@@ -15,37 +18,30 @@ namespace affix_services
 		/// <summary>
 		/// Boolean describing whether or not timing out is enabled for pending authentication attempts.
 		/// </summary>
-		bool m_enable_pending_authentication_timeout = true;
+		affix_base::data::ptr<affix_base::data::cache<bool>> m_enable_pending_authentication_timeout;
 
 		/// <summary>
 		/// Maximum time after which pending authentication attempts will be discarded.
 		/// </summary>
-		uint64_t m_pending_authentication_maximum_idle_time_in_seconds = 10;
+		affix_base::data::ptr<affix_base::data::cache<uint64_t>> m_pending_authentication_timeout_in_seconds;
 
 		/// <summary>
 		/// Boolean describing whether or not to close sockets after the connections have gone stale.
 		/// </summary>
-		bool m_enable_authenticated_connection_disconnect_after_maximum_idle_time = true;
+		affix_base::data::ptr<affix_base::data::cache<bool>> m_enable_authenticated_connection_timeout;
 
 		/// <summary>
 		/// Maximum time after which connections should be closed if they been idling.
 		/// (if m_authenticated_connection_enable_disconnect_after_maximum_idle_time is false, this will not take effect)
 		/// </summary>
-		uint64_t m_authenticated_connection_maximum_idle_time_in_seconds = 21600;
+		affix_base::data::ptr<affix_base::data::cache<uint64_t>> m_authenticated_connection_timeout_in_seconds;
 
 		/// <summary>
 		/// The local RSA key pair, used for all message security
 		/// </summary>
-		affix_base::cryptography::rsa_key_pair m_local_key_pair;
+		affix_base::data::ptr<affix_base::data::cache<affix_base::cryptography::rsa_key_pair>> m_local_key_pair;
 
 	public:
-		/// <summary>
-		/// Default constructor for the connection processor configuration.
-		/// </summary>
-		connection_processor_configuration(
-
-		);
-
 		/// <summary>
 		/// Constructor which takes an argument for each field it is to populate.
 		/// </summary>
@@ -53,23 +49,6 @@ namespace affix_services
 		/// <param name="a_connection_maximum_idle_time_in_seconds"></param>
 		connection_processor_configuration(
 			const std::string& a_json_file_path
-		);
-
-		/// <summary>
-		/// Exports the configuration to a JSON file.
-		/// </summary>
-		/// <param name="a_file_path"></param>
-		bool export_to_file(
-
-		);
-
-		/// <summary>
-		/// Imports the configuration from a JSON file.
-		/// </summary>
-		/// <param name="a_file_path"></param>
-		/// <returns></returns>
-		bool import_from_file(
-
 		);
 
 	};
