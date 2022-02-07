@@ -18,6 +18,7 @@ using affix_services::pending_connection;
 using affix_services::message_processor;
 using namespace affix_services;
 using namespace asio::ip;
+namespace fs = std::filesystem;
 
 int main()
 {
@@ -25,12 +26,18 @@ int main()
 	/*std::ofstream l_nullstream;
 	std::clog.rdbuf(l_nullstream.rdbuf());*/
 	// Create IO context object, which will be used for entire program's networking
-	
+
 	asio::io_context l_io_context;
 	message_processor l_message_processor;
 
+	if (!fs::exists("config/"))
+	{
+		// If config directory doesn't exist, create it.
+		fs::create_directory("config/");
+	}
+
 	// Get configuration for the connection processor
-	ptr<connection_processor_configuration> l_connection_processor_configuration(new connection_processor_configuration("connection_processor_configuration.json"));
+	ptr<connection_processor_configuration> l_connection_processor_configuration(new connection_processor_configuration("config/connection_processor_configuration.json"));
 	l_connection_processor_configuration->import_resource();
 	l_connection_processor_configuration->export_resource();
 	
@@ -41,7 +48,7 @@ int main()
 	);
 
 	// Get configuration for the server
-	affix_base::data::ptr<server_configuration> l_server_configuration(new server_configuration("server_configuration.json"));
+	affix_base::data::ptr<server_configuration> l_server_configuration(new server_configuration("config/server_configuration.json"));
 	l_server_configuration->import_resource();
 
 	server l_server(
