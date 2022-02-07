@@ -36,7 +36,6 @@ server::server(
 
 		// Save bound endpoint and write it to the config file
 		a_configuration->m_bound_port.resource() = m_acceptor->local_endpoint().port();
-		a_configuration->export_resource();
 
 		// Begin accepting connections
 		async_accept_next();

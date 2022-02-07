@@ -43,13 +43,15 @@ int main()
 	// Get configuration for the server
 	affix_base::data::ptr<server_configuration> l_server_configuration(new server_configuration("server_configuration.json"));
 	l_server_configuration->import_resource();
-	l_server_configuration->export_resource();
 
 	server l_server(
 		l_io_context,
 		l_processor.m_connection_results,
 		l_server_configuration
 	);
+
+	// Export the server configuration, which now contains the bound port
+	l_server_configuration->export_resource();
 
 	asio::ip::address l_local_ip_address;
 
