@@ -18,28 +18,28 @@ namespace affix_services
 		/// <summary>
 		/// Boolean describing whether or not timing out is enabled for pending authentication attempts.
 		/// </summary>
-		affix_base::data::ptr<affix_base::data::cache<bool>> m_enable_pending_authentication_timeout;
+		affix_base::data::cache<bool> m_enable_pending_authentication_timeout;
 
 		/// <summary>
 		/// Maximum time after which pending authentication attempts will be discarded.
 		/// </summary>
-		affix_base::data::ptr<affix_base::data::cache<uint64_t>> m_pending_authentication_timeout_in_seconds;
+		affix_base::data::cache<uint64_t> m_pending_authentication_timeout_in_seconds;
 
 		/// <summary>
 		/// Boolean describing whether or not to close sockets after the connections have gone stale.
 		/// </summary>
-		affix_base::data::ptr<affix_base::data::cache<bool>> m_enable_authenticated_connection_timeout;
+		affix_base::data::cache<bool> m_enable_authenticated_connection_timeout;
 
 		/// <summary>
 		/// Maximum time after which connections should be closed if they been idling.
 		/// (if m_authenticated_connection_enable_disconnect_after_maximum_idle_time is false, this will not take effect)
 		/// </summary>
-		affix_base::data::ptr<affix_base::data::cache<uint64_t>> m_authenticated_connection_timeout_in_seconds;
+		affix_base::data::cache<uint64_t> m_authenticated_connection_timeout_in_seconds;
 
 		/// <summary>
 		/// The local RSA key pair, used for all message security
 		/// </summary>
-		affix_base::data::ptr<affix_base::data::cache<affix_base::cryptography::rsa_key_pair>> m_local_key_pair;
+		affix_base::data::cache<affix_base::cryptography::rsa_key_pair> m_local_key_pair;
 
 	public:
 		/// <summary>

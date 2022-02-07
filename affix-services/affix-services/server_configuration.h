@@ -5,10 +5,11 @@
 #include "affix-base/persistent_thread.h"
 #include "asio.hpp"
 #include "json.hpp"
+#include "affix-base/cache.h"
 
 namespace affix_services
 {
-	struct server_configuration
+	struct server_configuration : public affix_base::data::cache<nlohmann::json>
 	{
 	public:
 		/// <summary>
@@ -19,17 +20,17 @@ namespace affix_services
 		/// <summary>
 		/// Boolean describing whether or not the server should be enabled.
 		/// </summary>
-		bool m_enable = true;
+		affix_base::data::cache<bool> m_enable;
 
 		/// <summary>
 		/// Endpoint to which the acceptor is bound.
 		/// </summary>
-		asio::ip::tcp::endpoint m_bind_endpoint;
+		affix_base::data::cache<uint16_t> m_bind_port;
 
 		/// <summary>
 		/// Endpoint to which the acceptor is bound.
 		/// </summary>
-		asio::ip::tcp::endpoint m_bound_endpoint;
+		affix_base::data::cache<uint16_t> m_bound_port;
 
 	public:
 		/// <summary>
@@ -40,51 +41,6 @@ namespace affix_services
 		server_configuration(
 			const std::string& a_server_configuration_file_path
 		);
-
-		/// <summary>
-		/// Exports the current configuration to the JSON file.
-		/// </summary>
-		void export_to_file(
-
-		);
-
-		/// <summary>
-		/// Imports the configuration from the JSON file.
-		/// </summary>
-		void import_from_file(
-
-		);
-
-	protected:
-		/// <summary>
-		/// Exports the m_enable field to JSON.
-		/// </summary>
-		/// <param name="a_json"></param>
-		/// <returns></returns>
-		bool export_enable(
-			nlohmann::json& a_json
-		);
-
-		/// <summary>
-		/// Imports the m_enable field from JSON.
-		/// </summary>
-		/// <param name="a_json"></param>
-		/// <returns></returns>
-		bool import_enable(
-			nlohmann::json& a_json
-		);
-
-		/// <summary>
-		/// Initializes the m_enable field in the JSON structure.
-		/// </summary>
-		/// <param name="a_json"></param>
-		void init_enable(
-			nlohmann::json& a_json
-		);
-
-		bool export_bind_endpoint(
-
-		)
 
 	};
 }

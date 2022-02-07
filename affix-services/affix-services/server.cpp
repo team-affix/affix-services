@@ -29,14 +29,14 @@ server::server(
 	m_connection_results(a_connection_results),
 	m_server_configuration(a_configuration)
 {
-	if (a_configuration->m_enable)
+	if (a_configuration->m_enable.resource())
 	{
 		// Create acceptor object using the specified endpoint
-		m_acceptor = new tcp::acceptor(a_io_context, a_configuration->m_bind_endpoint);
+		m_acceptor = new tcp::acceptor(a_io_context, tcp::endpoint(tcp::v4(), a_configuration->m_bind_port.resource()));
 
 		// Save bound endpoint and write it to the config file
-		a_configuration->m_bound_endpoint = m_acceptor->local_endpoint();
-		a_configuration->export_to_file();
+		a_configuration->m_bound_port.resource() = m_acceptor->local_endpoint().port();
+		a_configuration->export_resource();
 
 		// Begin accepting connections
 		async_accept_next();

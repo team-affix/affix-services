@@ -154,7 +154,7 @@ void connection_processor::process_connection_result(
 			new pending_authentication(
 				(*a_connection_result)->m_connection_information,
 				l_remote_seed,
-				m_connection_processor_configuration->m_local_key_pair,
+				m_connection_processor_configuration->m_local_key_pair.resource(),
 				m_authentication_attempt_results
 			)
 		);
@@ -301,9 +301,9 @@ void connection_processor::process_authenticated_connection(
 	std::vector<affix_base::data::ptr<authenticated_connection>>::iterator a_authenticated_connection
 )
 {
-	if (m_connection_processor_configuration->m_enable_authenticated_connection_disconnect_after_maximum_idle_time &&
+	if (m_connection_processor_configuration->m_enable_authenticated_connection_timeout.resource() &&
 		(*a_authenticated_connection)->idletime() > 
-		m_connection_processor_configuration->m_authenticated_connection_maximum_idle_time_in_seconds)
+		m_connection_processor_configuration->m_authenticated_connection_timeout_in_seconds.resource())
 	{
 		// Erase connection, since it has timed out.
 		(*a_authenticated_connection)->m_connection_information->m_socket->close();

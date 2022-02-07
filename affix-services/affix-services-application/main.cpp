@@ -29,17 +29,21 @@ int main()
 	asio::io_context l_io_context;
 	message_processor l_message_processor;
 
-	ptr<connection_processor_configuration> l_connection_processor_configuration(new connection_processor_configuration("configuration/connection_processor_configuration.json"));
-	l_connection_processor_configuration->import_from_file();
-
+	// Get configuration for the connection processor
+	ptr<connection_processor_configuration> l_connection_processor_configuration(new connection_processor_configuration("connection_processor_configuration.json"));
+	l_connection_processor_configuration->import_resource();
+	l_connection_processor_configuration->export_resource();
+	
 	connection_processor l_processor(
 		l_io_context,
 		l_message_processor,
 		l_connection_processor_configuration
 	);
 
-	affix_base::data::ptr<server_configuration> l_server_configuration(new server_configuration("configuration/server_configuration.json"));
-	l_server_configuration->import_from_file();
+	// Get configuration for the server
+	affix_base::data::ptr<server_configuration> l_server_configuration(new server_configuration("server_configuration.json"));
+	l_server_configuration->import_resource();
+	l_server_configuration->export_resource();
 
 	server l_server(
 		l_io_context,
@@ -57,7 +61,7 @@ int main()
 
 	tcp::endpoint l_server_local_endpoint(
 		l_local_ip_address,
-		l_server.m_acceptor->local_endpoint().port()
+		l_server_configuration->m_bound_port.resource()
 	);
 
 	bool l_context_thread_continue = true;
@@ -72,7 +76,9 @@ int main()
 			}
 		});
 		
-	l_processor.start_pending_outbound_connection(l_server_local_endpoint);
+	if (l_server_configuration->m_enable.resource())
+		// If the server is enabled, connect to it
+		l_processor.start_pending_outbound_connection(l_server_local_endpoint);
 
 	for(int i = 0; true; i++)
 	{
