@@ -9,8 +9,6 @@ using affix_base::threading::cross_thread_mutex;
 using affix_base::data::ptr;
 using namespace affix_base::threading;
 
-uint64_t pending_authentication::s_expire_time(3);
-
 pending_authentication::~pending_authentication(
 
 )
@@ -22,11 +20,15 @@ pending_authentication::pending_authentication(
 	affix_base::data::ptr<connection_information> a_connection_information,
 	const std::vector<uint8_t>& a_remote_seed,
 	const affix_base::cryptography::rsa_key_pair& a_local_key_pair,
-	affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_result>>, affix_base::threading::cross_thread_mutex>& a_authentication_attempt_results
+	affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_result>>, affix_base::threading::cross_thread_mutex>& a_authentication_attempt_results,
+	const bool& a_enable_timeout,
+	const uint64_t& a_timeout_in_seconds
 ) :
 	m_connection_information(a_connection_information),
 	m_start_time(affix_base::timing::utc_time()),
-	m_socket_io_guard(*a_connection_information->m_socket)
+	m_socket_io_guard(*a_connection_information->m_socket),
+	m_enable_timeout(a_enable_timeout),
+	m_timeout_in_seconds(a_timeout_in_seconds)
 {
 	// Instantiate async_authenticate instance, which will begin the authentication procedure.
 	m_async_authenticate = new async_authenticate(
@@ -108,7 +110,7 @@ bool pending_authentication::expired(
 
 ) const
 {
-	return lifetime() >= s_expire_time;
+	return m_enable_timeout && lifetime() >= m_timeout_in_seconds;
 }
 
 uint64_t pending_authentication::lifetime(

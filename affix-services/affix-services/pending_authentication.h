@@ -10,9 +10,14 @@ namespace affix_services
 	{
 	protected:
 		/// <summary>
+		/// Boolean describing the enabled status of a timeout procedure.
+		/// </summary>
+		bool m_enable_timeout;
+
+		/// <summary>
 		/// Defines the inclusive minimum lifetime (in seconds) for the authentication attempt to be considered expired.
 		/// </summary>
-		static uint64_t s_expire_time;
+		uint64_t m_timeout_in_seconds;
 
 		/// <summary>
 		/// Holds the UTC time for when this authentication request was created.
@@ -56,7 +61,9 @@ namespace affix_services
 			affix_base::data::ptr<connection_information> a_connection_information,
 			const std::vector<uint8_t>& a_remote_seed,
 			const affix_base::cryptography::rsa_key_pair& a_local_key_pair,
-			affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_result>>, affix_base::threading::cross_thread_mutex>& a_authentication_attempt_results
+			affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_result>>, affix_base::threading::cross_thread_mutex>& a_authentication_attempt_results,
+			const bool& a_enable_timeout,
+			const uint64_t& a_timeout_in_seconds
 		);
 
 	public:

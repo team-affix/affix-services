@@ -155,7 +155,9 @@ void connection_processor::process_connection_result(
 				(*a_connection_result)->m_connection_information,
 				l_remote_seed,
 				m_connection_processor_configuration->m_local_key_pair.resource(),
-				m_authentication_attempt_results
+				m_authentication_attempt_results,
+				m_connection_processor_configuration->m_enable_pending_authentication_timeout.resource(),
+				m_connection_processor_configuration->m_pending_authentication_timeout_in_seconds.resource()
 			)
 		);
 
@@ -277,8 +279,22 @@ void connection_processor::process_authentication_attempt_result(
 		LOG("[ PROCESSOR ] Error: authentication attempt failed: ");
 		LOG("Remote IPv4: " << (*a_authentication_attempt_result)->m_connection_information->m_socket->remote_endpoint().address().to_string() << ":" << (*a_authentication_attempt_result)->m_connection_information->m_socket->remote_endpoint().port());
 		
+		// Close the socket. Authentication was bad.
+		(*a_authentication_attempt_result)->m_connection_information->m_socket->close();
+
+		if (!(*a_authentication_attempt_result)->m_connection_information->m_inbound)
+		{
+			// If the connection was outbound, reconnect to the remote peer
+			start_pending_outbound_connection(
+				(*a_authentication_attempt_result)->m_connection_information->m_remote_endpoint,
+				(*a_authentication_attempt_result)->m_connection_information->m_local_endpoint.port()
+			);
+		}
+
 		// Erase authentication attempt result object
 		a_authentication_attempt_results.erase(a_authentication_attempt_result);
+
+
 
 	}
 	

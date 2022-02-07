@@ -37,6 +37,7 @@ int main()
 	}
 
 	// Get configuration for the connection processor
+	std::clog << "[ APPLICATION ] Importing connection processor configuration..." << std::endl;
 	ptr<connection_processor_configuration> l_connection_processor_configuration(new connection_processor_configuration("config/connection_processor_configuration.json"));
 	l_connection_processor_configuration->import_resource();
 	l_connection_processor_configuration->export_resource();
@@ -48,6 +49,7 @@ int main()
 	);
 
 	// Get configuration for the server
+	std::clog << "[ APPLICATION ] Importing server configuration..." << std::endl;
 	affix_base::data::ptr<server_configuration> l_server_configuration(new server_configuration("config/server_configuration.json"));
 	l_server_configuration->import_resource();
 
@@ -86,8 +88,11 @@ int main()
 		});
 		
 	if (l_server_configuration->m_enable.resource())
+	{
 		// If the server is enabled, connect to it
 		l_processor.start_pending_outbound_connection(l_server_local_endpoint);
+		std::clog << "[ APPLICATION ] Connecting to server..." << std::endl;
+	}
 
 	for(int i = 0; true; i++)
 	{
