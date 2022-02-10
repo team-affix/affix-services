@@ -60,7 +60,12 @@ namespace affix_services
 		/// Receive results for all authenticated connections.
 		/// </summary>
 		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::connection_async_receive_result>>, affix_base::threading::cross_thread_mutex> m_connection_async_receive_results;
-		
+
+		/// <summary>
+		/// A vector of all pending miscellaneous functions that need to be called after a certain delay, hence the uint64_t in the tuple.
+		/// </summary>
+		affix_base::threading::guarded_resource<std::vector<std::tuple<uint64_t, std::function<void()>>>, affix_base::threading::cross_thread_mutex> m_pending_function_calls;
+
 		/// <summary>
 		/// Processor responsible for handling inbound messages.
 		/// </summary>
@@ -85,6 +90,16 @@ namespace affix_services
 		void start_pending_outbound_connection(
 			const asio::ip::tcp::endpoint& a_remote_endpoint,
 			const uint16_t& a_local_port = 0
+		);
+
+		/// <summary>
+		/// Restarts a single pending outbound connection to a remote peer.
+		/// </summary>
+		/// <param name="a_remote_endpoint"></param>
+		/// <param name="a_local_port"></param>
+		void restart_pending_outbound_connection(
+			const asio::ip::tcp::endpoint& a_remote_endpoint,
+			const uint16_t& a_local_port
 		);
 
 		/// <summary>
@@ -190,6 +205,22 @@ namespace affix_services
 		void process_async_receive_result(
 			std::vector<affix_base::data::ptr<affix_services::networking::connection_async_receive_result>>& a_async_receive_results,
 			std::vector<affix_base::data::ptr<affix_services::networking::connection_async_receive_result>>::iterator a_async_receive_result
+		);
+
+		/// <summary>
+		/// Processes all pending function call.
+		/// </summary>
+		void process_pending_function_calls(
+
+		);
+
+		/// <summary>
+		/// Processes a single function call.
+		/// </summary>
+		/// <param name="a_pending_function"></param>
+		void process_pending_function_call(
+			std::vector<std::tuple<uint64_t, std::function<void()>>>& a_pending_function_calls,
+			std::vector<std::tuple<uint64_t, std::function<void()>>>::iterator a_pending_function_call
 		);
 
 	};

@@ -54,19 +54,41 @@ void connection_processor::start_pending_outbound_connection(
 	// Instantiate local endpoint object.
 	tcp::endpoint l_local_endpoint(tcp::v4(), a_local_port);
 
-	ptr<pending_connection> l_pending_outbound_connection = new pending_connection(
-		new connection_information(
-			new tcp::socket(m_io_context, l_local_endpoint),
-			a_remote_endpoint,
-			l_local_endpoint,
-			false,
-			false
-		),
-		m_connection_results
-	);
+	// Create new pending connection and push it to the back of the vector.
+	l_locked_resource->push_back(
+		new pending_connection(
+			new connection_information(
+				new tcp::socket(m_io_context, l_local_endpoint),
+				a_remote_endpoint,
+				l_local_endpoint,
+				false,
+				false
+			),
+			m_connection_results
+		));
 
-	l_locked_resource->push_back(l_pending_outbound_connection);
+}
 
+void connection_processor::restart_pending_outbound_connection(
+	const asio::ip::tcp::endpoint& a_remote_endpoint,
+	const uint16_t& a_local_port
+)
+{
+	locked_resource l_pending_function_calls = m_pending_function_calls.lock();
+
+	// The inclusive minimum UTC time at which this pending function should trigger.
+	uint64_t l_time_to_reconnect = affix_base::timing::utc_time() + m_connection_processor_configuration->m_reconnect_delay_in_seconds.resource();
+
+	// Create delayed function call
+	l_pending_function_calls->push_back(
+		std::tuple(
+			l_time_to_reconnect,
+			[&, a_remote_endpoint, a_local_port]
+			{
+				// Start a normal pending connection.
+				start_pending_outbound_connection(a_remote_endpoint, a_local_port);
+			}
+		));
 }
 
 void connection_processor::process(
@@ -79,8 +101,8 @@ void connection_processor::process(
 	process_authentication_attempt_results();
 	process_authenticated_connections();
 	process_async_receive_results();
+	process_pending_function_calls();
 }
-
 
 void connection_processor::process_pending_outbound_connections(
 
@@ -168,7 +190,7 @@ void connection_processor::process_connection_result(
 	else if (!(*a_connection_result)->m_connection_information->m_inbound)
 	{
 		// Reconnect to the remote peer
-		start_pending_outbound_connection(
+		restart_pending_outbound_connection(
 			(*a_connection_result)->m_connection_information->m_remote_endpoint,
 			(*a_connection_result)->m_connection_information->m_local_endpoint.port()
 		);
@@ -285,7 +307,7 @@ void connection_processor::process_authentication_attempt_result(
 		if (!(*a_authentication_attempt_result)->m_connection_information->m_inbound)
 		{
 			// If the connection was outbound, reconnect to the remote peer
-			start_pending_outbound_connection(
+			restart_pending_outbound_connection(
 				(*a_authentication_attempt_result)->m_connection_information->m_remote_endpoint,
 				(*a_authentication_attempt_result)->m_connection_information->m_local_endpoint.port()
 			);
@@ -293,8 +315,6 @@ void connection_processor::process_authentication_attempt_result(
 
 		// Erase authentication attempt result object
 		a_authentication_attempt_results.erase(a_authentication_attempt_result);
-
-
 
 	}
 	
@@ -365,7 +385,7 @@ void connection_processor::process_async_receive_result(
 			{
 				LOG("[ PROCESSOR ] Reconnecting to remote peer.");
 				// Reconnect to the remote peer
-				start_pending_outbound_connection(
+				restart_pending_outbound_connection(
 					(*l_connection)->m_connection_information->m_remote_endpoint,
 					(*l_connection)->m_connection_information->m_local_endpoint.port()
 				);
@@ -388,5 +408,41 @@ void connection_processor::process_async_receive_result(
 	}
 
 	a_async_receive_results.erase(a_async_receive_result);
+
+}
+
+void connection_processor::process_pending_function_calls(
+
+)
+{
+	// Lock the vector preventing concurrent reads/writes to it
+	locked_resource l_pending_function_calls = m_pending_function_calls.lock();
+
+	// Process each individual pending function call request
+	for (int i = l_pending_function_calls->size() - 1; i >= 0; i--)
+		process_pending_function_call(l_pending_function_calls.resource(), l_pending_function_calls->begin() + i);
+
+}
+
+void connection_processor::process_pending_function_call(
+	std::vector<std::tuple<uint64_t, std::function<void()>>>& a_pending_function_calls,
+	std::vector<std::tuple<uint64_t, std::function<void()>>>::iterator a_pending_function_call
+)
+{
+	// Get the time when the pending function call was created
+	const uint64_t& l_call_time = std::get<0>(*a_pending_function_call);
+
+	if (affix_base::timing::utc_time() >= l_call_time)
+	{
+		// Extract the actual function from the function call request.
+		const std::function<void()>& l_function = std::get<1>(*a_pending_function_call);
+		
+		// Call the function associated with this pending function call request
+		l_function();
+
+		// Erase the pending function call from the vector
+		a_pending_function_calls.erase(a_pending_function_call);
+
+	}
 
 }

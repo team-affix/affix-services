@@ -139,6 +139,23 @@ connection_processor_configuration::connection_processor_configuration(
 			a_resource = rsa_generate_key_pair(4096);
 		});
 
+	// Configure reconnect_delay_in_seconds cache
+	m_reconnect_delay_in_seconds.set_pull(
+		[&](uint64_t& a_resource)
+		{
+			a_resource = m_resource["reconnect_delay_in_seconds"].get<uint64_t>();
+		});
+	m_reconnect_delay_in_seconds.set_push(
+		[&](uint64_t& a_resource)
+		{
+			m_resource["reconnect_delay_in_seconds"] = a_resource;
+		});
+	m_reconnect_delay_in_seconds.set_import_failed_callback(
+		[&](uint64_t& a_resource, std::exception)
+		{
+			a_resource = 1;
+		});
+
 	// Configure this cache
 	set_pull(
 		[&](nlohmann::json& a_resource)
@@ -153,6 +170,7 @@ connection_processor_configuration::connection_processor_configuration(
 			m_enable_authenticated_connection_timeout.import_resource();
 			m_authenticated_connection_timeout_in_seconds.import_resource();
 			m_local_key_pair.import_resource();
+			m_reconnect_delay_in_seconds.import_resource();
 
 		});
 	set_push(
@@ -164,6 +182,7 @@ connection_processor_configuration::connection_processor_configuration(
 			m_enable_authenticated_connection_timeout.export_resource();
 			m_authenticated_connection_timeout_in_seconds.export_resource();
 			m_local_key_pair.export_resource();
+			m_reconnect_delay_in_seconds.export_resource();
 
 			std::ofstream l_ofstream(m_json_file_path);
 			l_ofstream << a_resource.dump(1, '\t');
@@ -180,6 +199,7 @@ connection_processor_configuration::connection_processor_configuration(
 			m_enable_authenticated_connection_timeout.import_resource();
 			m_authenticated_connection_timeout_in_seconds.import_resource();
 			m_local_key_pair.import_resource();
+			m_reconnect_delay_in_seconds.import_resource();
 		});
 
 }

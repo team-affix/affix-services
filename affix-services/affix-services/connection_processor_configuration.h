@@ -41,6 +41,11 @@ namespace affix_services
 		/// </summary>
 		affix_base::data::cache<affix_base::cryptography::rsa_key_pair> m_local_key_pair;
 
+		/// <summary>
+		/// The delay in seconds for which the connection processor should wait before reconnecting to a remote peer.
+		/// </summary>
+		affix_base::data::cache<uint64_t> m_reconnect_delay_in_seconds;
+
 	public:
 		/// <summary>
 		/// Constructor which takes an argument for each field it is to populate.

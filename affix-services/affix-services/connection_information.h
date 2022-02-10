@@ -18,7 +18,7 @@ namespace affix_services
 		asio::ip::tcp::endpoint m_remote_endpoint;
 
 		/// <summary>
-		/// Endpoint the socket is bound to.
+		/// Endpoint to which the socket WILL bind.
 		/// </summary>
 		asio::ip::tcp::endpoint m_local_endpoint;
 
