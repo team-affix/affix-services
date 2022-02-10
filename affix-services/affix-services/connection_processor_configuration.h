@@ -26,15 +26,24 @@ namespace affix_services
 		affix_base::data::cache<uint64_t> m_pending_authentication_timeout_in_seconds;
 
 		/// <summary>
-		/// Boolean describing whether or not to close sockets after the connections have gone stale.
+		/// Boolean describing whether or not to close sockets after the connections have existed too long.
 		/// </summary>
-		affix_base::data::cache<bool> m_enable_authenticated_connection_timeout;
+		affix_base::data::cache<bool> m_enable_authenticated_connection_lifetime_timeout;
 
 		/// <summary>
-		/// Maximum time after which connections should be closed if they been idling.
-		/// (if m_authenticated_connection_enable_disconnect_after_maximum_idle_time is false, this will not take effect)
+		/// Maximum time after which connections should be closed regardless of whether or not they've been idling.
 		/// </summary>
-		affix_base::data::cache<uint64_t> m_authenticated_connection_timeout_in_seconds;
+		affix_base::data::cache<uint64_t> m_authenticated_connection_lifetime_timeout_in_seconds;
+
+		/// <summary>
+		/// Boolean describing whether or not to close sockets after the connections have idled for a maximum amount of time.
+		/// </summary>
+		affix_base::data::cache<bool> m_enable_authenticated_connection_idletime_timeout;
+
+		/// <summary>
+		/// Maximum amount of time that connections can idle for before they must be closed and reestablished.
+		/// </summary>
+		affix_base::data::cache<uint64_t> m_authenticated_connection_idletime_timeout_in_seconds;
 
 		/// <summary>
 		/// The local RSA key pair, used for all message security

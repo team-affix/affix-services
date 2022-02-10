@@ -80,6 +80,9 @@ server_configuration::server_configuration(
 	set_push(
 		[&](nlohmann::json& a_resource)
 		{
+			// Wipe JSON clean before exporting fields (this removes unnecessary fields)
+			a_resource.clear();
+
 			// Export individual fields
 			m_enable.export_resource();
 			m_bind_port.export_resource();

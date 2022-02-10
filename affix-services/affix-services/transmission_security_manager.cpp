@@ -33,8 +33,12 @@ bool transmission_security_manager::export_transmission(
 	}
 
 	// PUSH TOKEN AND SIGNATURE INTO BUFFER
-	if (!pack_token(l_byte_buffer, a_result)) return false;
-	if (!pack_signature(l_byte_buffer, a_result)) return false;
+	if (!pack_token(l_byte_buffer, a_result))
+		return false;
+	if (!pack_signature(l_byte_buffer, a_result))
+		return false;
+
+	// Increment the local token (necessary for next send request to be valid)
 	m_security_information->m_local_token++;
 
 	// ENCRYPT BUFFER

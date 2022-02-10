@@ -48,38 +48,72 @@ connection_processor_configuration::connection_processor_configuration(
 			a_resource = 5;
 		});
 
-	// Configure enable_authenticated_connection_timeout cache
-	m_enable_authenticated_connection_timeout.set_pull(
+	// Configure enable_authenticated_connection_lifetime_timeout cache
+	m_enable_authenticated_connection_lifetime_timeout.set_pull(
 		[&](bool& a_resource)
 		{
-			a_resource = m_resource["enable_authenticated_connection_timeout"].get<bool>();
+			a_resource = m_resource["enable_authenticated_connection_lifetime_timeout"].get<bool>();
 		});
-	m_enable_authenticated_connection_timeout.set_push(
+	m_enable_authenticated_connection_lifetime_timeout.set_push(
 		[&](bool& a_resource)
 		{
-			m_resource["enable_authenticated_connection_timeout"] = a_resource;
+			m_resource["enable_authenticated_connection_lifetime_timeout"] = a_resource;
 		});
-	m_enable_authenticated_connection_timeout.set_import_failed_callback(
+	m_enable_authenticated_connection_lifetime_timeout.set_import_failed_callback(
+		[&](bool& a_resource, std::exception)
+		{
+			a_resource = false;
+		});
+
+	// Configure authenticated_connection_lifetime_timeout_in_seconds cache
+	m_authenticated_connection_lifetime_timeout_in_seconds.set_pull(
+		[&](uint64_t& a_resource)
+		{
+			a_resource = m_resource["authenticated_connection_lifetime_timeout_in_seconds"].get<uint64_t>();
+		});
+	m_authenticated_connection_lifetime_timeout_in_seconds.set_push(
+		[&](uint64_t& a_resource)
+		{
+			m_resource["authenticated_connection_lifetime_timeout_in_seconds"] = a_resource;
+		});
+	m_authenticated_connection_lifetime_timeout_in_seconds.set_import_failed_callback(
+		[&](uint64_t& a_resource, std::exception)
+		{
+			a_resource = 21600;
+		});
+
+	// Configure enable_authenticated_connection_idletime_timeout cache
+	m_enable_authenticated_connection_idletime_timeout.set_pull(
+		[&](bool& a_resource)
+		{
+			a_resource = m_resource["enable_authenticated_connection_idletime_timeout"].get<bool>();
+		});
+	m_enable_authenticated_connection_idletime_timeout.set_push(
+		[&](bool& a_resource)
+		{
+			m_resource["enable_authenticated_connection_idletime_timeout"] = a_resource;
+		});
+	m_enable_authenticated_connection_idletime_timeout.set_import_failed_callback(
 		[&](bool& a_resource, std::exception)
 		{
 			a_resource = true;
 		});
 
-	// Configure authenticated_connection_timeout_in_seconds cache
-	m_authenticated_connection_timeout_in_seconds.set_pull(
+	// Configure authenticated_connection_idletime_timeout_in_seconds cache
+	m_authenticated_connection_idletime_timeout_in_seconds.set_pull(
 		[&](uint64_t& a_resource)
 		{
-			a_resource = m_resource["authenticated_connection_timeout_in_seconds"].get<uint64_t>();
+			a_resource = m_resource["authenticated_connection_idletime_timeout_in_seconds"].get<uint64_t>();
 		});
-	m_authenticated_connection_timeout_in_seconds.set_push(
+	m_authenticated_connection_idletime_timeout_in_seconds.set_push(
 		[&](uint64_t& a_resource)
 		{
-			m_resource["authenticated_connection_timeout_in_seconds"] = a_resource;
+			m_resource["authenticated_connection_idletime_timeout_in_seconds"] = a_resource;
 		});
-	m_authenticated_connection_timeout_in_seconds.set_import_failed_callback(
+	m_authenticated_connection_idletime_timeout_in_seconds.set_import_failed_callback(
 		[&](uint64_t& a_resource, std::exception)
 		{
-			a_resource = 21600;
+			a_resource = 10800;
 		});
 
 	// Configure local_key_pair cache
@@ -165,23 +199,39 @@ connection_processor_configuration::connection_processor_configuration(
 			l_ifstream.close();
 
 			// Import internal fields
+
 			m_enable_pending_authentication_timeout.import_resource();
 			m_pending_authentication_timeout_in_seconds.import_resource();
-			m_enable_authenticated_connection_timeout.import_resource();
-			m_authenticated_connection_timeout_in_seconds.import_resource();
+
+			m_enable_authenticated_connection_lifetime_timeout.import_resource();
+			m_authenticated_connection_lifetime_timeout_in_seconds.import_resource();
+
+			m_enable_authenticated_connection_idletime_timeout.import_resource();
+			m_authenticated_connection_idletime_timeout_in_seconds.import_resource();
+
 			m_local_key_pair.import_resource();
+
 			m_reconnect_delay_in_seconds.import_resource();
 
 		});
 	set_push(
 		[&](nlohmann::json& a_resource)
 		{
+			// Wipe JSON clean before exporting fields (this removes unnecessary fields)
+			a_resource.clear();
+
 			// Export internal fields
 			m_enable_pending_authentication_timeout.export_resource();
 			m_pending_authentication_timeout_in_seconds.export_resource();
-			m_enable_authenticated_connection_timeout.export_resource();
-			m_authenticated_connection_timeout_in_seconds.export_resource();
+
+			m_enable_authenticated_connection_lifetime_timeout.export_resource();
+			m_authenticated_connection_lifetime_timeout_in_seconds.export_resource();
+
+			m_enable_authenticated_connection_idletime_timeout.export_resource();
+			m_authenticated_connection_idletime_timeout_in_seconds.export_resource();
+
 			m_local_key_pair.export_resource();
+
 			m_reconnect_delay_in_seconds.export_resource();
 
 			std::ofstream l_ofstream(m_json_file_path);
@@ -194,12 +244,20 @@ connection_processor_configuration::connection_processor_configuration(
 		{
 			// "Import" internal fields (will initialize them all to defaults since
 			// pulling will fail)
+
 			m_enable_pending_authentication_timeout.import_resource();
 			m_pending_authentication_timeout_in_seconds.import_resource();
-			m_enable_authenticated_connection_timeout.import_resource();
-			m_authenticated_connection_timeout_in_seconds.import_resource();
+
+			m_enable_authenticated_connection_lifetime_timeout.import_resource();
+			m_authenticated_connection_lifetime_timeout_in_seconds.import_resource();
+
+			m_enable_authenticated_connection_idletime_timeout.import_resource();
+			m_authenticated_connection_idletime_timeout_in_seconds.import_resource();
+
 			m_local_key_pair.import_resource();
+
 			m_reconnect_delay_in_seconds.import_resource();
+
 		});
 
 }

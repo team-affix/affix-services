@@ -337,13 +337,24 @@ void connection_processor::process_authenticated_connection(
 	std::vector<affix_base::data::ptr<authenticated_connection>>::iterator a_authenticated_connection
 )
 {
-	if (m_connection_processor_configuration->m_enable_authenticated_connection_timeout.resource() &&
+	// Check if connection has timed out (FROM IDLING)
+	if (m_connection_processor_configuration->m_enable_authenticated_connection_idletime_timeout.resource() &&
 		(*a_authenticated_connection)->idletime() > 
-		m_connection_processor_configuration->m_authenticated_connection_timeout_in_seconds.resource())
+		m_connection_processor_configuration->m_authenticated_connection_idletime_timeout_in_seconds.resource())
 	{
 		// Erase connection, since it has timed out.
-		(*a_authenticated_connection)->m_connection_information->m_socket->close();
+		(*a_authenticated_connection)->close();
 	}
+
+	// Check if connection has timed out (PURELY FROM EXISTING)
+	if (m_connection_processor_configuration->m_enable_authenticated_connection_lifetime_timeout.resource() &&
+		(*a_authenticated_connection)->lifetime() >
+		m_connection_processor_configuration->m_authenticated_connection_lifetime_timeout_in_seconds.resource())
+	{
+		// Erase connection, since it has timed out.
+		(*a_authenticated_connection)->close();
+	}
+
 }
 
 void connection_processor::process_async_receive_results(

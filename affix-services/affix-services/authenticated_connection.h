@@ -81,16 +81,45 @@ namespace affix_services {
 			);
 
 		public:
+			/// <summary>
+			/// Sends data over the socket, where the data first goes through
+			/// the transmission_security_manager, then the
+			/// socket_io_guard to ensure that all transmissions remain secure.
+			/// </summary>
+			/// <param name="a_byte_buffer"></param>
+			/// <param name="a_callback"></param>
 			void async_send(
 				affix_base::data::byte_buffer& a_byte_buffer,
 				const std::function<void(bool)>& a_callback
 			);
+
+			/// <summary>
+			/// Receives data over the socket, where the received data goes through
+			/// both the socket_io_guard and the transmission_security_manager before having
+			/// the result of the async_receive be pushed back onto a vector.
+			/// </summary>
 			void async_receive(
 			
 			);
 
+			/// <summary>
+			/// Closes the connection.
+			/// </summary>
+			void close(
+
+			);
+
 		public:
+			/// <summary>
+			/// Returns the total lifetime of this connection.
+			/// </summary>
+			/// <returns></returns>
 			uint64_t lifetime() const;
+
+			/// <summary>
+			/// Returns the total idletime of this connection. (Time since last send call or receive callback).
+			/// </summary>
+			/// <returns></returns>
 			uint64_t idletime();
 
 		};

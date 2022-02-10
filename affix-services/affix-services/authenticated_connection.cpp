@@ -64,6 +64,10 @@ void authenticated_connection::async_send(
 	// TRY TO EXPORT MESSAGE DATA IN "TRANSMISSION" FORMAT
 	if (!m_transmission_security_manager.export_transmission(a_byte_buffer.data(), l_exported_transmission_data, l_transmission_result)) {
 		LOG_ERROR("[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result]);
+
+		// Close the connection.
+		close();
+
 		return;
 	}
 
@@ -89,9 +93,6 @@ void authenticated_connection::async_receive(
 		// Lock the mutex preventing concurrent reads/writes to the vector
 		locked_resource l_receive_results = m_receive_results.lock();
 
-		// Lock mutex for m_connected boolean
-		locked_resource l_connected = m_connected.lock();
-
 		// Dynamically allocate result
 		ptr<connection_async_receive_result> l_result(new connection_async_receive_result(this));
 
@@ -102,8 +103,8 @@ void authenticated_connection::async_receive(
 		{
 			LOG_ERROR("[ CONNECTION ] Error receiving data.");
 
-			// Record the fact that the connection is no longer valid.
-			(*l_connected) = false;
+			// Close the connection.
+			close();
 
 			return; 
 		}
@@ -116,6 +117,10 @@ void authenticated_connection::async_receive(
 		if (!m_transmission_security_manager.import_transmission(l_data.val(), l_message_data, l_transmission_result))
 		{
 			LOG_ERROR("[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result]);
+
+			// Close the connection.
+			close();
+
 			return;
 		}
 
@@ -125,6 +130,21 @@ void authenticated_connection::async_receive(
 		l_result->m_byte_buffer = l_message_data_buffer;
 
 	});
+
+}
+
+void authenticated_connection::close(
+
+)
+{
+	// Lock mutex for m_connected boolean
+	locked_resource l_connected = m_connected.lock();
+
+	// Make sure the socket closes.
+	m_connection_information->m_socket->close();
+
+	// Record the fact that the connection is no longer valid.
+	(*l_connected) = false;
 
 }
 

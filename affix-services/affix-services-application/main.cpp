@@ -16,6 +16,7 @@ using affix_services::connection_processor;
 using affix_services::connection_information;
 using affix_services::pending_connection;
 using affix_services::message_processor;
+using affix_services::message_rqt_relay;
 using namespace affix_services;
 using namespace asio::ip;
 namespace fs = std::filesystem;

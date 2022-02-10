@@ -1,39 +1,43 @@
 #pragma once
 #include "affix-base/pch.h"
-#include "affix-base/ptr.h"
+#include "affix-base/rsa.h"
 #include "affix-base/byte_buffer.h"
 
 namespace affix_services
 {
-	class message_rqt_turn_create
+	class message_rqt_relay
 	{
 	public:
 		enum class serialization_status_response_type : uint8_t
 		{
 			unknown = 0,
-			error_packing_turn_name
+			error_packing_path,
+			error_packing_payload
 		};
 		enum class deserialization_status_response_type : uint8_t
 		{
 			unknown = 0,
-			error_unpacking_turn_name
+			error_importing_identity,
+			error_unpacking_path,
+			error_unpacking_payload
 		};
 		enum class processing_status_response_type : uint8_t
 		{
 			unknown = 0,
-			error_turn_already_exists,
-			error_invalid_turn_name
+			error_identity_not_connected
 		};
 
 	public:
-		std::string m_turn_name;
+		std::vector<CryptoPP::RSA::PublicKey> m_path;
+		affix_base::data::ptr<std::vector<uint8_t>> m_payload;
 
 	public:
-		message_rqt_turn_create(
+		message_rqt_relay(
 
 		);
-		message_rqt_turn_create(
-			const std::string& a_turn_name
+		message_rqt_relay(
+			const std::vector<CryptoPP::RSA::PublicKey>& a_path,
+			const affix_base::data::ptr<std::vector<uint8_t>>& a_payload
 		);
 
 	public:
