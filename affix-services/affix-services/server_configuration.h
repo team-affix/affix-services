@@ -9,7 +9,7 @@
 
 namespace affix_services
 {
-	struct server_configuration : public affix_base::data::cache<nlohmann::json>
+	struct server_configuration : public affix_base::data::cache<nlohmann::ordered_json>
 	{
 	public:
 		/// <summary>

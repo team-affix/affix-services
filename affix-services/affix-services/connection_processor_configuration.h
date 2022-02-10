@@ -7,7 +7,7 @@
 
 namespace affix_services
 {
-	struct connection_processor_configuration : affix_base::data::cache<nlohmann::json>
+	struct connection_processor_configuration : affix_base::data::cache<nlohmann::ordered_json>
 	{
 	public:
 		/// <summary>
@@ -26,24 +26,14 @@ namespace affix_services
 		affix_base::data::cache<uint64_t> m_pending_authentication_timeout_in_seconds;
 
 		/// <summary>
-		/// Boolean describing whether or not to close sockets after the connections have existed too long.
-		/// </summary>
-		affix_base::data::cache<bool> m_enable_authenticated_connection_lifetime_timeout;
-
-		/// <summary>
-		/// Maximum time after which connections should be closed regardless of whether or not they've been idling.
-		/// </summary>
-		affix_base::data::cache<uint64_t> m_authenticated_connection_lifetime_timeout_in_seconds;
-
-		/// <summary>
 		/// Boolean describing whether or not to close sockets after the connections have idled for a maximum amount of time.
 		/// </summary>
-		affix_base::data::cache<bool> m_enable_authenticated_connection_idletime_timeout;
+		affix_base::data::cache<bool> m_enable_authenticated_connection_timeout;
 
 		/// <summary>
 		/// Maximum amount of time that connections can idle for before they must be closed and reestablished.
 		/// </summary>
-		affix_base::data::cache<uint64_t> m_authenticated_connection_idletime_timeout_in_seconds;
+		affix_base::data::cache<uint64_t> m_authenticated_connection_timeout_in_seconds;
 
 		/// <summary>
 		/// The local RSA key pair, used for all message security
@@ -54,6 +44,16 @@ namespace affix_services
 		/// The delay in seconds for which the connection processor should wait before reconnecting to a remote peer.
 		/// </summary>
 		affix_base::data::cache<uint64_t> m_reconnect_delay_in_seconds;
+
+		/// <summary>
+		/// Import all identities approved for using this module.
+		/// </summary>
+		affix_base::data::cache<std::vector<CryptoPP::RSA::PublicKey>> m_approved_identities;
+
+		/// <summary>
+		/// Import all identities that are unapproved for using this module.
+		/// </summary>
+		affix_base::data::cache<std::vector<CryptoPP::RSA::PublicKey>> m_unapproved_identities;
 
 	public:
 		/// <summary>

@@ -65,7 +65,7 @@ server_configuration::server_configuration(
 
 	// Configure this cache
 	set_pull(
-		[&](nlohmann::json& a_resource)
+		[&](nlohmann::ordered_json& a_resource)
 		{
 			std::ifstream l_ifstream(m_json_file_path);
 			l_ifstream >> a_resource;
@@ -78,7 +78,7 @@ server_configuration::server_configuration(
 
 		});
 	set_push(
-		[&](nlohmann::json& a_resource)
+		[&](nlohmann::ordered_json& a_resource)
 		{
 			// Wipe JSON clean before exporting fields (this removes unnecessary fields)
 			a_resource.clear();
@@ -94,7 +94,7 @@ server_configuration::server_configuration(
 
 		});
 	set_import_failed_callback(
-		[&](nlohmann::json& a_resource, std::exception)
+		[&](nlohmann::ordered_json& a_resource, std::exception)
 		{
 			// "Import" internal fields (will initialize them all to defaults since
 			// pulling will fail)
