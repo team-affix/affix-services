@@ -44,15 +44,41 @@ connection_processor::connection_processor(
 }
 
 void connection_processor::start_pending_outbound_connection(
-	const asio::ip::tcp::endpoint& a_remote_endpoint,
-	const uint16_t& a_local_port
+	const uint16_t& a_bind_port,
+	asio::ip::tcp::endpoint a_remote_endpoint,
+	const bool& a_remote_localhost
 )
 {
 	// Lock mutex preventing concurrent pushes/pops from pending outbound connections vector.
 	affix_base::threading::locked_resource l_locked_resource = m_pending_outbound_connections.lock();
 
+	
 	// Instantiate local endpoint object.
-	tcp::endpoint l_local_endpoint(tcp::v4(), a_local_port);
+	tcp::endpoint l_local_endpoint(tcp::v4(), a_bind_port);
+
+
+	// If the remote is localhost, assign the remote endpoint's address to the local IP address
+	if (a_remote_localhost)
+	{
+		asio::ip::address l_local_ip_address;
+
+		// Get local IP address
+		if (!affix_base::networking::socket_internal_ip_address(l_local_ip_address))
+		{
+			std::cerr << "Unable to get the local ip address." << std::endl;
+
+			// If the local IP address is unable to be retrieved, set the outbound connection to retry
+			restart_pending_outbound_connection(a_bind_port, a_remote_endpoint, a_remote_localhost);
+
+			return;
+
+		}
+
+		a_remote_endpoint = tcp::endpoint(l_local_ip_address, a_remote_endpoint.port());
+
+	}
+
+
 
 	// Create new pending connection and push it to the back of the vector.
 	l_locked_resource->push_back(
@@ -60,6 +86,7 @@ void connection_processor::start_pending_outbound_connection(
 			new connection_information(
 				new tcp::socket(m_io_context, l_local_endpoint),
 				a_remote_endpoint,
+				a_remote_localhost,
 				l_local_endpoint,
 				false,
 				false
@@ -70,8 +97,9 @@ void connection_processor::start_pending_outbound_connection(
 }
 
 void connection_processor::restart_pending_outbound_connection(
-	const asio::ip::tcp::endpoint& a_remote_endpoint,
-	const uint16_t& a_local_port
+	const uint16_t& a_bind_port,
+	asio::ip::tcp::endpoint a_remote_endpoint,
+	const bool& a_remote_localhost
 )
 {
 	locked_resource l_pending_function_calls = m_pending_function_calls.lock();
@@ -83,10 +111,10 @@ void connection_processor::restart_pending_outbound_connection(
 	l_pending_function_calls->push_back(
 		std::tuple(
 			l_time_to_reconnect,
-			[&, a_remote_endpoint, a_local_port]
+			[&, a_remote_endpoint, a_bind_port, a_remote_localhost]
 			{
 				// Start a normal pending connection.
-				start_pending_outbound_connection(a_remote_endpoint, a_local_port);
+				start_pending_outbound_connection(a_bind_port, a_remote_endpoint, a_remote_localhost);
 			}
 		));
 }
@@ -206,8 +234,9 @@ void connection_processor::process_connection_result(
 	{
 		// Reconnect to the remote peer
 		restart_pending_outbound_connection(
+			(*a_connection_result)->m_connection_information->m_local_endpoint.port(),
 			(*a_connection_result)->m_connection_information->m_remote_endpoint,
-			(*a_connection_result)->m_connection_information->m_local_endpoint.port()
+			(*a_connection_result)->m_connection_information->m_remote_localhost
 		);
 
 	}
@@ -336,8 +365,9 @@ void connection_processor::process_authentication_attempt_result(
 		{
 			// If the connection was outbound, reconnect to the remote peer
 			restart_pending_outbound_connection(
+				(*a_authentication_attempt_result)->m_connection_information->m_local_endpoint.port(),
 				(*a_authentication_attempt_result)->m_connection_information->m_remote_endpoint,
-				(*a_authentication_attempt_result)->m_connection_information->m_local_endpoint.port()
+				(*a_authentication_attempt_result)->m_connection_information->m_remote_localhost
 			);
 		}
 
@@ -415,8 +445,9 @@ void connection_processor::process_async_receive_result(
 				LOG("[ PROCESSOR ] Reconnecting to remote peer.");
 				// Reconnect to the remote peer
 				restart_pending_outbound_connection(
+					(*l_connection)->m_connection_information->m_local_endpoint.port(),
 					(*l_connection)->m_connection_information->m_remote_endpoint,
-					(*l_connection)->m_connection_information->m_local_endpoint.port()
+					(*l_connection)->m_connection_information->m_remote_localhost
 				);
 
 			}

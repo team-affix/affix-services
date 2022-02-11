@@ -54,7 +54,7 @@ namespace affix_services
 		/// <summary>
 		/// Remote endpoints which this module will connect to.
 		/// </summary>
-		affix_base::data::cache<std::vector<asio::ip::tcp::endpoint>> m_remote_endpoints;
+		affix_base::data::cache<std::vector<std::string>> m_remote_endpoint_strings;
 
 	public:
 		/// <summary>

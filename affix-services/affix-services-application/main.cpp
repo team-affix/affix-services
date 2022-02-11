@@ -8,6 +8,7 @@
 #include "affix-base/timing.h"
 #include "json.hpp"
 #include <filesystem>
+#include "affix-base/string_extensions.h"
 
 using affix_base::data::ptr;
 using affix_services::server_configuration;
@@ -63,21 +64,36 @@ int main()
 	// Export the server configuration, which now contains the bound port
 	l_server_configuration->export_resource();
 
-	asio::ip::address l_local_ip_address;
+	// Get remote endpoint strings
+	const std::vector<std::string>& l_remote_endpoint_strings = l_connection_processor_configuration->m_remote_endpoint_strings.resource();
 
-	if (!affix_base::networking::socket_internal_ip_address(l_local_ip_address))
+	// Connect to remote parties
+	for (int i = 0; i < l_remote_endpoint_strings.size(); i++)
 	{
-		std::cerr << "Unable to get the local ip address." << std::endl;
-		return 1;
+		std::vector<std::string> l_remote_endpoint_string_split = affix_base::data::string_split(l_remote_endpoint_strings[i], ':');
+
+		// Check if the remote endpoint is localhost
+		bool l_remote_localhost = l_remote_endpoint_string_split[0] == "localhost";
+
+		asio::ip::tcp::endpoint l_remote_endpoint;
+
+		// Configure address of remote endpoint
+		if (!l_remote_localhost)
+			l_remote_endpoint.address(asio::ip::make_address(l_remote_endpoint_string_split[0]));
+
+		// Configure port of remote endpoint
+		l_remote_endpoint.port(std::stoi(l_remote_endpoint_string_split[1]));
+
+		// Start pending outbound connection
+		std::clog << "[ APPLICATION ] Connecting to: " << l_remote_endpoint_strings[i] << std::endl;
+		l_processor.start_pending_outbound_connection(0, l_remote_endpoint, l_remote_localhost);
+
 	}
 
-	tcp::endpoint l_server_local_endpoint(
-		l_local_ip_address,
-		l_server_configuration->m_bound_port.resource()
-	);
-
+	// Boolean describing whether the context thread should continue
 	bool l_context_thread_continue = true;
 
+	// Run context
 	std::thread l_context_thread(
 		[&]
 		{
@@ -87,14 +103,8 @@ int main()
 				l_io_context.run();
 			}
 		});
-		
-	if (l_server_configuration->m_enable.resource())
-	{
-		// If the server is enabled, connect to it
-		l_processor.start_pending_outbound_connection(l_server_local_endpoint);
-		std::clog << "[ APPLICATION ] Connecting to server..." << std::endl;
-	}
 
+	// Processing loop
 	for(int i = 0; true; i++)
 	{
 		try

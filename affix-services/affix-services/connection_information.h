@@ -18,6 +18,11 @@ namespace affix_services
 		asio::ip::tcp::endpoint m_remote_endpoint;
 
 		/// <summary>
+		/// Boolean describing whether or not the remote peer is this machine.
+		/// </summary>
+		bool m_remote_localhost = false;
+
+		/// <summary>
 		/// Endpoint to which the socket WILL bind.
 		/// </summary>
 		asio::ip::tcp::endpoint m_local_endpoint;
@@ -44,6 +49,7 @@ namespace affix_services
 		connection_information(
 			const affix_base::data::ptr<asio::ip::tcp::socket>& a_socket,
 			const asio::ip::tcp::endpoint& a_remote_endpoint,
+			const bool& a_remote_localhost,
 			const asio::ip::tcp::endpoint& a_local_endpoint,
 			const bool& a_inbound,
 			const bool& a_connected

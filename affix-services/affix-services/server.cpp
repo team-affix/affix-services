@@ -66,6 +66,7 @@ void server::async_accept_next(
 				affix_base::data::ptr<connection_information> l_connection_information = new connection_information(
 					new tcp::socket(std::move(a_socket)),
 					l_remote_endpoint,
+					false,
 					l_local_endpoint,
 					true,
 					true

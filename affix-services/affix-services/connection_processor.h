@@ -88,8 +88,9 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_outbound_connection_configuration"></param>
 		void start_pending_outbound_connection(
-			const asio::ip::tcp::endpoint& a_remote_endpoint,
-			const uint16_t& a_local_port = 0
+			const uint16_t& a_bind_port,
+			asio::ip::tcp::endpoint a_remote_endpoint,
+			const bool& a_remote_localhost
 		);
 
 		/// <summary>
@@ -98,8 +99,9 @@ namespace affix_services
 		/// <param name="a_remote_endpoint"></param>
 		/// <param name="a_local_port"></param>
 		void restart_pending_outbound_connection(
-			const asio::ip::tcp::endpoint& a_remote_endpoint,
-			const uint16_t& a_local_port
+			const uint16_t& a_bind_port,
+			asio::ip::tcp::endpoint a_remote_endpoint,
+			const bool& a_remote_localhost
 		);
 
 		/// <summary>
