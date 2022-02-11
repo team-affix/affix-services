@@ -42,7 +42,7 @@ int main()
 	ptr<connection_processor_configuration> l_connection_processor_configuration(new connection_processor_configuration("config/connection_processor_configuration.json"));
 	l_connection_processor_configuration->import_resource();
 	l_connection_processor_configuration->export_resource();
-	
+
 	connection_processor l_processor(
 		l_io_context,
 		l_message_processor,

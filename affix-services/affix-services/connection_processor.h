@@ -103,6 +103,14 @@ namespace affix_services
 		);
 
 		/// <summary>
+		/// Registers an identity as approved.
+		/// </summary>
+		/// <param name="a_identity"></param>
+		void register_approved_identity(
+			const std::string& a_identity
+		);
+
+		/// <summary>
 		/// Processes all unauthenticated, authentication-in-progress, and fully
 		/// authenticated connections, as well as all received messages.
 		/// </summary>

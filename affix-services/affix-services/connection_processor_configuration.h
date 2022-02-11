@@ -48,12 +48,12 @@ namespace affix_services
 		/// <summary>
 		/// Import all identities approved for using this module.
 		/// </summary>
-		affix_base::data::cache<std::vector<CryptoPP::RSA::PublicKey>> m_approved_identities;
+		affix_base::data::cache<std::vector<std::string>> m_approved_identities;
 
 		/// <summary>
-		/// Import all identities that are unapproved for using this module.
+		/// Boolean describing whether to automatically approve identities that connect.
 		/// </summary>
-		affix_base::data::cache<std::vector<CryptoPP::RSA::PublicKey>> m_unapproved_identities;
+		affix_base::data::cache<bool> m_automatically_approve_identities;
 
 	public:
 		/// <summary>

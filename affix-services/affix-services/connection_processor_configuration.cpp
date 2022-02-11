@@ -158,80 +158,41 @@ connection_processor_configuration::connection_processor_configuration(
 
 	// Configure approved_identities cache
 	m_approved_identities.set_pull(
-		[&](std::vector<CryptoPP::RSA::PublicKey>& a_resource)
+		[&](std::vector<std::string>& a_resource)
 		{
 			// Get base64 versions of the identities
-			std::vector<std::string> l_approved_identities = m_resource["approved_identities"].get<std::vector<std::string>>();
-
-			// Reside the vector of approved identities
-			a_resource.resize(l_approved_identities.size());
-
-			// Load all identities from base64 strings
-			for (int i = 0; i < l_approved_identities.size(); i++)
-			{
-				if (!rsa_from_base64_string(a_resource[i], l_approved_identities[i]))
-					throw std::exception("Failed to load remote RSA Public Key from base64 string.");
-			}
-
+			a_resource = m_resource["approved_identities"].get<std::vector<std::string>>();
 		});
 	m_approved_identities.set_push(
-		[&](std::vector<CryptoPP::RSA::PublicKey>& a_resource)
+		[&](std::vector<std::string>& a_resource)
 		{
-			// Vector of base64 representations of identities
-			std::vector<std::string> l_approved_identities(a_resource.size());
-
-			// Export identities to base64
-			for (int i = 0; i < a_resource.size(); i++)
-				l_approved_identities[i] = rsa_to_base64_string(a_resource[i]);
-
 			// Save list to json
-			m_resource["approved_identities"] = l_approved_identities;
+			m_resource["approved_identities"] = a_resource;
 
 		});
 	m_approved_identities.set_import_failed_callback(
-		[&](std::vector<CryptoPP::RSA::PublicKey>& a_resource, std::exception)
+		[&](std::vector<std::string>& a_resource, std::exception)
 		{
 			
 		});
 
-	// Configure unapproved_identities cache
-	m_unapproved_identities.set_pull(
-		[&](std::vector<CryptoPP::RSA::PublicKey>& a_resource)
+	// Configure automatically_approve_identities
+	m_automatically_approve_identities.set_pull(
+		[&](bool& a_resource)
 		{
-			// Get base64 versions of the identities
-			std::vector<std::string> l_unapproved_identities = m_resource["unapproved_identities"].get<std::vector<std::string>>();
-
-			// Reside the vector of unapproved identities
-			a_resource.resize(l_unapproved_identities.size());
-
-			// Load all identities from base64 strings
-			for (int i = 0; i < l_unapproved_identities.size(); i++)
-			{
-				if (!rsa_from_base64_string(a_resource[i], l_unapproved_identities[i]))
-					throw std::exception("Failed to load remote RSA Public Key from base64 string.");
-			}
-
+			a_resource = m_resource["automatically_approve_identities"].get<bool>();
 		});
-	m_unapproved_identities.set_push(
-		[&](std::vector<CryptoPP::RSA::PublicKey>& a_resource)
+	m_automatically_approve_identities.set_push(
+		[&](bool& a_resource)
 		{
-			// Vector of base64 representations of identities
-			std::vector<std::string> l_unapproved_identities(a_resource.size());
-
-			// Export identities to base64
-			for (int i = 0; i < a_resource.size(); i++)
-				l_unapproved_identities[i] = rsa_to_base64_string(a_resource[i]);
-
-			// Save list to json
-			m_resource["unapproved_identities"] = l_unapproved_identities;
-
+			m_resource["automatically_approve_identities"] = a_resource;
 		});
-	m_unapproved_identities.set_import_failed_callback(
-		[&](std::vector<CryptoPP::RSA::PublicKey>& a_resource, std::exception)
+	m_automatically_approve_identities.set_import_failed_callback(
+		[&](bool& a_resource, std::exception)
 		{
-
+			a_resource = false;
 		});
-
+	
 	// Configure this cache
 	set_pull(
 		[&](nlohmann::ordered_json& a_resource)
@@ -253,7 +214,8 @@ connection_processor_configuration::connection_processor_configuration(
 			m_reconnect_delay_in_seconds.import_resource();
 
 			m_approved_identities.import_resource();
-			m_unapproved_identities.import_resource();
+
+			m_automatically_approve_identities.import_resource();
 
 		});
 	set_push(
@@ -274,7 +236,8 @@ connection_processor_configuration::connection_processor_configuration(
 			m_reconnect_delay_in_seconds.export_resource();
 
 			m_approved_identities.export_resource();
-			m_unapproved_identities.export_resource();
+
+			m_automatically_approve_identities.export_resource();
 
 			std::ofstream l_ofstream(m_json_file_path);
 			l_ofstream << a_resource.dump(1, '\t');
@@ -298,7 +261,8 @@ connection_processor_configuration::connection_processor_configuration(
 			m_reconnect_delay_in_seconds.import_resource();
 
 			m_approved_identities.import_resource();
-			m_unapproved_identities.import_resource();
+
+			m_automatically_approve_identities.import_resource();
 
 		});
 
