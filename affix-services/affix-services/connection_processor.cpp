@@ -263,7 +263,7 @@ void connection_processor::process_authentication_attempt_result(
 )
 {
 
-	// Extract the identity of the remote peer.
+	// Extract the identity of the remote peer
 	std::string l_identity = rsa_to_base64_string((*a_authentication_attempt_result)->m_security_information->m_remote_public_key);
 
 	// Get current approved identities
@@ -280,7 +280,7 @@ void connection_processor::process_authentication_attempt_result(
 		// Set the identity approved state to true
 		l_approved_identity = true;
 
-		// Register the identity as approved.
+		// Register the identity as approved
 		l_approved_identities.push_back(l_identity);
 
 		// Export the connection processor configuration
@@ -294,7 +294,7 @@ void connection_processor::process_authentication_attempt_result(
 		// Lock mutex for authenticated connections
 		locked_resource l_authenticated_connections = m_authenticated_connections.lock();
 
-		// Log the success of the authentication attempt.
+		// Log the success of the authentication attempt
 		LOG("============================================================");
 		LOG("[ PROCESSOR ] Success: authentication attempt successful: " << std::endl);
 		LOG("Remote IPv4: " << (*a_authentication_attempt_result)->m_connection_information->m_socket->remote_endpoint().address().to_string() << ":" << (*a_authentication_attempt_result)->m_connection_information->m_socket->remote_endpoint().port());
@@ -325,19 +325,19 @@ void connection_processor::process_authentication_attempt_result(
 		// Print error message
 		if (!(*a_authentication_attempt_result)->m_successful)
 		{
-			// Log the success of the authentication attempt.
+			// Log the success of the authentication attempt
 			LOG("[ PROCESSOR ] Error: authentication attempt failed: ");
 			LOG("Remote IPv4: " << (*a_authentication_attempt_result)->m_connection_information->m_socket->remote_endpoint().address().to_string() << ":" << (*a_authentication_attempt_result)->m_connection_information->m_socket->remote_endpoint().port());
 		}
 		else
 		{
-			// Log the success of the authentication attempt.
+			// Log the success of the authentication attempt
 			LOG("[ PROCESSOR ] Error: identity not approved: ");
 			LOG("Remote Identity (base64): " << std::endl << rsa_to_base64_string((*a_authentication_attempt_result)->m_security_information->m_remote_public_key) << std::endl);
 
 		}
 
-		// Close the socket. Authentication was bad or identity not approved.
+		// Close the socket. Authentication was bad or identity not approved
 		(*a_authentication_attempt_result)->m_connection_information->m_socket->close();
 
 		if (!(*a_authentication_attempt_result)->m_connection_information->m_inbound)
