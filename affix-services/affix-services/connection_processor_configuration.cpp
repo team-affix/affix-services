@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include "affix-base/rsa.h"
+#include "affix-base/string_extensions.h"
 
 using namespace affix_services;
 using affix_base::data::cache;
@@ -153,7 +154,7 @@ connection_processor_configuration::connection_processor_configuration(
 	m_reconnect_delay_in_seconds.set_import_failed_callback(
 		[&](uint64_t& a_resource, std::exception)
 		{
-			a_resource = 1;
+			a_resource = 16;
 		});
 
 	// Configure approved_identities cache
@@ -176,23 +177,43 @@ connection_processor_configuration::connection_processor_configuration(
 			
 		});
 
-	// Configure automatically_approve_identities
-	m_automatically_approve_identities.set_pull(
-		[&](bool& a_resource)
+	// Configure remote_endpoints cache
+	m_remote_endpoints.set_pull(
+		[&](std::vector<asio::ip::tcp::endpoint>& a_resource)
 		{
-			a_resource = m_resource["automatically_approve_identities"].get<bool>();
+			std::vector<std::string> l_remote_endpoints = m_resource["remote_endpoints"].get<std::vector<std::string>>();
+
+			a_resource.resize(l_remote_endpoints.size());
+
+			for (int i = 0; i < l_remote_endpoints.size(); i++)
+			{
+				std::vector<std::string> l_remote_endpoint = affix_base::data::string_split(l_remote_endpoints[i], ':');
+
+				a_resource[i].address(asio::ip::make_address(l_remote_endpoint[0]));
+				a_resource[i].port(std::stoi(l_remote_endpoint[1]));
+
+			}
+
 		});
-	m_automatically_approve_identities.set_push(
-		[&](bool& a_resource)
+	m_remote_endpoints.set_push(
+		[&](std::vector<asio::ip::tcp::endpoint>& a_resource)
 		{
-			m_resource["automatically_approve_identities"] = a_resource;
+			std::vector<std::string> l_remote_endpoints(a_resource.size());
+
+			for (int i = 0; i < a_resource.size(); i++)
+			{
+				l_remote_endpoints[i] = a_resource[i].address().to_string() + ":" + std::to_string(a_resource[i].port());
+			}
+
+			m_resource["remote_endpoints"] = l_remote_endpoints;
+
 		});
-	m_automatically_approve_identities.set_import_failed_callback(
-		[&](bool& a_resource, std::exception)
+	m_remote_endpoints.set_import_failed_callback(
+		[&](std::vector<asio::ip::tcp::endpoint>& a_resource, std::exception)
 		{
-			a_resource = false;
+
 		});
-	
+
 	// Configure this cache
 	set_pull(
 		[&](nlohmann::ordered_json& a_resource)
@@ -215,7 +236,7 @@ connection_processor_configuration::connection_processor_configuration(
 
 			m_approved_identities.import_resource();
 
-			m_automatically_approve_identities.import_resource();
+			m_remote_endpoints.import_resource();
 
 		});
 	set_push(
@@ -237,7 +258,7 @@ connection_processor_configuration::connection_processor_configuration(
 
 			m_approved_identities.export_resource();
 
-			m_automatically_approve_identities.export_resource();
+			m_remote_endpoints.export_resource();
 
 			std::ofstream l_ofstream(m_json_file_path);
 			l_ofstream << a_resource.dump(1, '\t');
@@ -262,7 +283,7 @@ connection_processor_configuration::connection_processor_configuration(
 
 			m_approved_identities.import_resource();
 
-			m_automatically_approve_identities.import_resource();
+			m_remote_endpoints.import_resource();
 
 		});
 

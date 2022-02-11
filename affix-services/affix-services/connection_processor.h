@@ -103,11 +103,12 @@ namespace affix_services
 		);
 
 		/// <summary>
-		/// Registers an identity as approved.
+		/// Describes whether the identity is approved.
 		/// </summary>
 		/// <param name="a_identity"></param>
-		void register_approved_identity(
-			const std::string& a_identity
+		/// <returns></returns>
+		bool identity_approved(
+			const CryptoPP::RSA::PublicKey& a_identity
 		);
 
 		/// <summary>

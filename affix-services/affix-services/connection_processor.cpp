@@ -91,6 +91,21 @@ void connection_processor::restart_pending_outbound_connection(
 		));
 }
 
+bool connection_processor::identity_approved(
+	const CryptoPP::RSA::PublicKey& a_identity
+)
+{
+	// Extract the identity of the remote peer
+	std::string l_identity = rsa_to_base64_string(a_identity);
+
+	// Get current approved identities
+	std::vector<std::string>& l_approved_identities = m_connection_processor_configuration->m_approved_identities.resource();
+
+	return std::find(l_approved_identities.begin(), l_approved_identities.end(), l_identity) !=
+		l_approved_identities.end();
+
+}
+
 void connection_processor::process(
 
 )
@@ -262,34 +277,11 @@ void connection_processor::process_authentication_attempt_result(
 	std::vector<affix_base::data::ptr<authentication_result>>::iterator a_authentication_attempt_result
 )
 {
+	// Boolean suggesting the approved state of the identity.
+	bool l_identity_approved = identity_approved(
+		(*a_authentication_attempt_result)->m_security_information->m_remote_public_key);
 
-	// Extract the identity of the remote peer
-	std::string l_identity = rsa_to_base64_string((*a_authentication_attempt_result)->m_security_information->m_remote_public_key);
-
-	// Get current approved identities
-	std::vector<std::string>& l_approved_identities = m_connection_processor_configuration->m_approved_identities.resource();
-
-	// Get whether or not the identity is approved
-	bool l_approved_identity =
-		std::find(l_approved_identities.begin(), l_approved_identities.end(), l_identity) !=
-		l_approved_identities.end();
-
-	// Check if we should just approve the identity
-	if (!l_approved_identity && m_connection_processor_configuration->m_automatically_approve_identities.resource())
-	{
-		// Set the identity approved state to true
-		l_approved_identity = true;
-
-		// Register the identity as approved
-		l_approved_identities.push_back(l_identity);
-
-		// Export the connection processor configuration
-		m_connection_processor_configuration->export_resource();
-
-	}
-
-
-	if ((*a_authentication_attempt_result)->m_successful && l_approved_identity)
+	if ((*a_authentication_attempt_result)->m_successful && l_identity_approved)
 	{
 		// Lock mutex for authenticated connections
 		locked_resource l_authenticated_connections = m_authenticated_connections.lock();
@@ -332,7 +324,7 @@ void connection_processor::process_authentication_attempt_result(
 		else
 		{
 			// Log the success of the authentication attempt
-			LOG("[ PROCESSOR ] Error: identity not approved: ");
+			LOG("[ PROCESSOR ] Error: authentication attempt succeeded but identity not approved: ");
 			LOG("Remote Identity (base64): " << std::endl << rsa_to_base64_string((*a_authentication_attempt_result)->m_security_information->m_remote_public_key) << std::endl);
 
 		}

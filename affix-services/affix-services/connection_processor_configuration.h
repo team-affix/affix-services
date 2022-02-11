@@ -4,6 +4,7 @@
 #include "affix-base/cache.h"
 #include "affix-base/ptr.h"
 #include "json.hpp"
+#include "asio.hpp"
 
 namespace affix_services
 {
@@ -51,9 +52,9 @@ namespace affix_services
 		affix_base::data::cache<std::vector<std::string>> m_approved_identities;
 
 		/// <summary>
-		/// Boolean describing whether to automatically approve identities that connect.
+		/// Remote endpoints which this module will connect to.
 		/// </summary>
-		affix_base::data::cache<bool> m_automatically_approve_identities;
+		affix_base::data::cache<std::vector<asio::ip::tcp::endpoint>> m_remote_endpoints;
 
 	public:
 		/// <summary>
