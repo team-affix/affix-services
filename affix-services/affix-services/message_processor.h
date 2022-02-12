@@ -79,7 +79,7 @@ namespace affix_services
 		/// Processes an async receive result (originating from the connection processor).
 		/// </summary>
 		/// <param name="a_connection_async_receive_result"></param>
-		void process_async_receive_result(
+		virtual void process_async_receive_result(
 			affix_base::data::ptr<affix_services::networking::connection_async_receive_result> a_connection_async_receive_result
 		);
 
@@ -96,38 +96,17 @@ namespace affix_services
 
 		}
 
-		/// <summary>
-		/// Processes a request to push an identity 
-		/// (replacing the current identity they are authenticated as).
-		/// </summary>
-		/// <param name="a_process_message_declaration"></param>
 		template<>
-		void process_message<affix_services::message_rqt_identity_push>(
-			const affix_services_process_message_declaration<affix_services::message_rqt_identity_push>& a_process_message_declaration
+		void process_message(
+			const affix_services_process_message_declaration<affix_services::message_rqt_relay>& a_process_message_declaration
 		)
 		{
 
 		}
 
-		/// <summary>
-		/// Processes a response to push an identity.
-		/// </summary>
-		/// <param name="a_process_message_declaration"></param>
 		template<>
-		void process_message<affix_services::message_rsp_identity_push>(
-			const affix_services_process_message_declaration<affix_services::message_rsp_identity_push>& a_process_message_declaration
-		)
-		{
-
-		}
-
-		/// <summary>
-		/// Processes a response to push an identity.
-		/// </summary>
-		/// <param name="a_process_message_declaration"></param>
-		template<>
-		void process_message<affix_services::message_rqt_identity_delete>(
-			const affix_services_process_message_declaration<affix_services::message_rqt_identity_delete>& a_process_message_declaration
+		void process_message(
+			const affix_services_process_message_declaration<affix_services::message_rsp_relay>& a_process_message_declaration
 		)
 		{
 

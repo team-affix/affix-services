@@ -495,13 +495,15 @@ void connection_processor::process_pending_function_call(
 	if (affix_base::timing::utc_time() >= l_call_time)
 	{
 		// Extract the actual function from the function call request.
-		const std::function<void()>& l_function = std::get<1>(*a_pending_function_call);
+		std::function<void()> l_function = std::get<1>(*a_pending_function_call);
+
+		// Erase the pending function call from the vector BEFORE CALLING the function.
+		// We want to be the ones to invalidate this iterator by erasing it, instead of have the possibility
+		// where the function we call writes to the vector while we're using the iterator.
+		a_pending_function_calls.erase(a_pending_function_call);
 		
 		// Call the function associated with this pending function call request
 		l_function();
-
-		// Erase the pending function call from the vector
-		a_pending_function_calls.erase(a_pending_function_call);
 
 	}
 
