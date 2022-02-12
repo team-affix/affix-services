@@ -62,42 +62,7 @@ void message_processor::process_async_receive_result(
 
 	switch (l_message_header.m_message_type)
 	{
-		case affix_services::messaging::message_types::rqt_identity_push:
-		{
-			affix_services_process_message_declaration<message_rqt_identity_push> l_process_message_declaration(
-				a_connection_async_receive_result->m_owner,
-				l_message_header,
-				l_message_body_byte_buffer
-			);
 
-			process_message(l_process_message_declaration);
-
-			break;
-		}
-		case affix_services::messaging::message_types::rsp_identity_push:
-		{
-			affix_services_process_message_declaration<message_rsp_identity_push> l_process_message_declaration(
-				a_connection_async_receive_result->m_owner,
-				l_message_header,
-				l_message_body_byte_buffer
-			);
-
-			process_message(l_process_message_declaration);
-
-			break;
-		}
-		case affix_services::messaging::message_types::rqt_identity_delete:
-		{
-			affix_services_process_message_declaration<message_rqt_identity_delete> l_process_message_declaration(
-				a_connection_async_receive_result->m_owner,
-				l_message_header,
-				l_message_body_byte_buffer
-			);
-
-			process_message(l_process_message_declaration);
-
-			break;
-		}
 
 	}
 
