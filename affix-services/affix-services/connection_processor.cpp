@@ -123,15 +123,25 @@ bool connection_processor::identity_approved(
 	const CryptoPP::RSA::PublicKey& a_identity
 )
 {
-	// Extract the identity of the remote peer
-	std::string l_identity = rsa_to_base64_string(a_identity);
+	try
+	{
+		// Extract the identity of the remote peer
+		std::string l_identity = rsa_to_base64_string(a_identity);
 
-	// Get current approved identities
-	std::vector<std::string>& l_approved_identities = m_connection_processor_configuration->m_approved_identities.resource();
+		// Get current approved identities
+		std::vector<std::string>& l_approved_identities = m_connection_processor_configuration->m_approved_identities.resource();
 
-	return std::find(l_approved_identities.begin(), l_approved_identities.end(), l_identity) !=
-		l_approved_identities.end();
+		return std::find(l_approved_identities.begin(), l_approved_identities.end(), l_identity) !=
+			l_approved_identities.end();
 
+	}
+	catch (std::exception a_exception)
+	{
+		LOG_ERROR("[ CONNECTION PROCESSOR ] Error checking identity approval: " << a_exception.what());
+
+		return false;
+
+	}
 }
 
 void connection_processor::process(

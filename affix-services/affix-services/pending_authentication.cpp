@@ -62,7 +62,7 @@ pending_authentication::pending_authentication(
 				
 				// Generate the security information structure
 				ptr<security_information> l_security_information = new security_information(
-					a_local_key_pair.private_key,
+					a_local_key_pair,
 					affix_services::security::rolling_token(l_local_seed),
 					l_remote_public_key,
 					affix_services::security::rolling_token(l_remote_seed)

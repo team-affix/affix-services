@@ -28,16 +28,16 @@ namespace affix_services
 		};
 
 	public:
-		std::vector<CryptoPP::RSA::PublicKey> m_path;
-		affix_base::data::ptr<std::vector<uint8_t>> m_payload;
+		std::vector<std::string> m_path;
+		std::vector<uint8_t> m_payload;
 
 	public:
 		message_rqt_relay(
 
 		);
 		message_rqt_relay(
-			const std::vector<CryptoPP::RSA::PublicKey>& a_path,
-			const affix_base::data::ptr<std::vector<uint8_t>>& a_payload
+			const std::vector<std::string>& a_path,
+			const std::vector<uint8_t>& a_payload
 		);
 
 	public:

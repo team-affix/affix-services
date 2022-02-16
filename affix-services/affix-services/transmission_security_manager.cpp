@@ -60,7 +60,7 @@ bool transmission_security_manager::import_transmission(
 
 	// DECRYPT DATA
 	vector<uint8_t> l_decrypted_data;
-	if (!rsa_try_decrypt_in_chunks(a_data, m_security_information->m_local_private_key, l_decrypted_data)) {
+	if (!rsa_try_decrypt_in_chunks(a_data, m_security_information->m_local_key_pair.private_key, l_decrypted_data)) {
 		a_result = transmission_result::error_decrypting_data;
 		return false;
 	}
@@ -92,7 +92,7 @@ bool transmission_security_manager::pack_signature(
 	vector<uint8_t> l_signature;
 
 	// TRY TO SIGN DATA
-	if (!rsa_try_sign(a_data.data(), m_security_information->m_local_private_key, l_signature)) {
+	if (!rsa_try_sign(a_data.data(), m_security_information->m_local_key_pair.private_key, l_signature)) {
 		a_result = transmission_result::error_signing_data;
 		return false;
 	}

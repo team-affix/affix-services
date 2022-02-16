@@ -9,9 +9,9 @@ namespace affix_services
 	{
 	public:
 		/// <summary>
-		/// Private key, must remain private.
+		/// The RSA key pair used on by this local module.
 		/// </summary>
-		CryptoPP::RSA::PrivateKey m_local_private_key;
+		affix_base::cryptography::rsa_key_pair m_local_key_pair;
 
 		/// <summary>
 		/// Local token, which is a repeat-attack prevention object.
@@ -40,7 +40,7 @@ namespace affix_services
 		/// <param name="a_remote_public_key"></param>
 		/// <param name="a_remote_token"></param>
 		security_information(
-			const CryptoPP::RSA::PrivateKey& a_local_private_key,
+			const affix_base::cryptography::rsa_key_pair& a_local_key_pair,
 			const affix_services::security::rolling_token& a_local_token,
 			const CryptoPP::RSA::PublicKey& a_remote_public_key,
 			const affix_services::security::rolling_token& a_remote_token
