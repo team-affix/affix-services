@@ -13,6 +13,7 @@
 #include "affix-base/cross_thread_mutex.h"
 #include "affix-base/threading.h"
 #include "connection_information.h"
+#include "affix-base/callback_dispatcher.h"
 
 namespace affix_services {
 	namespace networking {
@@ -36,14 +37,9 @@ namespace affix_services {
 			affix_base::threading::guarded_resource<bool, affix_base::threading::cross_thread_mutex> m_connected = true;
 
 			/// <summary>
-			/// Boolean describing whether or not an async send request is in progress.
+			/// Dispatcher which tracks the progress of the send and receive callback functions.
 			/// </summary>
-			affix_base::threading::guarded_resource<size_t, affix_base::threading::cross_thread_mutex> m_number_of_sends_in_progress = 0;
-
-			/// <summary>
-			/// Boolean describing whether or not an async receive request is in progress.
-			/// </summary>
-			affix_base::threading::guarded_resource<bool, affix_base::threading::cross_thread_mutex> m_receive_in_progress = false;
+			affix_base::callback::callback_dispatcher<affix_base::threading::cross_thread_mutex, void, bool> m_callback_dispatcher;
 
 		protected:
 			/// <summary>

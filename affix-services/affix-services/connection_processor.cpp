@@ -79,7 +79,6 @@ void connection_processor::start_pending_outbound_connection(
 	}
 
 
-
 	// Create new pending connection and push it to the back of the vector.
 	l_locked_resource->push_back(
 		new pending_connection(
@@ -417,20 +416,32 @@ void connection_processor::process_authenticated_connection(
 		l_connected = *l_connection_connected;
 	}
 
-	if (!l_connected)
-	{
-		// Since the connection is no longer be active, just erase the object.
-		a_authenticated_connections.erase(a_authenticated_connection);
-		return;
+	// Boolean describing whether or not callbacks are currently dispatched that have not been triggered yet.
+	bool l_callbacks_currently_dispatched = (*a_authenticated_connection)->m_callback_dispatcher.dispatched();
 
-	}
-	if (l_connection_timed_out)
+	if (l_connected && l_connection_timed_out)
 	{
 		// Handle disposing of connection.
 
 		// Close connection, since it has timed out (this should cause the connection's receive callback to trigger with a failure response).
-		(*a_authenticated_connection)->m_connection_information->m_socket->close();
-		return;
+		(*a_authenticated_connection)->close();
+		
+	}
+
+	if (!l_connected && !l_callbacks_currently_dispatched)
+	{
+		if (!(*a_authenticated_connection)->m_connection_information->m_inbound)
+		{
+			// Reconnect to the remote peer
+			restart_pending_outbound_connection(
+				(*a_authenticated_connection)->m_connection_information->m_local_endpoint.port(),
+				(*a_authenticated_connection)->m_connection_information->m_remote_endpoint,
+				(*a_authenticated_connection)->m_connection_information->m_remote_localhost
+			);
+		}
+
+		// Since the connection is no longer be active, just erase the object.
+		a_authenticated_connections.erase(a_authenticated_connection);
 
 	}
 
