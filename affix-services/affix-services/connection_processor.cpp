@@ -408,17 +408,29 @@ void connection_processor::process_authenticated_connection(
 		(*a_authenticated_connection)->idletime() >
 		m_connection_processor_configuration->m_authenticated_connection_timeout_in_seconds.resource();
 
-	locked_resource l_connection_connected = (*a_authenticated_connection)->m_connected.lock();
+	// Boolean describing whether the authenticated connection is still active (connected)
+	bool l_connected = false;
 
-	if (!l_connection_connected.resource() || l_connection_timed_out)
+	{
+		// This must stay it's own scope
+		locked_resource l_connection_connected = (*a_authenticated_connection)->m_connected.lock();
+		l_connected = *l_connection_connected;
+	}
+
+	if (!l_connected)
+	{
+		// Since the connection is no longer be active, just erase the object.
+		a_authenticated_connections.erase(a_authenticated_connection);
+		return;
+
+	}
+	if (l_connection_timed_out)
 	{
 		// Handle disposing of connection.
-		
-		// Close connection, since it has timed out (this should cause the connection's receive callback to trigger with a failure response).
-		(*a_authenticated_connection)->close();
 
-		// Erase the connection from the vector.
-		a_authenticated_connections.erase(a_authenticated_connection);
+		// Close connection, since it has timed out (this should cause the connection's receive callback to trigger with a failure response).
+		(*a_authenticated_connection)->m_connection_information->m_socket->close();
+		return;
 
 	}
 

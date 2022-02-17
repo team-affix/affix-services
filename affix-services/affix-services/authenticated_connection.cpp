@@ -57,6 +57,12 @@ void authenticated_connection::async_send(
 	locked_resource l_last_interaction_time = m_last_interaction_time.lock();
 	(*l_last_interaction_time) = utc_time();
 
+	// Lock number_of_sends_in_progress mutex
+	locked_resource l_number_of_sends_in_progress = m_number_of_sends_in_progress.lock();
+
+	// Increment number of sends in progress
+	l_number_of_sends_in_progress.resource()++;
+
 	vector<uint8_t> l_exported_transmission_data;
 
 	transmission_result l_transmission_result = transmission_result::unknown;
@@ -72,7 +78,26 @@ void authenticated_connection::async_send(
 	}
 
 	// SEND TRANSMISSION
-	m_socket_io_guard.async_send(l_exported_transmission_data, a_callback);
+	m_socket_io_guard.async_send(l_exported_transmission_data, 
+		[&](bool a_result)
+		{
+			// Lock the mutex describing whether or not a send is in progress.
+			locked_resource l_lambda_number_of_sends_in_progress = m_number_of_sends_in_progress.lock();
+
+			// Let the program know that there is not currently a send request in progress.
+			l_lambda_number_of_sends_in_progress.resource()--;
+
+			if (!a_result)
+			{
+				LOG_ERROR("[ CONNECTION ] Error sending data.");
+
+				// Close the connection.
+				close();
+
+				return;
+			}
+
+		});
 
 }
 
@@ -80,6 +105,10 @@ void authenticated_connection::async_receive(
 
 )
 {
+	// Lock mutex describing whether or not there is an async receive request in progress.
+	locked_resource l_receive_in_progress = m_receive_in_progress.lock();
+
+
 	// ALLOCATE DYNAMIC VECTOR FOR CALLBACK LAMBDA FUNCTION TO ACCESS AFTER PROGRAM EXITS THIS FUNCTION'S SCOPE
 	ptr<vector<uint8_t>> l_data = new vector<uint8_t>();
 
