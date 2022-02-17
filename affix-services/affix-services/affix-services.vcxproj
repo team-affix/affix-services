@@ -189,7 +189,9 @@
     <ClCompile Include="application_configuration.cpp" />
     <ClCompile Include="connection_processor_configuration.cpp" />
     <ClCompile Include="message_processor.cpp" />
+    <ClCompile Include="message_rqt_index.cpp" />
     <ClCompile Include="message_rqt_relay.cpp" />
+    <ClCompile Include="message_rsp_index.cpp" />
     <ClCompile Include="message_rsp_index.h" />
     <ClCompile Include="message_rsp_relay.cpp" />
     <ClCompile Include="pending_authentication.cpp" />

@@ -87,7 +87,66 @@ void message_processor::process_authenticated_connection_receive_result(
 
 	switch (l_message_header.m_message_type)
 	{
+		case message_types::rqt_relay:
+		{
+			// Lock the resource, preventing concurrent writes/reads to it.
+			locked_resource l_locked_resource = m_received_relay_requests.lock();
 
+			l_locked_resource->push_back(
+				new process_message_declaration<message_rqt_relay>(
+					(*a_authenticated_connection_receive_result)->m_authenticated_connection,
+					l_message_header,
+					l_message_body_byte_buffer
+				));
+
+			break;
+
+		}
+		case message_types::rsp_relay:
+		{
+			// Lock the resource, preventing concurrent writes/reads to it.
+			locked_resource l_locked_resource = m_received_relay_responses.lock();
+
+			l_locked_resource->push_back(
+				new process_message_declaration<message_rsp_relay>(
+						(*a_authenticated_connection_receive_result)->m_authenticated_connection,
+						l_message_header,
+						l_message_body_byte_buffer
+				));
+
+			break;
+
+		}
+		case message_types::rqt_index:
+		{
+			// Lock the resource, preventing concurrent writes/reads to it.
+			locked_resource l_locked_resource = m_received_index_requests.lock();
+
+			l_locked_resource->push_back(
+				new process_message_declaration<message_rqt_index>(
+					(*a_authenticated_connection_receive_result)->m_authenticated_connection,
+					l_message_header,
+					l_message_body_byte_buffer
+				));
+
+			break;
+
+		}
+		case message_types::rsp_index:
+		{
+			// Lock the resource, preventing concurrent writes/reads to it.
+			locked_resource l_locked_resource = m_received_index_responses.lock();
+
+			l_locked_resource->push_back(
+				new process_message_declaration<message_rsp_index>(
+					(*a_authenticated_connection_receive_result)->m_authenticated_connection,
+					l_message_header,
+					l_message_body_byte_buffer
+				));
+
+			break;
+
+		}
 
 	}
 }
@@ -109,6 +168,7 @@ void message_processor::process_received_relay_request(
 	std::vector<affix_base::data::ptr<process_message_declaration<message_rqt_relay>>>::iterator a_received_relay_request
 )
 {
+
 
 }
 

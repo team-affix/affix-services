@@ -417,7 +417,7 @@ void connection_processor::process_authenticated_connection(
 	}
 
 	// Boolean describing whether or not callbacks are currently dispatched that have not been triggered yet.
-	bool l_callbacks_currently_dispatched = (*a_authenticated_connection)->m_callback_dispatcher.dispatched();
+	bool l_callbacks_currently_dispatched = (*a_authenticated_connection)->m_dispatcher.dispatched();
 
 	if (l_connected && l_connection_timed_out)
 	{

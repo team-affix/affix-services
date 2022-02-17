@@ -13,7 +13,7 @@
 #include "affix-base/cross_thread_mutex.h"
 #include "affix-base/threading.h"
 #include "connection_information.h"
-#include "affix-base/callback_dispatcher.h"
+#include "affix-base/dispatcher.h"
 
 namespace affix_services {
 	namespace networking {
@@ -39,7 +39,7 @@ namespace affix_services {
 			/// <summary>
 			/// Dispatcher which tracks the progress of the send and receive callback functions.
 			/// </summary>
-			affix_base::callback::callback_dispatcher<affix_base::threading::cross_thread_mutex, void, bool> m_callback_dispatcher;
+			affix_base::callback::dispatcher<affix_base::threading::cross_thread_mutex, void, bool> m_dispatcher;
 
 		protected:
 			/// <summary>

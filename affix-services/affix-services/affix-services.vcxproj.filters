@@ -194,5 +194,11 @@
     <ClCompile Include="message_rsp_index.h">
       <Filter>Header Files\messaging</Filter>
     </ClCompile>
+    <ClCompile Include="message_rqt_index.cpp">
+      <Filter>Source Files\messaging</Filter>
+    </ClCompile>
+    <ClCompile Include="message_rsp_index.cpp">
+      <Filter>Source Files\messaging</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

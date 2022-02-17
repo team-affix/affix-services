@@ -11,12 +11,12 @@ namespace affix_services
 		struct authenticated_connection_receive_result
 		{
 		public:
-			affix_base::data::ptr<authenticated_connection> m_owner;
+			affix_base::data::ptr<authenticated_connection> m_authenticated_connection;
 			affix_base::data::byte_buffer m_byte_buffer;
 
 		public:
 			authenticated_connection_receive_result(
-				const affix_base::data::ptr<authenticated_connection>& a_owner,
+				const affix_base::data::ptr<authenticated_connection>& a_authenticated_connection,
 				affix_base::data::byte_buffer a_byte_buffer = {}
 			);
 
