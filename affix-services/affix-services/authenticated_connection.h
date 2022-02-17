@@ -54,7 +54,7 @@ namespace affix_services {
 			/// <summary>
 			/// Vector of async_receive results.
 			/// </summary>
-			affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_async_receive_result>>, affix_base::threading::cross_thread_mutex>& m_receive_results;
+			affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authenticated_connection_receive_result>>, affix_base::threading::cross_thread_mutex>& m_receive_results;
 
 		public:
 			/// <summary>
@@ -77,7 +77,7 @@ namespace affix_services {
 			authenticated_connection(
 				affix_base::data::ptr<connection_information> a_connection_information,
 				affix_base::data::ptr<security_information> a_security_information,
-				affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_async_receive_result>>, affix_base::threading::cross_thread_mutex>& a_receive_results
+				affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authenticated_connection_receive_result>>, affix_base::threading::cross_thread_mutex>& a_receive_results
 			);
 
 		public:

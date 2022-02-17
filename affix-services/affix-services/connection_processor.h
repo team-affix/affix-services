@@ -17,7 +17,7 @@ namespace affix_services
 {
 	class connection_processor
 	{
-	public:
+	protected:
 		/// <summary>
 		/// Contains the configuration for this connection_processor instance; this object governs how to behave as a connection processor.
 		/// </summary>
@@ -38,7 +38,6 @@ namespace affix_services
 		/// </summary>
 		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>, affix_base::threading::cross_thread_mutex> m_connection_results;
 
-	protected:
 		/// <summary>
 		/// A vector of all current authentication attempts, which holds those for both inbound and outbound connections.
 		/// </summary>
@@ -49,17 +48,10 @@ namespace affix_services
 		/// </summary>
 		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_result>>, affix_base::threading::cross_thread_mutex> m_authentication_attempt_results;
 
-	public:
 		/// <summary>
 		/// A vector of fully authenticated connections.
 		/// </summary>
 		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>>, affix_base::threading::cross_thread_mutex> m_authenticated_connections;
-
-	protected:
-		/// <summary>
-		/// Receive results for all authenticated connections.
-		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::connection_async_receive_result>>, affix_base::threading::cross_thread_mutex> m_connection_async_receive_results;
 
 		/// <summary>
 		/// A vector of all pending miscellaneous functions that need to be called after a certain delay, hence the uint64_t in the tuple.
@@ -67,9 +59,9 @@ namespace affix_services
 		affix_base::threading::guarded_resource<std::vector<std::tuple<uint64_t, std::function<void()>>>, affix_base::threading::cross_thread_mutex> m_pending_function_calls;
 
 		/// <summary>
-		/// Processor responsible for handling inbound messages.
+		/// Receive results for all authenticated connections.
 		/// </summary>
-		message_processor& m_message_processor;
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection_receive_result>>, affix_base::threading::cross_thread_mutex>& m_authenticated_connection_receive_results;
 
 	public:
 		/// <summary>
@@ -78,7 +70,7 @@ namespace affix_services
 		/// <param name="a_local_key_pair"></param>
 		connection_processor(
 			asio::io_context& a_io_context,
-			message_processor& a_message_processor,
+			affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection_receive_result>>, affix_base::threading::cross_thread_mutex>& a_authenticated_connection_receive_results,
 			affix_base::data::ptr<connection_processor_configuration> a_connection_processor_configuration
 		);
 
@@ -204,21 +196,6 @@ namespace affix_services
 		);
 
 		/// <summary>
-		/// Processes all async receive results in the vector.
-		/// </summary>
-		void process_async_receive_results(
-
-		);
-
-		/// <summary>
-		/// Processes a single async_receive_result from the vector.
-		/// </summary>
-		void process_async_receive_result(
-			std::vector<affix_base::data::ptr<affix_services::networking::connection_async_receive_result>>& a_async_receive_results,
-			std::vector<affix_base::data::ptr<affix_services::networking::connection_async_receive_result>>::iterator a_async_receive_result
-		);
-
-		/// <summary>
 		/// Processes all pending function call.
 		/// </summary>
 		void process_pending_function_calls(
@@ -232,6 +209,15 @@ namespace affix_services
 		void process_pending_function_call(
 			std::vector<std::tuple<uint64_t, std::function<void()>>>& a_pending_function_calls,
 			std::vector<std::tuple<uint64_t, std::function<void()>>>::iterator a_pending_function_call
+		);
+
+	public:
+		/// <summary>
+		/// Gets a reference to the connection results vector.
+		/// </summary>
+		/// <returns></returns>
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>, affix_base::threading::cross_thread_mutex>& connection_results(
+
 		);
 
 	};

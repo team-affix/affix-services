@@ -11,6 +11,7 @@ using affix_base::data::ptr;
 using affix_base::data::byte_buffer;
 using namespace affix_services::networking;
 using namespace affix_services::messaging;
+using affix_base::threading::locked_resource;
 
 message_processor::message_processor(
 	const std::function<void(const std::vector<uint8_t>&)>& a_relay_received_callback
@@ -20,14 +21,34 @@ message_processor::message_processor(
 
 }
 
-void message_processor::process_async_receive_result(
-	affix_base::data::ptr<affix_services::networking::connection_async_receive_result> a_connection_async_receive_result
+void message_processor::process(
+
+)
+{
+
+}
+
+void message_processor::process_authenticated_connection_receive_results(
+
+)
+{
+	// Lock the mutex for all receive results
+	locked_resource l_authenticated_connections = m_authenticated_connection_receive_results.lock();
+
+	for (int i = l_authenticated_connections->size() - 1; i >= 0; i--)
+		process_authenticated_connection_receive_result(l_authenticated_connections.resource(), l_authenticated_connections->begin() + i);
+
+}
+
+void message_processor::process_authenticated_connection_receive_result(
+	std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection_receive_result>>& a_authenticated_connection_receive_results,
+	std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection_receive_result>>::iterator a_authenticated_connection_receive_result
 )
 {
 	std::vector<uint8_t> l_message_header_data;
 
 	// Try to unpack message header data.
-	if (!a_connection_async_receive_result->m_byte_buffer.pop_front(l_message_header_data))
+	if (!(*a_authenticated_connection_receive_result)->m_byte_buffer.pop_front(l_message_header_data))
 	{
 		LOG_ERROR("[ MESSAGE PROCESSOR ] Error: unable to unpack message header from received data.");
 		return;
@@ -51,7 +72,7 @@ void message_processor::process_async_receive_result(
 	std::vector<uint8_t> l_message_body_data;
 
 	// Try to unpack message body data.
-	if (!a_connection_async_receive_result->m_byte_buffer.pop_front(l_message_body_data))
+	if (!(*a_authenticated_connection_receive_result)->m_byte_buffer.pop_front(l_message_body_data))
 	{
 		LOG_ERROR("[ MESSAGE PROCESSOR ] Error: unable to unpack message body from received data.");
 		return;
@@ -65,5 +86,11 @@ void message_processor::process_async_receive_result(
 
 
 	}
+}
 
+affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection_receive_result>>, affix_base::threading::cross_thread_mutex>& message_processor::authenticated_connection_receive_results(
+
+)
+{
+	return m_authenticated_connection_receive_results;
 }

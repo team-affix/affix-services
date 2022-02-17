@@ -33,12 +33,12 @@ using namespace affix_base::threading;
 
 connection_processor::connection_processor(
 	asio::io_context& a_io_context,
-	message_processor& a_message_processor,
+	affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection_receive_result>>, affix_base::threading::cross_thread_mutex>& a_authenticated_connection_receive_results,
 	affix_base::data::ptr<connection_processor_configuration> a_connection_processor_configuration
 ) :
-	m_connection_processor_configuration(a_connection_processor_configuration),
 	m_io_context(a_io_context),
-	m_message_processor(a_message_processor)
+	m_authenticated_connection_receive_results(a_authenticated_connection_receive_results),
+	m_connection_processor_configuration(a_connection_processor_configuration)
 {
 
 }
@@ -153,7 +153,6 @@ void connection_processor::process(
 	process_authentication_attempts();
 	process_authentication_attempt_results();
 	process_authenticated_connections();
-	process_async_receive_results();
 	process_pending_function_calls();
 }
 
@@ -339,7 +338,7 @@ void connection_processor::process_authentication_attempt_result(
 			new authenticated_connection(
 				(*a_authentication_attempt_result)->m_connection_information,
 				(*a_authentication_attempt_result)->m_security_information,
-				m_connection_async_receive_results
+				m_authenticated_connection_receive_results
 			)
 		);
 
@@ -405,79 +404,23 @@ void connection_processor::process_authenticated_connection(
 	std::vector<affix_base::data::ptr<authenticated_connection>>::iterator a_authenticated_connection
 )
 {
-	if (m_connection_processor_configuration->m_enable_authenticated_connection_timeout.resource() &&
-		(*a_authenticated_connection)->idletime() > 
-		m_connection_processor_configuration->m_authenticated_connection_timeout_in_seconds.resource())
+	bool l_connection_timed_out = m_connection_processor_configuration->m_enable_authenticated_connection_timeout.resource() &&
+		(*a_authenticated_connection)->idletime() >
+		m_connection_processor_configuration->m_authenticated_connection_timeout_in_seconds.resource();
+
+	locked_resource l_connection_connected = (*a_authenticated_connection)->m_connected.lock();
+
+	if (!l_connection_connected.resource() || l_connection_timed_out)
 	{
-		// Erase connection, since it has timed out.
+		// Handle disposing of connection.
+		
+		// Close connection, since it has timed out (this should cause the connection's receive callback to trigger with a failure response).
 		(*a_authenticated_connection)->close();
+
+		// Erase the connection from the vector.
+		a_authenticated_connections.erase(a_authenticated_connection);
+
 	}
-
-}
-
-void connection_processor::process_async_receive_results(
-
-)
-{
-	// Lock the mutex preventing concurrent reads/writes to the async_receive_results vector
-	locked_resource l_connection_async_receive_results = m_connection_async_receive_results.lock();
-
-	// Decrement through vector since processing might erase elements from the vector.
-	for (int i = l_connection_async_receive_results->size() - 1; i >= 0; i--)
-		process_async_receive_result(l_connection_async_receive_results.resource(), l_connection_async_receive_results->begin() + i);
-
-}
-
-void connection_processor::process_async_receive_result(
-	std::vector<affix_base::data::ptr<affix_services::networking::connection_async_receive_result>>& a_async_receive_results,
-	std::vector<affix_base::data::ptr<affix_services::networking::connection_async_receive_result>>::iterator a_async_receive_result
-)
-{
-	// Lock mutex for connections
-	locked_resource l_authenticated_connections = m_authenticated_connections.lock();
-
-	// Get the owner connection from the vector of authenticated connections
-	std::vector<ptr<authenticated_connection>>::iterator l_connection(std::find(l_authenticated_connections->begin(), l_authenticated_connections->end(), (*a_async_receive_result)->m_owner));
-
-	if (l_connection != l_authenticated_connections->end())
-	{
-		if (!(*a_async_receive_result)->successful())
-		{
-			// Log that there was an error receiving data.
-			LOG_ERROR("[ PROCESSOR ] Error: Failed to receive data from connection: ");
-			LOG_ERROR("Remote Identity (base64): " << std::endl << rsa_to_base64_string((*a_async_receive_result)->m_owner->m_transmission_security_manager.m_security_information->m_remote_public_key) << std::endl);
-
-			// Boolean describing the direction of the established connection.
-			bool l_inbound_connection = (*l_connection)->m_connection_information->m_inbound;
-
-			if (!l_inbound_connection)
-			{
-				LOG("[ PROCESSOR ] Reconnecting to remote peer.");
-				// Reconnect to the remote peer
-				restart_pending_outbound_connection(
-					(*l_connection)->m_connection_information->m_local_endpoint.port(),
-					(*l_connection)->m_connection_information->m_remote_endpoint,
-					(*l_connection)->m_connection_information->m_remote_localhost
-				);
-
-			}
-
-			// Close connection
-			l_authenticated_connections->erase(l_connection);
-
-		}
-		else
-		{
-			// If the connection is still active, process the inbound message
-			m_message_processor.process_async_receive_result((*a_async_receive_result));
-
-			// Prime the IO context with another async receive request
-			(*l_connection)->async_receive();
-
-		}
-	}
-
-	a_async_receive_results.erase(a_async_receive_result);
 
 }
 
@@ -517,4 +460,11 @@ void connection_processor::process_pending_function_call(
 
 	}
 
+}
+
+affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>, affix_base::threading::cross_thread_mutex>& connection_processor::connection_results(
+
+)
+{
+	return m_connection_results;
 }

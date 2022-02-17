@@ -15,11 +15,22 @@ namespace affix_services
 		/// </summary>
 		/// <typeparam name="MESSAGE_TYPE"></typeparam>
 		template<typename MESSAGE_TYPE>
-		struct affix_services_process_message_declaration
+		struct process_message_declaration
 		{
 		public:
-			affix_base::data::ptr<affix_services::networking::authenticated_connection> m_owner;
+			/// <summary>
+			/// The connection from which this message originated.
+			/// </summary>
+			affix_base::data::ptr<affix_services::networking::authenticated_connection> m_authenticated_connection;
+
+			/// <summary>
+			/// The message header which contains useful information about the message.
+			/// </summary>
 			affix_services::messaging::message_header m_message_header;
+
+			/// <summary>
+			/// The message body which contains all of the fields specific to the message type.
+			/// </summary>
 			MESSAGE_TYPE m_message_body;
 
 		public:
@@ -37,14 +48,14 @@ namespace affix_services
 			/// <param name="a_owner"></param>
 			/// <param name="a_message_header"></param>
 			/// <param name="a_body_byte_buffer"></param>
-			affix_services_process_message_declaration(
-				const affix_base::data::ptr<affix_services::networking::authenticated_connection>& a_owner,
+			process_message_declaration(
+				const affix_base::data::ptr<affix_services::networking::authenticated_connection>& a_authenticated_connection,
 				const affix_services::messaging::message_header& a_message_header,
 				affix_base::data::byte_buffer& a_body_byte_buffer
 			)
 			{
 				// Store owner connection.
-				m_owner = a_owner;
+				m_authenticated_connection = a_authenticated_connection;
 
 				// Store message header.
 				m_message_header = a_message_header;
@@ -65,6 +76,31 @@ namespace affix_services
 		/// </summary>
 		std::function<void(const std::vector<uint8_t>&)> m_relay_received_callback;
 
+		/// <summary>
+		/// Authenticated connections' receive results.
+		/// </summary>
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection_receive_result>>, affix_base::threading::cross_thread_mutex> m_authenticated_connection_receive_results;
+
+		/// <summary>
+		/// A vector of all received relay requests.
+		/// </summary>
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<process_message_declaration<message_rqt_relay>>>, affix_base::threading::cross_thread_mutex> m_received_relay_requests;
+
+		/// <summary>
+		/// A vector of all received relay responses.
+		/// </summary>
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<process_message_declaration<message_rsp_relay>>>, affix_base::threading::cross_thread_mutex> m_received_relay_responses;
+
+		/// <summary>
+		/// A vector of all received index requests.
+		/// </summary>
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<process_message_declaration<message_rqt_index>>>, affix_base::threading::cross_thread_mutex> m_received_index_requests;
+
+		/// <summary>
+		/// A vector of all received index responses.
+		/// </summary>
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<process_message_declaration<message_rsp_index>>>, affix_base::threading::cross_thread_mutex> m_received_index_responses;
+
 	public:
 		/// <summary>
 		/// Constructor for the message processor which takes as an argument 
@@ -79,38 +115,35 @@ namespace affix_services
 		/// Processes an async receive result (originating from the connection processor).
 		/// </summary>
 		/// <param name="a_connection_async_receive_result"></param>
-		virtual void process_async_receive_result(
-			affix_base::data::ptr<affix_services::networking::connection_async_receive_result> a_connection_async_receive_result
+		void process(
+
 		);
 
 		/// <summary>
-		/// Processes a single Affix Services message
+		/// Processes all receive results originating from authenticated connections.
 		/// </summary>
-		/// <typeparam name="MESSAGE_TYPE"></typeparam>
-		/// <param name="a_process_message_declaration"></param>
-		template<typename MESSAGE_TYPE>
-		void process_message(
-			const affix_services_process_message_declaration<MESSAGE_TYPE>& a_process_message_declaration
-		)
-		{
+		void process_authenticated_connection_receive_results(
 
-		}
+		);
 
-		template<>
-		void process_message(
-			const affix_services_process_message_declaration<affix_services::message_rqt_relay>& a_process_message_declaration
-		)
-		{
+		/// <summary>
+		/// Processes a single receive result originating from an authenticated connection.
+		/// </summary>
+		/// <param name="a_authenticated_connection_receive_results"></param>
+		/// <param name="a_authenticated_connection_receive_result"></param>
+		void process_authenticated_connection_receive_result(
+			std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection_receive_result>>& a_authenticated_connection_receive_results,
+			std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection_receive_result>>::iterator a_authenticated_connection_receive_result
+		);
 
-		}
+	public:
+		/// <summary>
+		/// Gets a reference to the receive results vector.
+		/// </summary>
+		/// <returns></returns>
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection_receive_result>>, affix_base::threading::cross_thread_mutex>& authenticated_connection_receive_results(
 
-		template<>
-		void process_message(
-			const affix_services_process_message_declaration<affix_services::message_rsp_relay>& a_process_message_declaration
-		)
-		{
-
-		}
+		);
 
 	};
 }

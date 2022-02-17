@@ -35,7 +35,7 @@ authenticated_connection::~authenticated_connection(
 authenticated_connection::authenticated_connection(
 	affix_base::data::ptr<connection_information> a_connection_information,
 	affix_base::data::ptr<security_information> a_security_information,
-	affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_async_receive_result>>, affix_base::threading::cross_thread_mutex>& a_receive_results
+	affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authenticated_connection_receive_result>>, affix_base::threading::cross_thread_mutex>& a_receive_results
 ) :
 	m_transmission_security_manager(a_security_information),
 	m_connection_information(a_connection_information),
@@ -89,33 +89,20 @@ void authenticated_connection::async_receive(
 		// Set the last interaction time to the current utc time.
 		locked_resource l_last_interaction_time = m_last_interaction_time.lock();
 		(*l_last_interaction_time) = utc_time();
-
+		
 		// Lock the mutex preventing concurrent reads/writes to the vector
 		locked_resource l_receive_results = m_receive_results.lock();
 
-		// Dynamically allocate result
-		ptr<connection_async_receive_result> l_result(new connection_async_receive_result(this));
-
-		// Push dynamically allocated result into vector.
-		l_receive_results->push_back(l_result);
-
-		if (!a_result)
-		{
-			LOG_ERROR("[ CONNECTION ] Error receiving data.");
-
-			// Close the connection.
-			close();
-
-			return; 
-		}
-
+		// The result from trying to import the message
 		transmission_result l_transmission_result = transmission_result::unknown;
 
+		// The decrypted message data.
 		vector<uint8_t> l_message_data;
 
-		// TRY TO "IMPORT" THE TRANSMISSION DATA
-		if (!m_transmission_security_manager.import_transmission(l_data.val(), l_message_data, l_transmission_result))
+		// If the receive call was unsuccessful, close the connection, then return.
+		if (!a_result || !m_transmission_security_manager.import_transmission(l_data.val(), l_message_data, l_transmission_result))
 		{
+			LOG_ERROR("[ CONNECTION ] Error receiving data.");
 			LOG_ERROR("[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result]);
 
 			// Close the connection.
@@ -126,8 +113,12 @@ void authenticated_connection::async_receive(
 
 		byte_buffer l_message_data_buffer(l_message_data);
 
-		// Save byte buffer for future use.
-		l_result->m_byte_buffer = l_message_data_buffer;
+		// Write the byte buffer to the vector of receive results
+		l_receive_results->push_back(
+			new authenticated_connection_receive_result(
+			this, l_message_data_buffer
+			)
+		);
 
 	});
 

@@ -46,7 +46,7 @@ int main()
 
 	connection_processor l_processor(
 		l_io_context,
-		l_message_processor,
+		l_message_processor.authenticated_connection_receive_results(),
 		l_connection_processor_configuration
 	);
 
@@ -57,7 +57,7 @@ int main()
 
 	server l_server(
 		l_io_context,
-		l_processor.m_connection_results,
+		l_processor.connection_results(),
 		l_server_configuration
 	);
 
