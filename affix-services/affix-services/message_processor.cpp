@@ -25,7 +25,11 @@ void message_processor::process(
 
 )
 {
-
+	process_authenticated_connection_receive_results();
+	process_received_relay_requests();
+	process_received_relay_responses();
+	process_received_index_requests();
+	process_received_index_responses();
 }
 
 void message_processor::process_authenticated_connection_receive_results(
@@ -86,6 +90,86 @@ void message_processor::process_authenticated_connection_receive_result(
 
 
 	}
+}
+
+void message_processor::process_received_relay_requests(
+
+)
+{
+	// Lock the mutex preventing concurrent reads/writes to the vector
+	locked_resource l_received_relay_requests = m_received_relay_requests.lock();
+
+	for (int i = l_received_relay_requests->size() - 1; i >= 0; i--)
+		process_received_relay_request(l_received_relay_requests.resource(), l_received_relay_requests->begin() + i);
+
+}
+
+void message_processor::process_received_relay_request(
+	std::vector<affix_base::data::ptr<process_message_declaration<message_rqt_relay>>>& a_received_relay_requests,
+	std::vector<affix_base::data::ptr<process_message_declaration<message_rqt_relay>>>::iterator a_received_relay_request
+)
+{
+
+}
+
+void message_processor::process_received_relay_responses(
+
+)
+{
+	// Lock the mutex preventing concurrent reads/writes to the vector
+	locked_resource l_received_relay_responses = m_received_relay_responses.lock();
+
+	for (int i = l_received_relay_responses->size() - 1; i >= 0; i--)
+		process_received_relay_response(l_received_relay_responses.resource(), l_received_relay_responses->begin() + i);
+
+}
+
+void message_processor::process_received_relay_response(
+	std::vector<affix_base::data::ptr<process_message_declaration<message_rsp_relay>>>& a_received_relay_responses,
+	std::vector<affix_base::data::ptr<process_message_declaration<message_rsp_relay>>>::iterator a_received_relay_response
+)
+{
+
+}
+
+void message_processor::process_received_index_requests(
+
+)
+{
+	// Lock the mutex preventing concurrent reads/writes to the vector
+	locked_resource l_received_index_requests = m_received_index_requests.lock();
+
+	for (int i = l_received_index_requests->size() - 1; i >= 0; i--)
+		process_received_index_request(l_received_index_requests.resource(), l_received_index_requests->begin() + i);
+
+}
+
+void message_processor::process_received_index_request(
+	std::vector<affix_base::data::ptr<process_message_declaration<message_rqt_index>>>& a_received_index_requests,
+	std::vector<affix_base::data::ptr<process_message_declaration<message_rqt_index>>>::iterator a_received_index_request
+)
+{
+
+}
+
+void message_processor::process_received_index_responses(
+
+)
+{
+	// Lock the mutex preventing concurrent reads/writes to the vector
+	locked_resource l_received_index_responses = m_received_index_responses.lock();
+
+	for (int i = l_received_index_responses->size() - 1; i >= 0; i--)
+		process_received_index_response(l_received_index_responses.resource(), l_received_index_responses->begin() + i);
+
+}
+
+void message_processor::process_received_index_response(
+	std::vector<affix_base::data::ptr<process_message_declaration<message_rsp_index>>>& a_received_index_responses,
+	std::vector<affix_base::data::ptr<process_message_declaration<message_rsp_index>>>::iterator a_received_index_response
+)
+{
+
 }
 
 affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection_receive_result>>, affix_base::threading::cross_thread_mutex>& message_processor::authenticated_connection_receive_results(

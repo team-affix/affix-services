@@ -136,6 +136,68 @@ namespace affix_services
 			std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection_receive_result>>::iterator a_authenticated_connection_receive_result
 		);
 
+		/// <summary>
+		/// Processes all received relay requests in the vector.
+		/// </summary>
+		void process_received_relay_requests(
+
+		);
+
+		/// <summary>
+		/// Processes a single received relay request.
+		/// </summary>
+		/// <param name="a_received_relay_requests"></param>
+		/// <param name="a_received_relay_request"></param>
+		void process_received_relay_request(
+			std::vector<affix_base::data::ptr<process_message_declaration<message_rqt_relay>>>& a_received_relay_requests,
+			std::vector<affix_base::data::ptr<process_message_declaration<message_rqt_relay>>>::iterator a_received_relay_request
+		);
+
+		/// <summary>
+		/// Processes all received relay responses.
+		/// </summary>
+		void process_received_relay_responses(
+
+		);
+
+		/// <summary>
+		/// Processes a single received relay response.
+		/// </summary>
+		void process_received_relay_response(
+			std::vector<affix_base::data::ptr<process_message_declaration<message_rsp_relay>>>& a_received_relay_responses,
+			std::vector<affix_base::data::ptr<process_message_declaration<message_rsp_relay>>>::iterator a_received_relay_response
+		);
+
+		/// <summary>
+		/// Processes all received index requests in the vector.
+		/// </summary>
+		void process_received_index_requests(
+
+		);
+
+		/// <summary>
+		/// Processes a single received index request.
+		/// </summary>
+		void process_received_index_request(
+			std::vector<affix_base::data::ptr<process_message_declaration<message_rqt_index>>>& a_received_index_requests,
+			std::vector<affix_base::data::ptr<process_message_declaration<message_rqt_index>>>::iterator a_received_index_request
+		);
+
+		/// <summary>
+		/// Processes all received index responses.
+		/// </summary>
+		void process_received_index_responses(
+
+		);
+
+		/// <summary>
+		/// Processes a single received index response.
+		/// </summary>
+		void process_received_index_response(
+			std::vector<affix_base::data::ptr<process_message_declaration<message_rsp_index>>>& a_received_index_responses,
+			std::vector<affix_base::data::ptr<process_message_declaration<message_rsp_index>>>::iterator a_received_index_response
+		);
+
 	public:
 		/// <summary>
 		/// Gets a reference to the receive results vector.

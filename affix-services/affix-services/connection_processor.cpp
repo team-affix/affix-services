@@ -432,6 +432,8 @@ void connection_processor::process_authenticated_connection(
 	{
 		if (!(*a_authenticated_connection)->m_connection_information->m_inbound)
 		{
+			LOG("[ CONNECTION PROCESSOR ] Reconnecting to remote peer...");
+
 			// Reconnect to the remote peer
 			restart_pending_outbound_connection(
 				(*a_authenticated_connection)->m_connection_information->m_local_endpoint.port(),
