@@ -132,6 +132,12 @@
     <ClInclude Include="message_rqt_index.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
+    <ClInclude Include="pending_relay.h">
+      <Filter>Header Files\processing</Filter>
+    </ClInclude>
+    <ClInclude Include="process_message_declaration.h">
+      <Filter>Header Files\processing</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rolling_token.cpp">

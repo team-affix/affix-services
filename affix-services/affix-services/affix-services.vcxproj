@@ -171,6 +171,8 @@
     <ClInclude Include="pending_connection.h" />
     <ClInclude Include="connection_processor.h" />
     <ClInclude Include="connection_processor_configuration.h" />
+    <ClInclude Include="pending_relay.h" />
+    <ClInclude Include="process_message_declaration.h" />
     <ClInclude Include="security_information.h" />
     <ClInclude Include="server.h" />
     <ClInclude Include="server_configuration.h" />
