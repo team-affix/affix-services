@@ -3,12 +3,12 @@
 namespace affix_services
 {
 	/// <summary>
-	/// A message process call declaration type.
+	/// An inbound message deserializer type.
 	/// This type holds all deserialized parameters necessary for processing messages.
 	/// </summary>
 	/// <typeparam name="MESSAGE_TYPE"></typeparam>
 	template<typename MESSAGE_TYPE>
-	struct process_message_declaration
+	struct deserialized_message
 	{
 	public:
 		/// <summary>
@@ -41,7 +41,7 @@ namespace affix_services
 		/// <param name="a_owner"></param>
 		/// <param name="a_message_header"></param>
 		/// <param name="a_body_byte_buffer"></param>
-		process_message_declaration(
+		deserialized_message(
 			const affix_base::data::ptr<affix_services::networking::authenticated_connection>& a_originating_connection,
 			const affix_services::messaging::message_header& a_message_header,
 			affix_base::data::byte_buffer& a_body_byte_buffer

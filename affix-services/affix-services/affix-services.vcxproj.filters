@@ -135,7 +135,10 @@
     <ClInclude Include="pending_relay.h">
       <Filter>Header Files\processing</Filter>
     </ClInclude>
-    <ClInclude Include="process_message_declaration.h">
+    <ClInclude Include="deserialized_message.h">
+      <Filter>Header Files\processing</Filter>
+    </ClInclude>
+    <ClInclude Include="serialized_message.h">
       <Filter>Header Files\processing</Filter>
     </ClInclude>
   </ItemGroup>
@@ -205,6 +208,9 @@
     </ClCompile>
     <ClCompile Include="message_rsp_index.cpp">
       <Filter>Source Files\messaging</Filter>
+    </ClCompile>
+    <ClCompile Include="pending_relay.cpp">
+      <Filter>Source Files\processing</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -3,16 +3,15 @@
 #include "affix-base/ptr.h"
 #include "authenticated_connection.h"
 #include "messaging.h"
+#include "pending_relay.h"
+#include "deserialized_message.h"
+#include "serialized_message.h"
 
 namespace affix_services
 {
 	class message_processor
 	{
 	protected:
-		
-
-
-
 		/// <summary>
 		/// Callback for when a relay is received whose destination is the submodule attached to this affix-services client.
 		/// </summary>
@@ -24,24 +23,34 @@ namespace affix_services
 		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection_receive_result>>, affix_base::threading::cross_thread_mutex> m_authenticated_connection_receive_results;
 
 		/// <summary>
-		/// A vector of all received relay requests.
+		/// A vector of all pending relays
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<process_message_declaration<message_rqt_relay>>>, affix_base::threading::cross_thread_mutex> m_received_relay_requests;
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::pending_relay>>, affix_base::threading::cross_thread_mutex> m_pending_relays;
 
 		/// <summary>
-		/// A vector of all received relay responses.
+		/// A vector of all pending indexes
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<process_message_declaration<message_rsp_relay>>>, affix_base::threading::cross_thread_mutex> m_received_relay_responses;
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<pending_index>>, affix_base::threading::cross_thread_mutex> m_pending_indexes;
 
 		/// <summary>
-		/// A vector of all received index requests.
+		/// Vector of all received relay requests.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<process_message_declaration<message_rqt_index>>>, affix_base::threading::cross_thread_mutex> m_received_index_requests;
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::deserialized_message<affix_services::message_rqt_relay>>>, affix_base::threading::cross_thread_mutex> m_inbound_relay_requests;
 
 		/// <summary>
-		/// A vector of all received index responses.
+		/// Vector of all received relay responses.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<process_message_declaration<message_rsp_index>>>, affix_base::threading::cross_thread_mutex> m_received_index_responses;
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::deserialized_message<affix_services::message_rsp_relay>>>, affix_base::threading::cross_thread_mutex> m_inbound_relay_responses;
+
+		/// <summary>
+		/// Vector of all outbound relay requests.
+		/// </summary>
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::serialized_message<affix_services::message_rqt_relay>>>, affix_base::threading::cross_thread_mutex> m_outbound_relay_requests;
+
+		/// <summary>
+		/// Vector of all outbound relay responses.
+		/// </summary>
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::serialized_message<affix_services::message_rsp_relay>>>, affix_base::threading::cross_thread_mutex> m_outbound_relay_responses;
 
 	public:
 		/// <summary>
