@@ -114,6 +114,9 @@ namespace affix_services {
 					// Failed to serialize message header.
 					std::cerr << "[ AUTHENTICATED CONNECTION ] Error: failed to serialize message header." << std::endl;
 
+					// Trigger the callback with a failure response
+					a_callback(false);
+
 					// Close the conection.
 					close();
 
@@ -132,6 +135,9 @@ namespace affix_services {
 				{
 					// Failed to serialize message header.
 					std::cerr << "[ AUTHENTICATED CONNECTION ] Error: failed to serialize message body." << std::endl;
+
+					// Trigger the callback with a failure response
+					a_callback(false);
 
 					// Close the conection.
 					close();
@@ -173,7 +179,7 @@ namespace affix_services {
 			/// <param name="a_callback"></param>
 			void async_send_message_data(
 				const affix_base::data::byte_buffer& a_byte_buffer,
-				const std::function<void()>& a_callback
+				const std::function<void(bool)>& a_callback
 			);
 
 			/// <summary>
@@ -183,7 +189,7 @@ namespace affix_services {
 			/// </summary>
 			void async_receive_message_data(
 				std::vector<uint8_t>& a_received_message_data,
-				const std::function<void()>& a_callback
+				const std::function<void(bool)>& a_callback
 			);
 
 		public:

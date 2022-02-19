@@ -16,23 +16,28 @@ namespace affix_services
 		{
 			unknown = 0,
 			error_packing_path,
+			error_packing_path_index,
 			error_packing_payload
 		};
 		enum class deserialization_status_response_type : uint8_t
 		{
 			unknown = 0,
-			error_importing_identity,
 			error_unpacking_path,
+			error_unpacking_path_index,
 			error_unpacking_payload
 		};
 		enum class processing_status_response_type : uint8_t
 		{
 			unknown = 0,
-			error_identity_not_connected
+			success,
+			error_identity_not_connected,
+			error_identity_not_reached
 		};
 
 	public:
 		std::vector<std::string> m_path;
+		size_t m_path_index = 0;
+
 		std::vector<uint8_t> m_payload;
 
 	public:
@@ -41,6 +46,7 @@ namespace affix_services
 		);
 		message_rqt_relay(
 			const std::vector<std::string>& a_path,
+			const size_t& a_path_index,
 			const std::vector<uint8_t>& a_payload
 		);
 

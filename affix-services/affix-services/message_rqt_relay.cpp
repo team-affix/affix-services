@@ -16,9 +16,11 @@ message_rqt_relay::message_rqt_relay(
 
 message_rqt_relay::message_rqt_relay(
 	const std::vector<std::string>& a_path,
+	const size_t& a_path_index,
 	const std::vector<uint8_t>& a_payload
 ) :
 	m_path(a_path),
+	m_path_index(a_path_index),
 	m_payload(a_payload)
 {
 
@@ -33,6 +35,13 @@ bool message_rqt_relay::serialize(
 	if (!a_output.push_back(m_path))
 	{
 		a_result = serialization_status_response_type::error_packing_path;
+		return false;
+	}
+
+	// Push the index of the current identity in the path onto the byte buffer
+	if (!a_output.push_back(m_path_index))
+	{
+		a_result = serialization_status_response_type::error_packing_path_index;
 		return false;
 	}
 	
@@ -56,6 +65,13 @@ bool message_rqt_relay::deserialize(
 	if (!a_input.pop_front(m_path))
 	{
 		a_result = deserialization_status_response_type::error_unpacking_path;
+		return false;
+	}
+
+	// Pop the path index from the byte buffer
+	if (!a_input.pop_front(m_path_index))
+	{
+		a_result = deserialization_status_response_type::error_unpacking_path_index;
 		return false;
 	}
 

@@ -58,8 +58,11 @@ void authenticated_connection::async_receive_message(
 
 	async_receive_message_data(
 		l_received_message_data.val(),
-		[&, l_received_message_data]()
+		[&, l_received_message_data](bool a_result)
 		{
+			if (!a_result)
+				return;
+
 			// Create byte buffer from which all message-specific data will be unpacked
 			affix_base::data::byte_buffer l_message_data_byte_buffer(*l_received_message_data);
 
@@ -223,7 +226,7 @@ void authenticated_connection::async_receive_message(
 
 void authenticated_connection::async_send_message_data(
 	const affix_base::data::byte_buffer& a_byte_buffer,
-	const std::function<void()>& a_callback
+	const std::function<void(bool)>& a_callback
 )
 {
 	// Set the last interaction time to the current utc time.
@@ -237,6 +240,9 @@ void authenticated_connection::async_send_message_data(
 	// TRY TO EXPORT MESSAGE DATA IN "TRANSMISSION" FORMAT
 	if (!m_transmission_security_manager.export_transmission(a_byte_buffer.data(), l_exported_transmission_data, l_transmission_result)) {
 		LOG_ERROR("[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result]);
+
+		// Trigger the callback with a failure response.
+		a_callback(false);
 
 		// Close the connection.
 		close();
@@ -252,6 +258,9 @@ void authenticated_connection::async_send_message_data(
 			{
 				LOG_ERROR("[ CONNECTION ] Error sending data.");
 
+				// Trigger the callback with a failure response.
+				a_callback(false);
+
 				// Close the connection.
 				close();
 
@@ -259,7 +268,7 @@ void authenticated_connection::async_send_message_data(
 			}
 
 			// Trigger the argued callback function
-			a_callback();
+			a_callback(true);
 
 		}));
 
@@ -267,7 +276,7 @@ void authenticated_connection::async_send_message_data(
 
 void authenticated_connection::async_receive_message_data(
 	std::vector<uint8_t>& a_received_message_data,
-	const std::function<void()>& a_callback
+	const std::function<void(bool)>& a_callback
 )
 {
 	// DYNAMICALLY ALLOCATE VECTOR SO IT CAN STAY IN SCOPE FOR LAMBDA CALLBACKS
@@ -290,6 +299,9 @@ void authenticated_connection::async_receive_message_data(
 				LOG_ERROR("[ CONNECTION ] Error receiving data.");
 				LOG_ERROR("[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result]);
 
+				// Trigger the callback with a failure response.
+				a_callback(false);
+
 				// Close the connection.
 				close();
 
@@ -297,7 +309,7 @@ void authenticated_connection::async_receive_message_data(
 			}
 
 			// Call the argued callback function
-			a_callback();
+			a_callback(true);
 
 	}));
 

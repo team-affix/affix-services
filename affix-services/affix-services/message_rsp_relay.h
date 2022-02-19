@@ -30,8 +30,6 @@ namespace affix_services
 		};
 
 	public:
-		message_rqt_relay::deserialization_status_response_type m_deserialization_status_response =
-			message_rqt_relay::deserialization_status_response_type::unknown;
 		message_rqt_relay::processing_status_response_type m_processing_status_response =
 			message_rqt_relay::processing_status_response_type::unknown;
 
@@ -40,7 +38,6 @@ namespace affix_services
 
 		);
 		message_rsp_relay(
-			message_rqt_relay::deserialization_status_response_type a_deserialization_status_response,
 			message_rqt_relay::processing_status_response_type a_processing_status_response
 		);
 
