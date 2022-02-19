@@ -9,7 +9,6 @@
 #include "affix-base/networking.h"
 #include "affix-base/transmission.h"
 #include "message_header.h"
-#include "authenticated_connection_received_message.h"
 #include "affix-base/cross_thread_mutex.h"
 #include "affix-base/threading.h"
 #include "connection_information.h"

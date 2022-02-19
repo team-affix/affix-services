@@ -104,8 +104,7 @@ void authenticated_connection::async_receive_message(
 				case messaging::message_types::rqt_relay:
 				{
 					// Lock the mutex preventing concurrent reads/writes to the vector
-					locked_resource<std::vector<affix_base::data::ptr<authenticated_connection_received_message<message_rqt_relay>>>, affix_base::threading::cross_thread_mutex> 
-						l_received_relay_requests = m_application.m_received_relay_requests.lock();
+					locked_resource l_received_relay_requests = m_application.m_received_relay_requests.lock();
 
 					message_rqt_relay l_message_body;
 
@@ -121,9 +120,8 @@ void authenticated_connection::async_receive_message(
 
 					// Push the received relay request onto the vector
 					l_received_relay_requests->push_back(
-						new authenticated_connection_received_message<message_rqt_relay>(
+						new std::tuple(
 							this,
-							l_message_header,
 							l_message_body
 						));
 
@@ -132,8 +130,7 @@ void authenticated_connection::async_receive_message(
 				case messaging::message_types::rsp_relay:
 				{
 					// Lock the mutex preventing concurrent reads/writes to the vector
-					locked_resource<std::vector<affix_base::data::ptr<authenticated_connection_received_message<message_rsp_relay>>>, affix_base::threading::cross_thread_mutex> 
-						l_received_relay_responses = m_application.m_received_relay_responses.lock();
+					locked_resource l_received_relay_responses = m_application.m_received_relay_responses.lock();
 
 					message_rsp_relay l_message_body;
 
@@ -149,9 +146,8 @@ void authenticated_connection::async_receive_message(
 
 					// Push the received relay request onto the vector
 					l_received_relay_responses->push_back(
-						new authenticated_connection_received_message<message_rsp_relay>(
+						new std::tuple(
 							this,
-							l_message_header,
 							l_message_body
 						));
 
@@ -160,8 +156,7 @@ void authenticated_connection::async_receive_message(
 				case messaging::message_types::rqt_index:
 				{
 					// Lock the mutex preventing concurrent reads/writes to the vector
-					locked_resource<std::vector<affix_base::data::ptr<authenticated_connection_received_message<message_rqt_index>>>, affix_base::threading::cross_thread_mutex> 
-						l_received_index_requests = m_application.m_received_index_requests.lock();
+					locked_resource l_received_index_requests = m_application.m_received_index_requests.lock();
 
 					message_rqt_index l_message_body;
 
@@ -177,9 +172,8 @@ void authenticated_connection::async_receive_message(
 
 					// Push the received relay request onto the vector
 					l_received_index_requests->push_back(
-						new authenticated_connection_received_message<message_rqt_index>(
+						new std::tuple(
 							this,
-							l_message_header,
 							l_message_body
 						));
 
@@ -188,8 +182,7 @@ void authenticated_connection::async_receive_message(
 				case messaging::message_types::rsp_index:
 				{
 					// Lock the mutex preventing concurrent reads/writes to the vector
-					locked_resource<std::vector<affix_base::data::ptr<authenticated_connection_received_message<message_rsp_index>>>, affix_base::threading::cross_thread_mutex> 
-						l_received_index_responses = m_application.m_received_index_responses.lock();
+					locked_resource l_received_index_responses = m_application.m_received_index_responses.lock();
 
 					message_rsp_index l_message_body;
 
@@ -205,9 +198,8 @@ void authenticated_connection::async_receive_message(
 
 					// Push the received relay request onto the vector
 					l_received_index_responses->push_back(
-						new authenticated_connection_received_message<message_rsp_index>(
+						new std::tuple(
 							this,
-							l_message_header,
 							l_message_body
 						));
 					

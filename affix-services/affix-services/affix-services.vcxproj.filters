@@ -72,9 +72,6 @@
     <ClInclude Include="transmission_result.h">
       <Filter>Header Files\networking</Filter>
     </ClInclude>
-    <ClInclude Include="authenticated_connection_received_message.h">
-      <Filter>Header Files\networking</Filter>
-    </ClInclude>
     <ClInclude Include="pending_authentication.h">
       <Filter>Header Files\networking</Filter>
     </ClInclude>

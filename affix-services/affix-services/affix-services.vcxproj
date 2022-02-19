@@ -163,7 +163,6 @@
     <ClInclude Include="authentication_result.h" />
     <ClInclude Include="message_processor_configuration.h" />
     <ClInclude Include="details.h" />
-    <ClInclude Include="authenticated_connection_received_message.h" />
     <ClInclude Include="messaging.h" />
     <ClInclude Include="connection_information.h" />
     <ClInclude Include="pending_connection.h" />
