@@ -34,12 +34,6 @@
     <Filter Include="Header Files\details">
       <UniqueIdentifier>{69d898c4-4569-4e27-8079-3b87834cd551}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\application">
-      <UniqueIdentifier>{07437575-5f1a-47da-9179-9aa1e52a7ea7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\application">
-      <UniqueIdentifier>{e77e02a4-6199-44dd-9fac-e66e76a1acbd}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\processing">
       <UniqueIdentifier>{b0ef6205-5a64-4b0d-8566-7f051ca89fe4}</UniqueIdentifier>
     </Filter>
@@ -78,7 +72,7 @@
     <ClInclude Include="transmission_result.h">
       <Filter>Header Files\networking</Filter>
     </ClInclude>
-    <ClInclude Include="connection_async_receive_result.h">
+    <ClInclude Include="authenticated_connection_received_message.h">
       <Filter>Header Files\networking</Filter>
     </ClInclude>
     <ClInclude Include="pending_authentication.h">
@@ -93,15 +87,6 @@
     <ClInclude Include="messaging.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
-    <ClInclude Include="server.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="server_configuration.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="application_configuration.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
     <ClInclude Include="pending_connection.h">
       <Filter>Header Files\networking</Filter>
     </ClInclude>
@@ -114,13 +99,10 @@
     <ClInclude Include="message_processor_configuration.h">
       <Filter>Header Files\processing</Filter>
     </ClInclude>
-    <ClInclude Include="message_processor.h">
+    <ClInclude Include="application_configuration.h">
       <Filter>Header Files\processing</Filter>
     </ClInclude>
-    <ClInclude Include="connection_processor_configuration.h">
-      <Filter>Header Files\processing</Filter>
-    </ClInclude>
-    <ClInclude Include="connection_processor.h">
+    <ClInclude Include="application.h">
       <Filter>Header Files\processing</Filter>
     </ClInclude>
     <ClInclude Include="message_rqt_relay.h">
@@ -133,12 +115,6 @@
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
     <ClInclude Include="pending_relay.h">
-      <Filter>Header Files\processing</Filter>
-    </ClInclude>
-    <ClInclude Include="deserialized_message.h">
-      <Filter>Header Files\processing</Filter>
-    </ClInclude>
-    <ClInclude Include="serialized_message.h">
       <Filter>Header Files\processing</Filter>
     </ClInclude>
   </ItemGroup>
@@ -155,9 +131,6 @@
     <ClCompile Include="transmission_security_manager.cpp">
       <Filter>Source Files\security</Filter>
     </ClCompile>
-    <ClCompile Include="connection_async_receive_result.cpp">
-      <Filter>Source Files\networking</Filter>
-    </ClCompile>
     <ClCompile Include="pending_authentication.cpp">
       <Filter>Source Files\networking</Filter>
     </ClCompile>
@@ -167,31 +140,16 @@
     <ClCompile Include="connection_result.cpp">
       <Filter>Source Files\networking</Filter>
     </ClCompile>
-    <ClCompile Include="pending_connection.cpp">
-      <Filter>Source Files\application</Filter>
-    </ClCompile>
-    <ClCompile Include="server.cpp">
-      <Filter>Source Files\application</Filter>
-    </ClCompile>
-    <ClCompile Include="server_configuration.cpp">
-      <Filter>Source Files\application</Filter>
-    </ClCompile>
-    <ClCompile Include="application_configuration.cpp">
-      <Filter>Source Files\application</Filter>
-    </ClCompile>
     <ClCompile Include="connection_information.cpp">
       <Filter>Source Files\networking</Filter>
     </ClCompile>
     <ClCompile Include="security_information.cpp">
       <Filter>Source Files\security</Filter>
     </ClCompile>
-    <ClCompile Include="message_processor.cpp">
+    <ClCompile Include="application_configuration.cpp">
       <Filter>Source Files\processing</Filter>
     </ClCompile>
-    <ClCompile Include="connection_processor_configuration.cpp">
-      <Filter>Source Files\processing</Filter>
-    </ClCompile>
-    <ClCompile Include="connection_processor.cpp">
+    <ClCompile Include="application.cpp">
       <Filter>Source Files\processing</Filter>
     </ClCompile>
     <ClCompile Include="message_rqt_relay.cpp">
@@ -211,6 +169,9 @@
     </ClCompile>
     <ClCompile Include="pending_relay.cpp">
       <Filter>Source Files\processing</Filter>
+    </ClCompile>
+    <ClCompile Include="pending_connection.cpp">
+      <Filter>Source Files\networking</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

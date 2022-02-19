@@ -1,9 +1,9 @@
 #pragma once
 #include "affix-base/pch.h"
+#include "affix-base/ptr.h"
 #include "message_rqt_relay.h"
 #include "message_rsp_relay.h"
 #include "authenticated_connection.h"
-#include "inbound_message.h"
 
 namespace affix_services
 {
@@ -11,28 +11,15 @@ namespace affix_services
 	{
 	protected:
 		/// <summary>
-		/// The actual received request.
+		/// Dispatcher for the callback functions to be used (send, receive callbacks)
 		/// </summary>
-		affix_services::message_rqt_relay m_request;
+		affix_base::callback::dispatcher<affix_base::threading::cross_thread_mutex, void, bool> m_dispatcher;
 
-		/// <summary>
-		/// Vector of all pending relay objects.
-		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<pending_relay>>, affix_base::threading::cross_thread_mutex>& m_pending_relays;
-
-		/// <summary>
-		/// Vector into which the result of this async object will push it's results.
-		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<relay_result>>, affix_base::threading::cross_thread_mutex>& m_relay_results;
 	public:
 		pending_relay(
-			const affix_services::message_rqt_relay& a_request,
-			affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<pending_relay>>, affix_base::threading::cross_thread_mutex>& a_pending_relays,
-			affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<relay_result>>, affix_base::threading::cross_thread_mutex>& a_relay_results
-		);
-
-		bool finished(
-
+			const std::function<void(const std::vector<uint8_t>&)>& a_relay_received_callback,
+			const affix_base::data::ptr<affix_services::networking::authenticated_connection>& a_authenticated_connection,
+			const affix_services::message_rqt_relay& a_request
 		);
 
 	};

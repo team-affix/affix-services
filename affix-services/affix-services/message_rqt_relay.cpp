@@ -3,6 +3,10 @@
 using namespace affix_services;
 using namespace affix_base::cryptography;
 
+affix_services::messaging::message_types message_rqt_relay::s_message_type(
+	affix_services::messaging::message_types::rqt_relay
+);
+
 message_rqt_relay::message_rqt_relay(
 
 )

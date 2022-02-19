@@ -14,30 +14,68 @@ namespace affix_services {
 		class message_header
 		{
 		public:
+			enum class serialization_status_response_type : uint8_t
+			{
+				unknown = 0,
+				error_packing_affix_services_version,
+				error_packing_message_type,
+			};
+			enum class deserialization_status_response_type : uint8_t
+			{
+				unknown = 0,
+				error_unpacking_affix_services_version,
+				error_affix_services_version_mismatch,
+				error_unpacking_message_type,
+			};
+
+		public:
+			/// <summary>
+			/// The version of affix services in the sender module
+			/// </summary>
 			affix_base::details::semantic_version_number m_affix_services_version = affix_services::details::i_affix_services_version;
 
-		public:
+			/// <summary>
+			/// The type of message being sent
+			/// </summary>
 			message_types m_message_type = message_types::unknown;
-			affix_services::networking::transmission_result m_transmission_result = affix_services::networking::transmission_result::unknown;
 
 		public:
+			/// <summary>
+			/// Default constructor. Initializes all fields to their types' default values.
+			/// </summary>
 			message_header(
 
 			);
+
+			/// <summary>
+			/// Constructs the message header with the argued field values.
+			/// </summary>
+			/// <param name="a_discourse_id"></param>
+			/// <param name="a_message_type"></param>
+			/// <param name="a_transmission_result"></param>
 			message_header(
-				const uint32_t& a_discourse_id,
-				const message_types& a_message_type,
-				const affix_services::networking::transmission_result& a_transmission_result
+				const message_types& a_message_type
 			);
 
-		public:
+			/// <summary>
+			/// Serializes the message header, returning a boolean suggesting the success of the operation (true == success)
+			/// </summary>
+			/// <param name="a_output"></param>
+			/// <param name="a_result"></param>
+			/// <returns></returns>
 			virtual bool serialize(
 				affix_base::data::byte_buffer& a_output,
-				affix_services::networking::transmission_result& a_result
+				serialization_status_response_type& a_result
 			);
+			/// <summary>
+			/// Deserializes the message header, returning a boolean suggesting the success of the operation (true == success)
+			/// </summary>
+			/// <param name="a_output"></param>
+			/// <param name="a_result"></param>
+			/// <returns></returns>
 			virtual bool deserialize(
 				affix_base::data::byte_buffer& a_input,
-				affix_services::networking::transmission_result& a_result
+				deserialization_status_response_type& a_result
 			);
 
 		};

@@ -2,11 +2,15 @@
 #include "affix-base/pch.h"
 #include "affix-base/byte_buffer.h"
 #include "affix-base/tree.h"
+#include "message_types.h"
 
 namespace affix_services
 {
 	class message_rsp_index
 	{
+	public:
+		static affix_services::messaging::message_types s_message_type;
+
 	public:
 		enum class serialization_status_response_type : uint8_t
 		{

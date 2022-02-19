@@ -1,9 +1,10 @@
-#include "connection_processor.h"
+#include "application.h"
 #include "cryptopp/osrng.h"
 #include "affix-base/vector_extensions.h"
 #include "messaging.h"
 #include "transmission_result.h"
 #include "pending_connection.h"
+#include "affix-base/string_extensions.h"
 
 #if 1
 #define LOG(x) std::clog << x << std::endl
@@ -30,21 +31,70 @@ using affix_services::networking::transmission_result_strings;
 using affix_services::pending_connection;
 using affix_services::connection_information;
 using namespace affix_base::threading;
+using namespace affix_base::data;
 
-connection_processor::connection_processor(
+application::application(
 	asio::io_context& a_io_context,
-	affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection_receive_result>>, affix_base::threading::cross_thread_mutex>& a_authenticated_connection_receive_results,
-	affix_base::data::ptr<connection_processor_configuration> a_connection_processor_configuration
+	affix_base::data::ptr<application_configuration> a_application_configuration
 ) :
 	m_io_context(a_io_context),
-	m_authenticated_connection_receive_results(a_authenticated_connection_receive_results),
-	m_connection_processor_configuration(a_connection_processor_configuration)
+	m_application_configuration(a_application_configuration)
 {
+	if (m_application_configuration->m_enable_server.resource())
+		// If the server is enabled, start it
+		start_server();
 
+	// Begin connecting to the default remote parties
+	start_pending_outbound_connections();
+	
 }
 
-void connection_processor::start_pending_outbound_connection(
-	const uint16_t& a_bind_port,
+void application::start_server(
+
+)
+{
+	// Log a server bootup message to the standard output
+	LOG("[ CONNECTION PROCESSOR ] Starting server.");
+
+	// Create acceptor object using the specified endpoint
+	m_acceptor = new tcp::acceptor(m_io_context, tcp::endpoint(tcp::v4(), m_application_configuration->m_server_bind_port.resource()));
+
+	// Begin accepting connections
+	async_accept_next();
+}
+
+void application::start_pending_outbound_connections(
+
+)
+{
+	// Get remote endpoints to which we should connect
+	std::vector<std::string> l_remote_endpoints = m_application_configuration->m_remote_endpoint_strings.resource();
+
+	// Connect to remote parties
+	for (int i = 0; i < l_remote_endpoints.size(); i++)
+	{
+		std::vector<std::string> l_remote_endpoint_string_split = affix_base::data::string_split(l_remote_endpoints[i], ':');
+
+		// Check if the remote endpoint is localhost
+		bool l_remote_localhost = l_remote_endpoint_string_split[0] == "localhost";
+
+		asio::ip::tcp::endpoint l_remote_endpoint;
+
+		// Configure address of remote endpoint
+		if (!l_remote_localhost)
+			l_remote_endpoint.address(asio::ip::make_address(l_remote_endpoint_string_split[0]));
+
+		// Configure port of remote endpoint
+		l_remote_endpoint.port(std::stoi(l_remote_endpoint_string_split[1]));
+
+		// Start pending outbound connection
+		LOG(" [ APPLICATION ] Connecting to: " << l_remote_endpoints[i]);
+		start_pending_outbound_connection(l_remote_endpoint, l_remote_localhost);
+
+	}
+}
+
+void application::start_pending_outbound_connection(
 	asio::ip::tcp::endpoint a_remote_endpoint,
 	const bool& a_remote_localhost
 )
@@ -54,7 +104,7 @@ void connection_processor::start_pending_outbound_connection(
 
 	
 	// Instantiate local endpoint object.
-	tcp::endpoint l_local_endpoint(tcp::v4(), a_bind_port);
+	tcp::endpoint l_local_endpoint(tcp::v4(), 0);
 
 
 	// If the remote is localhost, assign the remote endpoint's address to the local IP address
@@ -68,7 +118,7 @@ void connection_processor::start_pending_outbound_connection(
 			std::cerr << "Unable to get the local ip address." << std::endl;
 
 			// If the local IP address is unable to be retrieved, set the outbound connection to retry
-			restart_pending_outbound_connection(a_bind_port, a_remote_endpoint, a_remote_localhost);
+			restart_pending_outbound_connection(a_remote_endpoint, a_remote_localhost);
 
 			return;
 
@@ -95,8 +145,7 @@ void connection_processor::start_pending_outbound_connection(
 
 }
 
-void connection_processor::restart_pending_outbound_connection(
-	const uint16_t& a_bind_port,
+void application::restart_pending_outbound_connection(
 	asio::ip::tcp::endpoint a_remote_endpoint,
 	const bool& a_remote_localhost
 )
@@ -104,21 +153,21 @@ void connection_processor::restart_pending_outbound_connection(
 	locked_resource l_pending_function_calls = m_pending_function_calls.lock();
 
 	// The inclusive minimum UTC time at which this pending function should trigger.
-	uint64_t l_time_to_reconnect = affix_base::timing::utc_time() + m_connection_processor_configuration->m_reconnect_delay_in_seconds.resource();
+	uint64_t l_time_to_reconnect = affix_base::timing::utc_time() + m_application_configuration->m_reconnect_delay_in_seconds.resource();
 
 	// Create delayed function call
 	l_pending_function_calls->push_back(
 		std::tuple(
 			l_time_to_reconnect,
-			[&, a_remote_endpoint, a_bind_port, a_remote_localhost]
+			[&, a_remote_endpoint, a_remote_localhost]
 			{
 				// Start a normal pending connection.
-				start_pending_outbound_connection(a_bind_port, a_remote_endpoint, a_remote_localhost);
+				start_pending_outbound_connection(a_remote_endpoint, a_remote_localhost);
 			}
 		));
 }
 
-bool connection_processor::identity_approved(
+bool application::identity_approved(
 	const CryptoPP::RSA::PublicKey& a_identity
 )
 {
@@ -128,7 +177,7 @@ bool connection_processor::identity_approved(
 		std::string l_identity = rsa_to_base64_string(a_identity);
 
 		// Get current approved identities
-		std::vector<std::string>& l_approved_identities = m_connection_processor_configuration->m_approved_identities.resource();
+		std::vector<std::string>& l_approved_identities = m_application_configuration->m_approved_identities.resource();
 
 		return std::find(l_approved_identities.begin(), l_approved_identities.end(), l_identity) !=
 			l_approved_identities.end();
@@ -143,7 +192,7 @@ bool connection_processor::identity_approved(
 	}
 }
 
-void connection_processor::process(
+void application::process(
 
 )
 {
@@ -152,10 +201,13 @@ void connection_processor::process(
 	process_authentication_attempts();
 	process_authentication_attempt_results();
 	process_authenticated_connections();
+
+	process_pending_relays();
+
 	process_pending_function_calls();
 }
 
-void connection_processor::process_pending_outbound_connections(
+void application::process_pending_outbound_connections(
 
 )
 {
@@ -168,7 +220,7 @@ void connection_processor::process_pending_outbound_connections(
 
 }
 
-void connection_processor::process_pending_outbound_connection(
+void application::process_pending_outbound_connection(
 	std::vector<affix_base::data::ptr<pending_connection>>& a_pending_outbound_connections,
 	std::vector<affix_base::data::ptr<pending_connection>>::iterator a_pending_outbound_connection
 )
@@ -192,7 +244,7 @@ void connection_processor::process_pending_outbound_connection(
 
 }
 
-void connection_processor::process_connection_results(
+void application::process_connection_results(
 
 )
 {
@@ -205,7 +257,7 @@ void connection_processor::process_connection_results(
 
 }
 
-void connection_processor::process_connection_result(
+void application::process_connection_result(
 	std::vector<affix_base::data::ptr<connection_result>>& a_connection_results,
 	std::vector<affix_base::data::ptr<connection_result>>::iterator a_connection_result
 )
@@ -227,10 +279,10 @@ void connection_processor::process_connection_result(
 			new pending_authentication(
 				(*a_connection_result)->m_connection_information,
 				l_remote_seed,
-				m_connection_processor_configuration->m_local_key_pair.resource(),
+				m_application_configuration->m_local_key_pair.resource(),
 				m_authentication_attempt_results,
-				m_connection_processor_configuration->m_enable_pending_authentication_timeout.resource(),
-				m_connection_processor_configuration->m_pending_authentication_timeout_in_seconds.resource()
+				m_application_configuration->m_enable_pending_authentication_timeout.resource(),
+				m_application_configuration->m_pending_authentication_timeout_in_seconds.resource()
 			)
 		);
 
@@ -242,7 +294,6 @@ void connection_processor::process_connection_result(
 	{
 		// Reconnect to the remote peer
 		restart_pending_outbound_connection(
-			(*a_connection_result)->m_connection_information->m_local_endpoint.port(),
 			(*a_connection_result)->m_connection_information->m_remote_endpoint,
 			(*a_connection_result)->m_connection_information->m_remote_localhost
 		);
@@ -254,7 +305,7 @@ void connection_processor::process_connection_result(
 
 }
 
-void connection_processor::process_authentication_attempts(
+void application::process_authentication_attempts(
 
 )
 {
@@ -267,7 +318,7 @@ void connection_processor::process_authentication_attempts(
 
 }
 
-void connection_processor::process_authentication_attempt(
+void application::process_authentication_attempt(
 	std::vector<affix_base::data::ptr<pending_authentication>>& a_authentication_attempts,
 	std::vector<affix_base::data::ptr<pending_authentication>>::iterator a_authentication_attempt
 )
@@ -296,7 +347,7 @@ void connection_processor::process_authentication_attempt(
 
 }
 
-void connection_processor::process_authentication_attempt_results(
+void application::process_authentication_attempt_results(
 
 )
 {
@@ -309,7 +360,7 @@ void connection_processor::process_authentication_attempt_results(
 
 }
 
-void connection_processor::process_authentication_attempt_result(
+void application::process_authentication_attempt_result(
 	std::vector<affix_base::data::ptr<authentication_result>>& a_authentication_attempt_results,
 	std::vector<affix_base::data::ptr<authentication_result>>::iterator a_authentication_attempt_result
 )
@@ -335,9 +386,9 @@ void connection_processor::process_authentication_attempt_result(
 		// Create authenticated connection object
 		ptr<authenticated_connection> l_authenticated_connection(
 			new authenticated_connection(
+				*this,
 				(*a_authentication_attempt_result)->m_connection_information,
-				(*a_authentication_attempt_result)->m_security_information,
-				m_authenticated_connection_receive_results
+				(*a_authentication_attempt_result)->m_security_information
 			)
 		);
 
@@ -345,7 +396,7 @@ void connection_processor::process_authentication_attempt_result(
 		l_authenticated_connections->push_back(l_authenticated_connection);
 
 		// Begin receiving data from socket
-		l_authenticated_connection->async_receive();
+		l_authenticated_connection->async_receive_message();
 		
 	}
 	else
@@ -373,7 +424,6 @@ void connection_processor::process_authentication_attempt_result(
 		{
 			// If the connection was outbound, reconnect to the remote peer
 			restart_pending_outbound_connection(
-				(*a_authentication_attempt_result)->m_connection_information->m_local_endpoint.port(),
 				(*a_authentication_attempt_result)->m_connection_information->m_remote_endpoint,
 				(*a_authentication_attempt_result)->m_connection_information->m_remote_localhost
 			);
@@ -386,7 +436,7 @@ void connection_processor::process_authentication_attempt_result(
 	
 }
 
-void connection_processor::process_authenticated_connections(
+void application::process_authenticated_connections(
 
 )
 {
@@ -398,14 +448,14 @@ void connection_processor::process_authenticated_connections(
 		process_authenticated_connection(l_authenticated_connections.resource(), l_authenticated_connections->begin() + i);
 }
 
-void connection_processor::process_authenticated_connection(
+void application::process_authenticated_connection(
 	std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>>& a_authenticated_connections,
 	std::vector<affix_base::data::ptr<authenticated_connection>>::iterator a_authenticated_connection
 )
 {
-	bool l_connection_timed_out = m_connection_processor_configuration->m_enable_authenticated_connection_timeout.resource() &&
+	bool l_connection_timed_out = m_application_configuration->m_enable_authenticated_connection_timeout.resource() &&
 		(*a_authenticated_connection)->idletime() >
-		m_connection_processor_configuration->m_authenticated_connection_timeout_in_seconds.resource();
+		m_application_configuration->m_authenticated_connection_timeout_in_seconds.resource();
 
 	// Boolean describing whether the authenticated connection is still active (connected)
 	bool l_connected = false;
@@ -436,7 +486,6 @@ void connection_processor::process_authenticated_connection(
 
 			// Reconnect to the remote peer
 			restart_pending_outbound_connection(
-				(*a_authenticated_connection)->m_connection_information->m_local_endpoint.port(),
 				(*a_authenticated_connection)->m_connection_information->m_remote_endpoint,
 				(*a_authenticated_connection)->m_connection_information->m_remote_localhost
 			);
@@ -449,7 +498,48 @@ void connection_processor::process_authenticated_connection(
 
 }
 
-void connection_processor::process_pending_function_calls(
+void application::process_pending_relays(
+
+)
+{
+	// Lock the mutex preventing concurrent reads/writes to the vector
+	locked_resource l_pending_relays = m_pending_relays.lock();
+
+	for (int i = l_pending_relays->size() - 1; i >= 0; i--)
+		process_pending_relay(l_pending_relays.resource(), l_pending_relays->begin() + i);
+
+}
+
+void application::process_pending_relay(
+	std::vector<affix_base::data::ptr<pending_relay>>& a_pending_relays,
+	std::vector<affix_base::data::ptr<pending_relay>>::iterator a_pending_relay
+)
+{
+
+
+}
+
+//void connection_processor::process_pending_indexes(
+//
+//)
+//{
+//	// Lock the mutex preventing concurrent reads/writes to the vector
+//	locked_resource l_pending_indexeds = m_pending_indexes.lock();
+//
+//	for (int i = l_pending_indexeds->size() - 1; i >= 0; i--)
+//		process_pending_index(l_pending_indexeds.resource(), l_pending_indexeds->begin() + i);
+//
+//}
+//
+//void connection_processor::process_pending_index(
+//	std::vector<affix_base::data::ptr<pending_index>>& a_pending_index,
+//	std::vector<affix_base::data::ptr<pending_index>>::iterator a_pending_indexes
+//)
+//{
+//
+//}
+
+void application::process_pending_function_calls(
 
 )
 {
@@ -462,7 +552,7 @@ void connection_processor::process_pending_function_calls(
 
 }
 
-void connection_processor::process_pending_function_call(
+void application::process_pending_function_call(
 	std::vector<std::tuple<uint64_t, std::function<void()>>>& a_pending_function_calls,
 	std::vector<std::tuple<uint64_t, std::function<void()>>>::iterator a_pending_function_call
 )
@@ -487,9 +577,52 @@ void connection_processor::process_pending_function_call(
 
 }
 
-affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>, affix_base::threading::cross_thread_mutex>& connection_processor::connection_results(
+void application::async_accept_next(
 
 )
 {
-	return m_connection_results;
+	m_acceptor->async_accept(
+		[&](asio::error_code a_ec, tcp::socket a_socket)
+		{
+			// Store the new socket in the list of connections
+			locked_resource l_connection_results = m_connection_results.lock();
+
+			try
+			{
+				// Extract remote endpoint from socket object
+				asio::ip::tcp::endpoint l_remote_endpoint = a_socket.remote_endpoint();
+
+				// Extract local endpoint from socket object
+				asio::ip::tcp::endpoint l_local_endpoint = a_socket.local_endpoint();
+
+				// Initialize connection information struct
+				affix_base::data::ptr<connection_information> l_connection_information = new connection_information(
+					new tcp::socket(std::move(a_socket)),
+					l_remote_endpoint,
+					false,
+					l_local_endpoint,
+					true,
+					true
+				);
+
+				l_connection_results->push_back(
+					new connection_result(
+						l_connection_information,
+						!a_ec
+					)
+				);
+
+			}
+			catch (std::exception a_exception)
+			{
+				LOG_ERROR("[ SERVER ] Error: " << a_exception.what());
+				return;
+			}
+
+			// If there was an error, return and do not make another async 
+			// accept request. Otherwise, try to accept another connection.
+			if (!a_ec)
+				async_accept_next();
+
+		});
 }

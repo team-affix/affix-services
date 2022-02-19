@@ -2,6 +2,10 @@
 
 using namespace affix_services;
 
+affix_services::messaging::message_types message_rsp_relay::s_message_type(
+	affix_services::messaging::message_types::rsp_relay
+);
+
 message_rsp_relay::message_rsp_relay(
 
 )

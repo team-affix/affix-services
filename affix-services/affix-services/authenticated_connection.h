@@ -9,18 +9,28 @@
 #include "affix-base/networking.h"
 #include "affix-base/transmission.h"
 #include "message_header.h"
-#include "connection_async_receive_result.h"
+#include "authenticated_connection_received_message.h"
 #include "affix-base/cross_thread_mutex.h"
 #include "affix-base/threading.h"
 #include "connection_information.h"
 #include "affix-base/dispatcher.h"
+#include "messaging.h"
 
 namespace affix_services {
+
+	class application;
+
 	namespace networking {
+
 
 		class authenticated_connection
 		{
 		public:
+			/// <summary>
+			/// The connection processor who owns this authenticated_connection object.
+			/// </summary>
+			affix_services::application& m_application;
+
 			/// <summary>
 			/// Holds relevant information about the connection.
 			/// </summary>
@@ -57,11 +67,6 @@ namespace affix_services {
 			/// </summary>
 			affix_base::threading::guarded_resource<uint64_t, affix_base::threading::cross_thread_mutex> m_last_interaction_time = 0;
 			
-			/// <summary>
-			/// Vector of async_receive results.
-			/// </summary>
-			affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authenticated_connection_receive_result>>, affix_base::threading::cross_thread_mutex>& m_receive_results;
-
 		public:
 			/// <summary>
 			/// Destructor, handles deletion of resources.
@@ -81,12 +86,84 @@ namespace affix_services {
 			/// <param name="a_receive_results_mutex"></param>
 			/// <param name="a_receive_results"></param>
 			authenticated_connection(
+				affix_services::application& a_application,
 				affix_base::data::ptr<connection_information> a_connection_information,
-				affix_base::data::ptr<security_information> a_security_information,
-				affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authenticated_connection_receive_result>>, affix_base::threading::cross_thread_mutex>& a_receive_results
+				affix_base::data::ptr<security_information> a_security_information
 			);
 
 		public:
+			template<typename MESSAGE_TYPE>
+			void async_send_message(
+				const MESSAGE_TYPE& a_message_body,
+				const std::function<void(bool)>& a_callback
+			)
+			{
+				// Create the message header from the message body's message type
+				affix_services::messaging::message_header l_message_header(
+					MESSAGE_TYPE::s_message_type
+				);
+
+				// The byte buffer into which the message header data is to be stored
+				affix_base::data::byte_buffer l_message_header_byte_buffer;
+
+				// The serialization status response for the message header.
+				affix_services::messaging::message_header::serialization_status_response_type l_message_header_serialization_status_response;
+
+				if (!l_message_header.serialize(l_message_header_byte_buffer, l_message_header_serialization_status_response))
+				{
+					// Failed to serialize message header.
+					std::cerr << "[ AUTHENTICATED CONNECTION ] Error: failed to serialize message header." << std::endl;
+
+					// Close the conection.
+					close();
+
+					// Just return on failure
+					return;
+
+				}
+
+				// The byte buffer into which the message body will be serialized
+				affix_base::data::byte_buffer l_message_body_byte_buffer;
+
+				// The serialization status response for the message body.
+				typename MESSAGE_TYPE::serialization_status_response_type l_message_body_serialization_status_response;
+
+				if (!a_message_body.serialize(l_message_body_byte_buffer, l_message_body_serialization_status_response))
+				{
+					// Failed to serialize message header.
+					std::cerr << "[ AUTHENTICATED CONNECTION ] Error: failed to serialize message body." << std::endl;
+
+					// Close the conection.
+					close();
+
+					// Just return on failure
+					return;
+
+				}
+
+
+				// The final message data byte buffer
+				affix_base::data::byte_buffer l_message_data_byte_buffer;
+
+				// Push the contents of the message header byte buffer into the final byte buffer
+				l_message_data_byte_buffer.push_back(l_message_header_byte_buffer.data());
+
+				// Push the contents of the message body byte buffer into the final byte buffer
+				l_message_data_byte_buffer.push_back(l_message_body_byte_buffer.data());
+
+				// Finally, send the message data
+				async_send_message_data(l_message_data_byte_buffer, a_callback);
+
+			}
+
+			/// <summary>
+			/// Receives a message asynchronously, and pushes it into the received message vector corresponding to the message type
+			/// </summary>
+			void async_receive_message(
+
+			);
+
+		protected:
 			/// <summary>
 			/// Sends data over the socket, where the data first goes through
 			/// the transmission_security_manager, then the
@@ -94,9 +171,9 @@ namespace affix_services {
 			/// </summary>
 			/// <param name="a_byte_buffer"></param>
 			/// <param name="a_callback"></param>
-			void async_send(
-				affix_base::data::byte_buffer& a_byte_buffer,
-				const std::function<void(bool)>& a_callback
+			void async_send_message_data(
+				const affix_base::data::byte_buffer& a_byte_buffer,
+				const std::function<void()>& a_callback
 			);
 
 			/// <summary>
@@ -104,10 +181,12 @@ namespace affix_services {
 			/// both the socket_io_guard and the transmission_security_manager before having
 			/// the result of the async_receive be pushed back onto a vector.
 			/// </summary>
-			void async_receive(
-			
+			void async_receive_message_data(
+				std::vector<uint8_t>& a_received_message_data,
+				const std::function<void()>& a_callback
 			);
 
+		public:
 			/// <summary>
 			/// Closes the connection.
 			/// </summary>

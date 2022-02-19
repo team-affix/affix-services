@@ -4,29 +4,40 @@
 #include "authenticated_connection.h"
 #include "affix-base/persistent_thread.h"
 #include "asio.hpp"
-#include "server.h"
 #include "pending_authentication.h"
 #include "connection_result.h"
 #include "authentication_result.h"
 #include "messaging.h"
-#include "message_processor.h"
 #include "pending_connection.h"
-#include "connection_processor_configuration.h"
+#include "application_configuration.h"
+#include "authenticated_connection_received_message.h"
+#include "pending_relay.h"
 
 namespace affix_services
 {
-	class connection_processor
+	class application
 	{
 	protected:
 		/// <summary>
-		/// Contains the configuration for this connection_processor instance; this object governs how to behave as a connection processor.
+		/// Contains the configuration for this application instance; this object governs how to behave as a connection processor.
 		/// </summary>
-		affix_base::data::ptr<connection_processor_configuration> m_connection_processor_configuration;
+		affix_base::data::ptr<application_configuration> m_application_configuration;
 
 		/// <summary>
 		/// IO context which runs all the asynchronous networking functions.
 		/// </summary>
 		asio::io_context& m_io_context;
+
+		/// <summary>
+		/// If the server has a dedicated port, the endpoint for this acceptor should include that port.
+		/// If the server doesn't have a dedicated port, the endpoint should have port set to 0.
+		/// </summary>
+		affix_base::data::ptr<asio::ip::tcp::acceptor> m_acceptor;
+
+		/// <summary>
+		/// Callback for when a relay is received whose destination is the submodule attached to this affix-services client.
+		/// </summary>
+		std::function<void(const std::vector<uint8_t>&)> m_relay_received_callback;
 
 		/// <summary>
 		/// A vector of all pending outbound connections.
@@ -58,20 +69,60 @@ namespace affix_services
 		/// </summary>
 		affix_base::threading::guarded_resource<std::vector<std::tuple<uint64_t, std::function<void()>>>, affix_base::threading::cross_thread_mutex> m_pending_function_calls;
 
+	public:
 		/// <summary>
-		/// Receive results for all authenticated connections.
+		/// Vector of asynchronously received relay requests.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection_receive_result>>, affix_base::threading::cross_thread_mutex>& m_authenticated_connection_receive_results;
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection_received_message<message_rqt_relay>>>, affix_base::threading::cross_thread_mutex> m_received_relay_requests;
+
+		/// <summary>
+		/// Vector of asynchronously received relay responses.
+		/// </summary>
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection_received_message<message_rsp_relay>>>, affix_base::threading::cross_thread_mutex> m_received_relay_responses;
+
+		/// <summary>
+		/// Vector of asynchronously received index requests.
+		/// </summary>
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection_received_message<message_rqt_index>>>, affix_base::threading::cross_thread_mutex> m_received_index_requests;
+
+		/// <summary>
+		/// Vector of asynchronously received index responses.
+		/// </summary>
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection_received_message<message_rsp_index>>>, affix_base::threading::cross_thread_mutex> m_received_index_responses;
+
+	protected:
+		/// <summary>
+		/// A vector of all pending relays
+		/// </summary>
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::pending_relay>>, affix_base::threading::cross_thread_mutex> m_pending_relays;
+
+		///// <summary>
+		///// A vector of all pending indexes
+		///// </summary>
+		//affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<pending_index>>, affix_base::threading::cross_thread_mutex> m_pending_indexes;
 
 	public:
 		/// <summary>
-		/// Constructs the processor given the local key pair.
+		/// Constructs the affix services application given an io context as well as an application configuration.
 		/// </summary>
 		/// <param name="a_local_key_pair"></param>
-		connection_processor(
+		application(
 			asio::io_context& a_io_context,
-			affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection_receive_result>>, affix_base::threading::cross_thread_mutex>& a_authenticated_connection_receive_results,
-			affix_base::data::ptr<connection_processor_configuration> a_connection_processor_configuration
+			affix_base::data::ptr<application_configuration> a_application_configuration
+		);
+
+		/// <summary>
+		/// Starts the server associated with this affix-services module.
+		/// </summary>
+		void start_server(
+
+		);
+
+		/// <summary>
+		/// Starts the pending outbound connections associated with this affix-services-module
+		/// </summary>
+		void start_pending_outbound_connections(
+
 		);
 
 	public:
@@ -80,7 +131,6 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_outbound_connection_configuration"></param>
 		void start_pending_outbound_connection(
-			const uint16_t& a_bind_port,
 			asio::ip::tcp::endpoint a_remote_endpoint,
 			const bool& a_remote_localhost
 		);
@@ -91,7 +141,6 @@ namespace affix_services
 		/// <param name="a_remote_endpoint"></param>
 		/// <param name="a_local_port"></param>
 		void restart_pending_outbound_connection(
-			const uint16_t& a_bind_port,
 			asio::ip::tcp::endpoint a_remote_endpoint,
 			const bool& a_remote_localhost
 		);
@@ -106,8 +155,7 @@ namespace affix_services
 		);
 
 		/// <summary>
-		/// Processes all unauthenticated, authentication-in-progress, and fully
-		/// authenticated connections, as well as all received messages.
+		/// Runs main functions necessary for functionality of the Affix-Services module. This should be called repeatedly for ideal performance.
 		/// </summary>
 		void process(
 
@@ -196,6 +244,38 @@ namespace affix_services
 		);
 
 		/// <summary>
+		/// Processes all received relay requests in the vector.
+		/// </summary>
+		void process_pending_relays(
+
+		);
+
+		/// <summary>
+		/// Processes a single received relay request.
+		/// </summary>
+		/// <param name="a_received_relay_requests"></param>
+		/// <param name="a_received_relay_request"></param>
+		void process_pending_relay(
+			std::vector<affix_base::data::ptr<pending_relay>>& a_pending_relays,
+			std::vector<affix_base::data::ptr<pending_relay>>::iterator a_pending_relay
+		);
+
+		///// <summary>
+		///// Processes all received index requests in the vector.
+		///// </summary>
+		//void process_pending_indexes(
+
+		//);
+
+		///// <summary>
+		///// Processes a single received index request.
+		///// </summary>
+		//void process_pending_index(
+		//	std::vector<affix_base::data::ptr<pending_index>>& a_pending_index,
+		//	std::vector<affix_base::data::ptr<pending_index>>::iterator a_pending_indexes
+		//);
+
+		/// <summary>
 		/// Processes all pending function call.
 		/// </summary>
 		void process_pending_function_calls(
@@ -212,11 +292,9 @@ namespace affix_services
 		);
 
 	public:
-		/// <summary>
-		/// Gets a reference to the connection results vector.
-		/// </summary>
-		/// <returns></returns>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>, affix_base::threading::cross_thread_mutex>& connection_results(
+
+	protected:
+		void async_accept_next(
 
 		);
 

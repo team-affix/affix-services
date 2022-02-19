@@ -156,27 +156,21 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="application_configuration.h" />
-    <ClInclude Include="message_processor.h" />
     <ClInclude Include="message_rqt_index.h" />
     <ClInclude Include="message_rqt_relay.h" />
     <ClInclude Include="message_rsp_relay.h" />
-    <ClInclude Include="serialized_message.h" />
     <ClInclude Include="pending_authentication.h" />
     <ClInclude Include="authentication_result.h" />
     <ClInclude Include="message_processor_configuration.h" />
     <ClInclude Include="details.h" />
-    <ClInclude Include="connection_async_receive_result.h" />
+    <ClInclude Include="authenticated_connection_received_message.h" />
     <ClInclude Include="messaging.h" />
     <ClInclude Include="connection_information.h" />
     <ClInclude Include="pending_connection.h" />
-    <ClInclude Include="connection_processor.h" />
-    <ClInclude Include="connection_processor_configuration.h" />
+    <ClInclude Include="application.h" />
+    <ClInclude Include="application_configuration.h" />
     <ClInclude Include="pending_relay.h" />
-    <ClInclude Include="deserialized_message.h" />
     <ClInclude Include="security_information.h" />
-    <ClInclude Include="server.h" />
-    <ClInclude Include="server_configuration.h" />
     <ClInclude Include="transmission_security_manager.h" />
     <ClInclude Include="connection_result.h" />
     <ClInclude Include="version.h" />
@@ -190,8 +184,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application_configuration.cpp" />
-    <ClCompile Include="connection_processor_configuration.cpp" />
-    <ClCompile Include="message_processor.cpp" />
     <ClCompile Include="message_rqt_index.cpp" />
     <ClCompile Include="message_rqt_relay.cpp" />
     <ClCompile Include="message_rsp_index.cpp" />
@@ -200,15 +192,12 @@
     <ClCompile Include="pending_authentication.cpp" />
     <ClCompile Include="authentication_result.cpp" />
     <ClCompile Include="authenticated_connection.cpp" />
-    <ClCompile Include="connection_async_receive_result.cpp" />
     <ClCompile Include="message_header.cpp" />
     <ClCompile Include="connection_information.cpp" />
     <ClCompile Include="pending_connection.cpp" />
-    <ClCompile Include="connection_processor.cpp" />
+    <ClCompile Include="application.cpp" />
     <ClCompile Include="pending_relay.cpp" />
     <ClCompile Include="security_information.cpp" />
-    <ClCompile Include="server.cpp" />
-    <ClCompile Include="server_configuration.cpp" />
     <ClCompile Include="transmission_security_manager.cpp" />
     <ClCompile Include="rolling_token.cpp" />
     <ClCompile Include="connection_result.cpp" />

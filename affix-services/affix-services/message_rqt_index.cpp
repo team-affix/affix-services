@@ -2,6 +2,10 @@
 
 using affix_services::message_rqt_index;
 
+affix_services::messaging::message_types message_rqt_index::s_message_type(
+	affix_services::messaging::message_types::rqt_index
+);
+
 bool message_rqt_index::serialize(
 	affix_base::data::byte_buffer& a_output,
 	serialization_status_response_type& a_result

@@ -3,6 +3,7 @@
 #include "affix-base/utc_time.h"
 #include "affix-base/rsa.h"
 #include "affix-base/catch_friendly_assert.h"
+#include "application.h"
 
 #if 1
 #define LOG(x) std::clog << x << std::endl
@@ -33,24 +34,196 @@ authenticated_connection::~authenticated_connection(
 }
 
 authenticated_connection::authenticated_connection(
+	application& a_application,
 	affix_base::data::ptr<connection_information> a_connection_information,
-	affix_base::data::ptr<security_information> a_security_information,
-	affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authenticated_connection_receive_result>>, affix_base::threading::cross_thread_mutex>& a_receive_results
+	affix_base::data::ptr<security_information> a_security_information
 ) :
 	m_transmission_security_manager(a_security_information),
 	m_connection_information(a_connection_information),
     m_socket_io_guard(*a_connection_information->m_socket),
 	m_start_time(utc_time()),
-	m_receive_results(a_receive_results)
+	m_application(a_application)
 {
 	// Set the last interaction time to the current utc time, to avoid having it ever be set to zero.
 	locked_resource l_last_interaction_time = m_last_interaction_time.lock();
 	(*l_last_interaction_time) = utc_time();
 }
 
-void authenticated_connection::async_send(
-	affix_base::data::byte_buffer& a_byte_buffer,
-	const std::function<void(bool)>& a_callback
+void authenticated_connection::async_receive_message(
+
+)
+{
+	// DYNAMICALLY ALLOCATE VECTOR SO IT CAN STAY IN SCOPE FOR LAMBDA CALLBACKS
+	ptr<std::vector<uint8_t>> l_received_message_data = new std::vector<uint8_t>();
+
+	async_receive_message_data(
+		l_received_message_data.val(),
+		[&, l_received_message_data]()
+		{
+			// Create byte buffer from which all message-specific data will be unpacked
+			affix_base::data::byte_buffer l_message_data_byte_buffer(*l_received_message_data);
+
+			// Vector where all message header data lives
+			std::vector<uint8_t> l_message_header_data;
+
+			// Vector where all message body data lives
+			std::vector<uint8_t> l_message_body_data;
+
+			if (!l_message_data_byte_buffer.pop_front(l_message_header_data) ||
+				!l_message_data_byte_buffer.pop_front(l_message_body_data))
+			{
+				LOG_ERROR("[ AUTHENTICATED CONNECTION ] Error unpacking message header (or) body.");
+				close();
+				return;
+			}
+
+			// Create a message header byte buffer, which holds serialized contents of message header
+			byte_buffer l_message_header_byte_buffer(l_message_header_data);
+
+			// Create a message body byte buffer, which holds serialized contents of message body
+			byte_buffer l_message_body_byte_buffer(l_message_body_data);
+
+			// Create actual message header
+			affix_services::messaging::message_header l_message_header;
+
+			// Deserialization status response for the message header only
+			affix_services::messaging::message_header::deserialization_status_response_type l_message_header_deserialization_status_response;
+
+			if (!l_message_header.deserialize(l_message_header_byte_buffer, l_message_header_deserialization_status_response))
+			{
+				LOG_ERROR("[ AUTHENTICATED CONNECTION ] Error deserializing message header.");
+				close();
+				return;
+			}
+
+			switch (l_message_header.m_message_type)
+			{
+				case messaging::message_types::rqt_relay:
+				{
+					// Lock the mutex preventing concurrent reads/writes to the vector
+					locked_resource<std::vector<affix_base::data::ptr<authenticated_connection_received_message<message_rqt_relay>>>, affix_base::threading::cross_thread_mutex> 
+						l_received_relay_requests = m_application.m_received_relay_requests.lock();
+
+					message_rqt_relay l_message_body;
+
+					// Create a deserialization status response
+					message_rqt_relay::deserialization_status_response_type l_message_body_deserialization_status_response;
+
+					if (!l_message_body.deserialize(l_message_body_byte_buffer, l_message_body_deserialization_status_response))
+					{
+						LOG_ERROR("[ AUTHENTICATED CONNECTION ] Error deserializing the body of message_rqt_relay.");
+						close();
+						return;
+					}
+
+					// Push the received relay request onto the vector
+					l_received_relay_requests->push_back(
+						new authenticated_connection_received_message<message_rqt_relay>(
+							this,
+							l_message_header,
+							l_message_body
+						));
+
+					break;
+				}
+				case messaging::message_types::rsp_relay:
+				{
+					// Lock the mutex preventing concurrent reads/writes to the vector
+					locked_resource<std::vector<affix_base::data::ptr<authenticated_connection_received_message<message_rsp_relay>>>, affix_base::threading::cross_thread_mutex> 
+						l_received_relay_responses = m_application.m_received_relay_responses.lock();
+
+					message_rsp_relay l_message_body;
+
+					// Create a deserialization status response
+					message_rsp_relay::deserialization_status_response_type l_message_body_deserialization_status_response;
+
+					if (!l_message_body.deserialize(l_message_body_byte_buffer, l_message_body_deserialization_status_response))
+					{
+						LOG_ERROR("[ AUTHENTICATED CONNECTION ] Error deserializing the body of message_rsp_relay.");
+						close();
+						return;
+					}
+
+					// Push the received relay request onto the vector
+					l_received_relay_responses->push_back(
+						new authenticated_connection_received_message<message_rsp_relay>(
+							this,
+							l_message_header,
+							l_message_body
+						));
+
+					break;
+				}
+				case messaging::message_types::rqt_index:
+				{
+					// Lock the mutex preventing concurrent reads/writes to the vector
+					locked_resource<std::vector<affix_base::data::ptr<authenticated_connection_received_message<message_rqt_index>>>, affix_base::threading::cross_thread_mutex> 
+						l_received_index_requests = m_application.m_received_index_requests.lock();
+
+					message_rqt_index l_message_body;
+
+					// Create a deserialization status response
+					message_rqt_index::deserialization_status_response_type l_message_body_deserialization_status_response;
+
+					if (!l_message_body.deserialize(l_message_body_byte_buffer, l_message_body_deserialization_status_response))
+					{
+						LOG_ERROR("[ AUTHENTICATED CONNECTION ] Error deserializing the body of message_rqt_index.");
+						close();
+						return;
+					}
+
+					// Push the received relay request onto the vector
+					l_received_index_requests->push_back(
+						new authenticated_connection_received_message<message_rqt_index>(
+							this,
+							l_message_header,
+							l_message_body
+						));
+
+					break;
+				}
+				case messaging::message_types::rsp_index:
+				{
+					// Lock the mutex preventing concurrent reads/writes to the vector
+					locked_resource<std::vector<affix_base::data::ptr<authenticated_connection_received_message<message_rsp_index>>>, affix_base::threading::cross_thread_mutex> 
+						l_received_index_responses = m_application.m_received_index_responses.lock();
+
+					message_rsp_index l_message_body;
+
+					// Create a deserialization status response
+					message_rsp_index::deserialization_status_response_type l_message_body_deserialization_status_response;
+
+					if (!l_message_body.deserialize(l_message_body_byte_buffer, l_message_body_deserialization_status_response))
+					{
+						LOG_ERROR("[ AUTHENTICATED CONNECTION ] Error deserializing the body of message_rsp_index.");
+						close();
+						return;
+					}
+
+					// Push the received relay request onto the vector
+					l_received_index_responses->push_back(
+						new authenticated_connection_received_message<message_rsp_index>(
+							this,
+							l_message_header,
+							l_message_body
+						));
+					
+					break;
+				}
+				default:
+				{
+					LOG_ERROR("[ AUTHENTICATED CONNECTION ] Error: message_type was invalid.");
+					close();
+					return;
+				}
+			}
+
+		});
+}
+
+void authenticated_connection::async_send_message_data(
+	const affix_base::data::byte_buffer& a_byte_buffer,
+	const std::function<void()>& a_callback
 )
 {
 	// Set the last interaction time to the current utc time.
@@ -73,7 +246,7 @@ void authenticated_connection::async_send(
 
 	// SEND TRANSMISSION
 	m_socket_io_guard.async_send(l_exported_transmission_data, 
-		m_dispatcher.dispatch([&](bool a_result)
+		m_dispatcher.dispatch([&, a_callback](bool a_result)
 		{
 			if (!a_result)
 			{
@@ -85,36 +258,34 @@ void authenticated_connection::async_send(
 				return;
 			}
 
+			// Trigger the argued callback function
+			a_callback();
+
 		}));
 
 }
 
-void authenticated_connection::async_receive(
-
+void authenticated_connection::async_receive_message_data(
+	std::vector<uint8_t>& a_received_message_data,
+	const std::function<void()>& a_callback
 )
 {
-	// ALLOCATE DYNAMIC VECTOR FOR CALLBACK LAMBDA FUNCTION TO ACCESS AFTER PROGRAM EXITS THIS FUNCTION'S SCOPE
-	ptr<vector<uint8_t>> l_data = new vector<uint8_t>();
+	// DYNAMICALLY ALLOCATE VECTOR SO IT CAN STAY IN SCOPE FOR LAMBDA CALLBACKS
+	ptr<std::vector<uint8_t>> l_received_exported_message_data = new std::vector<uint8_t>();
 
 	// Try to receive data asynchronously
-	m_socket_io_guard.async_receive(l_data.val(), 
-		m_dispatcher.dispatch([&, l_data](bool a_result) {
+	m_socket_io_guard.async_receive(a_received_message_data, 
+		m_dispatcher.dispatch([&, l_received_exported_message_data, a_callback](bool a_result) {
 
 			// Set the last interaction time to the current utc time.
 			locked_resource l_last_interaction_time = m_last_interaction_time.lock();
 			(*l_last_interaction_time) = utc_time();
-		
-			// Lock the mutex preventing concurrent reads/writes to the vector
-			locked_resource l_receive_results = m_receive_results.lock();
 
 			// The result from trying to import the message
 			transmission_result l_transmission_result = transmission_result::unknown;
 
-			// The decrypted message data.
-			vector<uint8_t> l_message_data;
-
 			// If the receive call was unsuccessful, close the connection, then return.
-			if (!a_result || !m_transmission_security_manager.import_transmission(l_data.val(), l_message_data, l_transmission_result))
+			if (!a_result || !m_transmission_security_manager.import_transmission(l_received_exported_message_data.val(), a_received_message_data, l_transmission_result))
 			{
 				LOG_ERROR("[ CONNECTION ] Error receiving data.");
 				LOG_ERROR("[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result]);
@@ -125,13 +296,8 @@ void authenticated_connection::async_receive(
 				return;
 			}
 
-			byte_buffer l_message_data_buffer(l_message_data);
-
-			// Write the byte buffer to the vector of receive results
-			l_receive_results->push_back(
-				new authenticated_connection_receive_result(
-					this, l_message_data_buffer
-				));
+			// Call the argued callback function
+			a_callback();
 
 	}));
 
