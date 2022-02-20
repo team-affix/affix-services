@@ -20,6 +20,11 @@ namespace affix_services
 		affix_services::security::rolling_token m_local_token;
 
 		/// <summary>
+		/// The remote public key exported into base64 format.
+		/// </summary>
+		std::string m_remote_identity;
+
+		/// <summary>
 		/// The remote party's public key, using which all received data must be signed.
 		/// </summary>
 		CryptoPP::RSA::PublicKey m_remote_public_key;

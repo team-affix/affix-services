@@ -1,6 +1,7 @@
 #include "security_information.h"
 
 using namespace affix_services;
+using namespace affix_base::cryptography;
 
 security_information::security_information(
 	const affix_base::cryptography::rsa_key_pair& a_local_key_pair,
@@ -13,5 +14,5 @@ security_information::security_information(
 	m_remote_public_key(a_remote_public_key),
 	m_remote_token(a_remote_token)
 {
-
+	m_remote_identity = rsa_to_base64_string(a_remote_public_key);
 }

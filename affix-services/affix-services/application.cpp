@@ -40,6 +40,9 @@ application::application(
 	m_io_context(a_io_context),
 	m_application_configuration(a_application_configuration)
 {
+	// Get the local identity string from the local public key.
+	m_local_identity = rsa_to_base64_string(a_application_configuration->m_local_key_pair.resource().public_key);
+
 	if (m_application_configuration->m_enable_server.resource())
 		// If the server is enabled, start it
 		start_server();

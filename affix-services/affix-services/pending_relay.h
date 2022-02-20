@@ -7,6 +7,9 @@
 
 namespace affix_services
 {
+
+	class application;
+
 	class pending_relay
 	{
 	protected:
@@ -32,11 +35,13 @@ namespace affix_services
 
 	public:
 		pending_relay(
+			application& a_application,
 			affix_base::data::ptr<affix_services::networking::authenticated_connection> a_authenticated_connection,
 			const affix_services::message_rqt_relay& a_request,
 			const std::function<void(const std::vector<uint8_t>&)>& a_relay_received_callback
 		);
 
+	protected:
 		void respond(
 
 		)

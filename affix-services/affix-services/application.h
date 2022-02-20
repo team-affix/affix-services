@@ -23,6 +23,11 @@ namespace affix_services
 		affix_base::data::ptr<application_configuration> m_application_configuration;
 
 		/// <summary>
+		/// The local public key exported into base64 format.
+		/// </summary>
+		std::string m_local_identity;
+
+		/// <summary>
 		/// IO context which runs all the asynchronous networking functions.
 		/// </summary>
 		asio::io_context& m_io_context;

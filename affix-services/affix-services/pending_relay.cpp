@@ -1,10 +1,13 @@
 #include "pending_relay.h"
+#include "application.h"
 
 using namespace affix_services;
 using namespace affix_base::data;
 using namespace affix_base::threading;
+using namespace affix_services::networking;
 
 pending_relay::pending_relay(
+	application& a_application,
 	affix_base::data::ptr<affix_services::networking::authenticated_connection> a_authenticated_connection,
 	const affix_services::message_rqt_relay& a_request,
 	const std::function<void(const std::vector<uint8_t>&)>& a_relay_received_callback
@@ -16,7 +19,7 @@ pending_relay::pending_relay(
 	if (affix_base::cryptography::rsa_to_base64_string(a_authenticated_connection->m_transmission_security_manager.m_security_information->m_local_key_pair.public_key)
 		!= a_request.m_path[a_request.m_path_index])
 	{
-		// We have an issue, the destination identity does not match our identity. Respond with an error
+		// We have an issue, the current identity in the path does not match our identity. Respond with an error
 		message_rsp_relay l_response(message_rqt_relay::processing_status_response_type::error_identity_not_reached);
 
 		// Send the response message
@@ -52,7 +55,7 @@ pending_relay::pending_relay(
 		// Request intended to be relayed to the remote module.
 		message_rqt_relay l_relay_request(a_request.m_path, l_next_identity_index, a_request.m_payload);
 
-
+		ptr<authenticated_connection> l_;
 
 	}
 
