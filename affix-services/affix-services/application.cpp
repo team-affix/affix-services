@@ -204,9 +204,9 @@ void application::process(
 	process_authentication_attempts();
 	process_authentication_attempt_results();
 	process_authenticated_connections();
-
+	process_relay_requests();
+	process_relay_responses();
 	process_pending_relays();
-
 	process_pending_function_calls();
 }
 

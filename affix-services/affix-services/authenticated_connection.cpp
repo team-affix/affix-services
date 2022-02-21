@@ -275,7 +275,7 @@ void authenticated_connection::async_receive_message_data(
 	ptr<std::vector<uint8_t>> l_received_exported_message_data = new std::vector<uint8_t>();
 
 	// Try to receive data asynchronously
-	m_socket_io_guard.async_receive(a_received_message_data, 
+	m_socket_io_guard.async_receive(*l_received_exported_message_data,
 		m_dispatcher.dispatch([&, l_received_exported_message_data, a_callback](bool a_result) {
 
 			// Set the last interaction time to the current utc time.
