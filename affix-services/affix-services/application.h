@@ -10,6 +10,7 @@
 #include "messaging.h"
 #include "pending_connection.h"
 #include "application_configuration.h"
+#include "pending_relay.h"
 
 namespace affix_services
 {
@@ -36,11 +37,6 @@ namespace affix_services
 		/// If the server doesn't have a dedicated port, the endpoint should have port set to 0.
 		/// </summary>
 		affix_base::data::ptr<asio::ip::tcp::acceptor> m_acceptor;
-
-		/// <summary>
-		/// Callback for when a relay is received whose destination is the submodule attached to this affix-services client.
-		/// </summary>
-		std::function<void(const std::vector<uint8_t>&)> m_relay_received_callback;
 
 		/// <summary>
 		/// A vector of all pending outbound connections.
@@ -103,6 +99,12 @@ namespace affix_services
 		///// A vector of all pending indexes
 		///// </summary>
 		//affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<pending_index>>, affix_base::threading::cross_thread_mutex> m_pending_indexes;
+
+	public:
+		/// <summary>
+		/// Vector of relayed payloads that have been received and were destined for this module.
+		/// </summary>
+		affix_base::threading::guarded_resource<std::vector<std::vector<uint8_t>>, affix_base::threading::cross_thread_mutex> m_received_relay_payloads;
 
 	public:
 		/// <summary>
@@ -244,6 +246,40 @@ namespace affix_services
 		void process_authenticated_connection(
 			std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>>& a_authenticated_connections,
 			std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>>::iterator a_authenticated_connection
+		);
+
+		/// <summary>
+		/// Processes all relay requests that have been received.
+		/// </summary>
+		void process_relay_requests(
+
+		);
+
+		/// <summary>
+		/// Processes a single relay request that has been received.
+		/// </summary>
+		/// <param name="a_relay_requests"></param>
+		/// <param name="a_relay_request"></param>
+		void process_relay_request(
+			std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message_rqt_relay>>& a_relay_requests,
+			std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message_rqt_relay>>::iterator a_relay_request
+		);
+
+		/// <summary>
+		/// Processes all relay responses that have been received.
+		/// </summary>
+		void process_relay_responses(
+
+		);
+
+		/// <summary>
+		/// Processes a single received relay response.
+		/// </summary>
+		/// <param name="a_relay_responses"></param>
+		/// <param name="a_relay_response"></param>
+		void process_relay_response(
+			std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message_rsp_relay>>& a_relay_responses,
+			std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message_rsp_relay>>::iterator a_relay_response
 		);
 
 		/// <summary>

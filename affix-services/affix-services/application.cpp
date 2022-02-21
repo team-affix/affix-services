@@ -501,6 +501,183 @@ void application::process_authenticated_connection(
 
 }
 
+void application::process_relay_requests(
+
+)
+{
+	// Lock the mutex preventing new relay requests from being received
+	locked_resource l_relay_requests = m_relay_requests.lock();
+
+	// Decrement through vector since elements of the vector might be removed
+	for (int i = l_relay_requests->size() - 1; i >= 0; i--)
+		process_relay_request(l_relay_requests.resource(), l_relay_requests->begin() + i);
+
+}
+
+void application::process_relay_request(
+	std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message_rqt_relay>>& a_relay_requests,
+	std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message_rqt_relay>>::iterator a_relay_request
+)
+{
+	// Lock the mutex preventing concurrent reads/writes to the authenticated connections vector
+	locked_resource l_authenticated_connections = m_authenticated_connections.lock();
+
+	// Lock the mutex preventing concurrent reads/writes to the pending relays vector
+	locked_resource l_pending_relays = m_pending_relays.lock();
+
+	// Get the authenticated connection out from the std::tuple
+	ptr<authenticated_connection> l_sender_connection = std::get<0>((*a_relay_request));
+
+	// Get the request out from the std::tuple
+	message_rqt_relay l_request = std::get<1>((*a_relay_request));
+
+	if (l_request.m_path[l_request.m_path_index] != m_local_identity)
+	{
+		// Something went wrong; the local identity does not match the identity that should have received this request
+
+		// Construct the response
+		message_rsp_relay l_response(message_rqt_relay::processing_status_response_type::error_identity_not_reached);
+
+		// Send the response
+		l_sender_connection->async_send_message(l_response);
+
+		// Erase the request from the vector
+		a_relay_requests.erase(a_relay_request);
+
+		return;
+	}
+
+	if (l_request.m_path_index == l_request.m_path.size() - 1)
+	{
+		// This module is the intended recipient
+
+		// Lock the mutex of received relays
+		locked_resource l_received_relay_payloads = m_received_relay_payloads.lock();
+
+		// Add the payload
+		l_received_relay_payloads->push_back(l_request.m_payload);
+
+		// Erase the request from the vector
+		a_relay_requests.erase(a_relay_request);
+
+		return;
+	}
+
+	// Get the index of the recipient in the path
+	size_t l_recipient_path_index = l_request.m_path_index + 1;
+
+	// Get the recipient's identity from the request
+	std::string l_recipient_identity = l_request.m_path[l_recipient_path_index];
+
+	std::vector<ptr<authenticated_connection>>::iterator l_recipient_connection = std::find_if(l_authenticated_connections->begin(), l_authenticated_connections->end(),
+			[&](ptr<authenticated_connection> a_recipient_authenticated_connection)
+			{
+				return a_recipient_authenticated_connection->m_transmission_security_manager.m_security_information->m_remote_identity == l_recipient_identity;
+			});
+
+	if (l_recipient_connection == l_authenticated_connections->end())
+	{
+		// Something went wrong; the recipient identity does not match the identity of any connected module
+
+		// Construct the response
+		message_rsp_relay l_response(message_rqt_relay::processing_status_response_type::error_identity_not_connected);
+
+		// Send the response
+		l_sender_connection->async_send_message(l_response);
+
+		// Erase the request from the vector
+		a_relay_requests.erase(a_relay_request);
+
+		return;
+	}
+
+	// Construct the request which is to be sent to the recipient
+	message_rqt_relay l_recipient_request(l_request.m_path, l_recipient_path_index, l_request.m_payload);
+
+	// Create a pending_relay object
+	ptr<pending_relay> l_pending_relay = new pending_relay(
+		l_sender_connection,
+		*l_recipient_connection
+	);
+
+	// Begin sending the relayed request asynchronously
+	l_pending_relay->send_request(l_recipient_request);
+
+	// Add the pending relay to the vector
+	l_pending_relays->push_back(l_pending_relay);
+
+	// Erase the processed relay request from the vector in which it lived
+	a_relay_requests.erase(a_relay_request);
+
+}
+
+void application::process_relay_responses(
+
+)
+{
+	// Lock the mutex preventing concurrent accessing of the vector of relay responses
+	locked_resource l_relay_responses = m_relay_responses.lock();
+
+	// Decrement through vector since elements of the vector might be removed
+	for (int i = l_relay_responses->size() - 1; i >= 0; i--)
+		process_relay_response(l_relay_responses.resource(), l_relay_responses->begin() + i);
+
+}
+
+void application::process_relay_response(
+	std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message_rsp_relay>>& a_relay_responses,
+	std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message_rsp_relay>>::iterator a_relay_response
+)
+{
+	// Lock the mutex preventing concurrent reads/writes to the authenticated connections vector
+	locked_resource l_authenticated_connections = m_authenticated_connections.lock();
+
+	// Lock the mutex preventing concurrent reads/writes to the pending relays vector
+	locked_resource l_pending_relays = m_pending_relays.lock();
+
+	// Get the authenticated connection out from the std::tuple
+	ptr<authenticated_connection> l_authenticated_connection = std::get<0>((*a_relay_response));
+
+	// Get the response out from the std::tuple
+	message_rsp_relay l_response = std::get<1>((*a_relay_response));
+
+	// Find the pending relay object associated with this response
+	std::vector<affix_base::data::ptr<pending_relay>>::iterator l_pending_relay =
+		std::find_if(l_pending_relays->begin(), l_pending_relays->end(),
+			[&](ptr<pending_relay> a_pending_relay)
+			{
+				// Get whether the identities match
+				bool l_recipient_identity_matches =
+					a_pending_relay->m_recipient_authenticated_connection->m_transmission_security_manager.m_security_information->m_remote_identity ==
+					l_authenticated_connection->m_transmission_security_manager.m_security_information->m_remote_identity;
+
+				// Lock mutex for send_request_started
+				locked_resource l_send_request_started = a_pending_relay->m_send_request_started.lock();
+
+				// Determine whether it would make sense to receive a response given solely whether or not 
+				bool l_should_receive_response =
+					(*l_send_request_started) && !a_pending_relay->m_request_dispatcher.dispatched();
+
+				return l_recipient_identity_matches && l_should_receive_response;
+
+			});
+
+	if (l_pending_relay == l_pending_relays->end())
+	{
+		// There was no pending relay that matched the criteria 
+
+		// Erase the relay response
+		a_relay_responses.erase(a_relay_response);
+
+		// Just return
+		return;
+	}
+
+	// Send the response to the original request sender
+	(*l_pending_relay)->send_response(l_response);
+
+}
+
 void application::process_pending_relays(
 
 )
@@ -508,6 +685,7 @@ void application::process_pending_relays(
 	// Lock the mutex preventing concurrent reads/writes to the vector
 	locked_resource l_pending_relays = m_pending_relays.lock();
 
+	// Decrement through vector since elements of the vector might be removed
 	for (int i = l_pending_relays->size() - 1; i >= 0; i--)
 		process_pending_relay(l_pending_relays.resource(), l_pending_relays->begin() + i);
 
@@ -518,7 +696,44 @@ void application::process_pending_relay(
 	std::vector<affix_base::data::ptr<pending_relay>>::iterator a_pending_relay
 )
 {
+	// Get whether the sender is currently connected
+	locked_resource l_sender_connected = (*a_pending_relay)->m_sender_authenticated_connection->m_connected.lock();
 
+	// Get whether the recipient is currently connected
+	locked_resource l_recipient_connected = (*a_pending_relay)->m_recipient_authenticated_connection->m_connected.lock();
+
+	// Get whether both connections are still connected
+	bool l_both_connections_connected = (*l_sender_connected) && (*l_recipient_connected);
+
+
+	// Get whether sending the request has been marked as successful
+	locked_resource l_send_request_started = (*a_pending_relay)->m_send_request_started.lock();
+
+	// Get whether sending the response has been marked as successful
+	locked_resource l_send_response_started = (*a_pending_relay)->m_send_response_started.lock();
+
+	// Get whether sending both the request and response was successful
+	bool l_both_request_and_response_started = (*l_send_request_started) && (*l_send_response_started);
+
+
+	// Get whether either the request or response dispatcher for the pending_relay is dispatched
+	bool l_either_dispatcher_dispatched = (*a_pending_relay)->m_request_dispatcher.dispatched() || (*a_pending_relay)->m_response_dispatcher.dispatched();
+
+
+	// Two conditions for erasing:
+	// 1. Success:
+	//		- Neither dispatcher is dispatched at the moment, meaning all callbacks have been triggered
+	//      - Both request and response have started
+	// 2. Failure:
+    //      - Neither dispatcher is dispatched at the moment
+	//		- Either connection is no longer connected
+
+	if (!l_either_dispatcher_dispatched && (!l_both_connections_connected || l_both_request_and_response_started))
+	{
+		// If either connection exits, erase the pending relay.
+		a_pending_relays.erase(a_pending_relay);
+
+	}
 
 }
 

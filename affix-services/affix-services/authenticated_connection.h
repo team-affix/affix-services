@@ -66,6 +66,13 @@ namespace affix_services {
 			/// </summary>
 			affix_base::threading::guarded_resource<uint64_t, affix_base::threading::cross_thread_mutex> m_last_interaction_time = 0;
 
+			/// <summary>
+			/// Boolean describing whether there is a receive in progress currently.
+			/// </summary>
+			affix_base::threading::guarded_resource<bool, affix_base::threading::cross_thread_mutex> m_receive_in_progress = false;
+
+
+
 		public:
 			/// <summary>
 			/// Destructor, handles deletion of resources.
@@ -93,8 +100,8 @@ namespace affix_services {
 		public:
 			template<typename MESSAGE_TYPE>
 			void async_send_message(
-				const MESSAGE_TYPE& a_message_body,
-				const std::function<void(bool)>& a_callback
+				MESSAGE_TYPE a_message_body,
+				const std::function<void(bool)>& a_callback = [](bool) {}
 			)
 			{
 				// Create the message header from the message body's message type
