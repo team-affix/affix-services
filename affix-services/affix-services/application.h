@@ -10,7 +10,6 @@
 #include "messaging.h"
 #include "pending_connection.h"
 #include "application_configuration.h"
-#include "pending_relay.h"
 
 namespace affix_services
 {
@@ -77,22 +76,22 @@ namespace affix_services
 		/// <summary>
 		/// Vector of asynchronously received relay requests.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<std::tuple<affix_services::networking::authenticated_connection, message_rqt_relay>>>, affix_base::threading::cross_thread_mutex> m_received_relay_requests;
+		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message_rqt_relay>>, affix_base::threading::cross_thread_mutex> m_relay_requests;
 
 		/// <summary>
 		/// Vector of asynchronously received relay responses.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<std::tuple<affix_services::networking::authenticated_connection, message_rsp_relay>>>, affix_base::threading::cross_thread_mutex> m_received_relay_responses;
+		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message_rsp_relay>>, affix_base::threading::cross_thread_mutex> m_relay_responses;
 
 		/// <summary>
 		/// Vector of asynchronously received index requests.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<std::tuple<affix_services::networking::authenticated_connection, message_rqt_index>>>, affix_base::threading::cross_thread_mutex> m_received_index_requests;
+		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message_rqt_index>>, affix_base::threading::cross_thread_mutex> m_index_requests;
 
 		/// <summary>
 		/// Vector of asynchronously received index responses.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<std::tuple<affix_services::networking::authenticated_connection, message_rsp_index>>>, affix_base::threading::cross_thread_mutex> m_received_index_responses;
+		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message_rsp_index>>, affix_base::threading::cross_thread_mutex> m_index_responses;
 
 	protected:
 		/// <summary>

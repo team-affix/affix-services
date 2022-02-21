@@ -164,11 +164,14 @@
     <ClCompile Include="message_rsp_index.cpp">
       <Filter>Source Files\messaging</Filter>
     </ClCompile>
-    <ClCompile Include="pending_relay.cpp">
+    <ClCompile Include="relay_manager.cpp">
       <Filter>Source Files\processing</Filter>
     </ClCompile>
     <ClCompile Include="pending_connection.cpp">
       <Filter>Source Files\networking</Filter>
+    </ClCompile>
+    <ClCompile Include="pending_relay.cpp">
+      <Filter>Source Files\processing</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

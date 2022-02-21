@@ -65,6 +65,7 @@ namespace affix_services {
 			/// Time of last interaction between either of the parties.
 			/// </summary>
 			affix_base::threading::guarded_resource<uint64_t, affix_base::threading::cross_thread_mutex> m_last_interaction_time = 0;
+
 		public:
 			/// <summary>
 			/// Destructor, handles deletion of resources.

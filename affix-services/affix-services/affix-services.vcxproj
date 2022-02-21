@@ -196,6 +196,7 @@
     <ClCompile Include="pending_connection.cpp" />
     <ClCompile Include="application.cpp" />
     <ClCompile Include="pending_relay.cpp" />
+    <ClCompile Include="relay_manager.cpp" />
     <ClCompile Include="security_information.cpp" />
     <ClCompile Include="transmission_security_manager.cpp" />
     <ClCompile Include="rolling_token.cpp" />
