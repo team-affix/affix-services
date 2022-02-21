@@ -16,7 +16,7 @@ namespace affix_services
 {
 	class application
 	{
-	protected:
+	public:
 		/// <summary>
 		/// Contains the configuration for this application instance; this object governs how to behave as a connection processor.
 		/// </summary>

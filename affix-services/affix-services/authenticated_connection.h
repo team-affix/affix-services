@@ -49,7 +49,7 @@ namespace affix_services {
 			/// Dispatcher which tracks the progress of the send and receive callback functions.
 			/// </summary>
 			affix_base::callback::dispatcher<affix_base::threading::cross_thread_mutex, void, bool> m_dispatcher;
-
+			
 		protected:
 			/// <summary>
 			/// IO guard preventing concurrent reads/writes to the socket.
@@ -65,7 +65,6 @@ namespace affix_services {
 			/// Time of last interaction between either of the parties.
 			/// </summary>
 			affix_base::threading::guarded_resource<uint64_t, affix_base::threading::cross_thread_mutex> m_last_interaction_time = 0;
-			
 		public:
 			/// <summary>
 			/// Destructor, handles deletion of resources.

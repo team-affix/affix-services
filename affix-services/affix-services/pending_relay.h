@@ -33,7 +33,19 @@ namespace affix_services
 		/// </summary>
 		std::function<void(const std::vector<uint8_t>&)> m_relay_received_callback;
 
+		/// <summary>
+		/// Boolean describing whether or not the pending relay has finished.
+		/// </summary>
+		affix_base::threading::guarded_resource<bool, affix_base::threading::cross_thread_mutex> m_finished;
+
 	public:
+		/// <summary>
+		/// Constructor for the pending relay. Takes all necessary arguments for instantiating all fields.
+		/// </summary>
+		/// <param name="a_application"></param>
+		/// <param name="a_authenticated_connection"></param>
+		/// <param name="a_request"></param>
+		/// <param name="a_relay_received_callback"></param>
 		pending_relay(
 			application& a_application,
 			affix_base::data::ptr<affix_services::networking::authenticated_connection> a_authenticated_connection,
@@ -41,20 +53,13 @@ namespace affix_services
 			const std::function<void(const std::vector<uint8_t>&)>& a_relay_received_callback
 		);
 
-	protected:
-		void respond(
-
-		)
-		{
-
-		}
-
-		bool finished(
-
-		)
-		{
-
-		}
+		/// <summary>
+		/// Callback for when a response is received by the remote peer.
+		/// </summary>
+		/// <param name="a_response"></param>
+		void response_received(
+			const affix_services::message_rsp_relay& a_response
+		);
 
 	};
 }
