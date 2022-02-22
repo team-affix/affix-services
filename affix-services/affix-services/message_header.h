@@ -14,6 +14,9 @@ namespace affix_services {
 		class message_header
 		{
 		public:
+			static size_t s_discourse_identifier_size;
+
+		public:
 			enum class serialization_status_response_type : uint8_t
 			{
 				unknown = 0,
@@ -39,6 +42,11 @@ namespace affix_services {
 			/// </summary>
 			message_types m_message_type = message_types::unknown;
 
+			/// <summary>
+			/// A random string used to identify all future messages corresponding to this one.
+			/// </summary>
+			std::string m_discourse_identifier;
+
 		public:
 			/// <summary>
 			/// Default constructor. Initializes all fields to their types' default values.
@@ -55,6 +63,13 @@ namespace affix_services {
 			/// <param name="a_transmission_result"></param>
 			message_header(
 				const message_types& a_message_type
+			);
+
+			/// <summary>
+			/// Generates a random discourse id, which must be unique for proper functionality.
+			/// </summary>
+			void generate_random_discourse_identifier(
+
 			);
 
 			/// <summary>

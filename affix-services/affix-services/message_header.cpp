@@ -1,15 +1,21 @@
 #include "message_header.h"
+#include "cryptopp/osrng.h"
+#include "affix-base/string_extensions.h"
 
 using affix_services::messaging::message_header;
 using namespace affix_services::messaging;
 using affix_base::data::byte_buffer;
 using affix_services::networking::transmission_result;
 
+size_t message_header::s_discourse_identifier_size(25);
+
 message_header::message_header(
 
 )
 {
-
+	CryptoPP::AutoSeededRandomPool l_random;
+	m_discourse_identifier.resize(s_discourse_identifier_size);
+	l_random.GenerateBlock((CryptoPP::byte*)m_discourse_identifier.data(), m_discourse_identifier.size());
 }
 
 message_header::message_header(
