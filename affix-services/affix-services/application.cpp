@@ -170,6 +170,41 @@ void application::restart_pending_outbound_connection(
 		));
 }
 
+void application::async_receive_message(
+	affix_base::data::ptr<affix_services::networking::authenticated_connection> a_authenticated_connection
+)
+{
+	ptr<std::vector<uint8_t>> l_message_data = new std::vector<uint8_t>();
+
+	// Begin receiving data asynchronously, the dynamically allocated vector above will be captured by the lambda for use after callback.
+	a_authenticated_connection->async_receive(*l_message_data,
+		[&, a_authenticated_connection, l_message_data](bool a_result)
+		{
+			if (!a_result)
+				return;
+
+			locked_resource l_received_messages = m_received_messages.lock();
+
+			l_received_messages->push_back(
+				std::tuple(a_authenticated_connection, l_message_data)
+			);
+
+		});
+
+}
+
+std::vector<affix_base::data::ptr<authenticated_connection>>::iterator application::find_connection(
+	std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>>& a_authenticated_connections,
+	const std::string& a_remote_identity
+)
+{
+	return std::find_if(a_authenticated_connections.begin(), a_authenticated_connections.end(),
+		[&](affix_base::data::ptr<authenticated_connection> a_authenticated_connection)
+		{
+			return a_authenticated_connection->m_transmission_security_manager.m_security_information->m_remote_identity == a_remote_identity;
+		});
+}
+
 bool application::identity_approved(
 	const CryptoPP::RSA::PublicKey& a_identity
 )
@@ -389,7 +424,6 @@ void application::process_authentication_attempt_result(
 		// Create authenticated connection object
 		ptr<authenticated_connection> l_authenticated_connection(
 			new authenticated_connection(
-				*this,
 				(*a_authentication_attempt_result)->m_connection_information,
 				(*a_authentication_attempt_result)->m_security_information
 			)
@@ -399,7 +433,7 @@ void application::process_authentication_attempt_result(
 		l_authenticated_connections->push_back(l_authenticated_connection);
 
 		// Begin receiving data from socket
-		l_authenticated_connection->async_receive_message();
+		async_receive_message(l_authenticated_connection);
 		
 	}
 	else
@@ -501,6 +535,181 @@ void application::process_authenticated_connection(
 
 }
 
+void application::process_received_messages(
+
+)
+{
+	// Lock the mutex preventing concurrent reads/writes to the vector
+	locked_resource l_received_messages = m_received_messages.lock();
+
+	for (int i = l_received_messages->size() - 1; i >= 0; i--)
+		process_received_message(l_received_messages.resource(), l_received_messages->begin() + i);
+
+}
+
+void application::process_received_message(
+	std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, affix_base::data::ptr<std::vector<uint8_t>>>>& a_received_messages,
+	std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, affix_base::data::ptr<std::vector<uint8_t>>>>::iterator a_received_message
+)
+{
+	// Get data out of tuple
+	ptr<authenticated_connection> l_authenticated_connection =
+		std::get<0>((*a_received_message));
+	ptr<std::vector<uint8_t>> l_message_data =
+		std::get<1>((*a_received_message));
+
+	// FIRST THING: ERASE THIS ITERATOR FROM THE VECTOR
+	a_received_messages.erase(a_received_message);
+
+	// Create byte buffer from which all message-specific data will be unpacked
+	affix_base::data::byte_buffer l_message_data_byte_buffer(*l_message_data);
+
+	std::vector<uint8_t> l_message_header_data;
+	std::vector<uint8_t> l_message_body_data;
+
+	if (!l_message_data_byte_buffer.pop_front(l_message_header_data) ||
+		!l_message_data_byte_buffer.pop_front(l_message_body_data))
+	{
+		LOG_ERROR("[ AUTHENTICATED CONNECTION ] Error unpacking message header (or) body.");
+		l_authenticated_connection->close();
+		return;
+	}
+
+	// Create a message header byte buffer, which holds serialized contents of message header
+	byte_buffer l_message_header_byte_buffer(l_message_header_data);
+
+	// Create a message body byte buffer, which holds serialized contents of message body
+	byte_buffer l_message_body_byte_buffer(l_message_body_data);
+
+	// Create actual message header
+	affix_services::messaging::message_header l_message_header;
+
+	// Deserialization status response for the message header only
+	affix_services::messaging::message_header::deserialization_status_response_type l_message_header_deserialization_status_response;
+
+	if (!l_message_header.deserialize(l_message_header_byte_buffer, l_message_header_deserialization_status_response))
+	{
+		LOG_ERROR("[ AUTHENTICATED CONNECTION ] Error deserializing message header.");
+		l_authenticated_connection->close();
+		return;
+	}
+
+	switch (l_message_header.m_message_type)
+	{
+		case messaging::message_types::rqt_relay:
+		{
+			// Lock the mutex preventing concurrent reads/writes to the vector
+			locked_resource l_relay_requests = m_relay_requests.lock();
+
+			message_rqt_relay l_message_body;
+
+			// Create a deserialization status response
+			message_rqt_relay::deserialization_status_response_type l_message_body_deserialization_status_response;
+
+			if (!l_message_body.deserialize(l_message_body_byte_buffer, l_message_body_deserialization_status_response))
+			{
+				LOG_ERROR("[ AUTHENTICATED CONNECTION ] Error deserializing the body of message_rqt_relay.");
+				l_authenticated_connection->close();
+				return;
+			}
+
+			// Push the received relay request onto the vector
+			l_relay_requests->push_back(
+				std::tuple(
+					this,
+					l_message_body
+				));
+
+			break;
+		}
+		case messaging::message_types::rsp_relay:
+		{
+			// Lock the mutex preventing concurrent reads/writes to the vector
+			locked_resource l_relay_responses = m_relay_responses.lock();
+
+			message_rsp_relay l_message_body;
+
+			// Create a deserialization status response
+			message_rsp_relay::deserialization_status_response_type l_message_body_deserialization_status_response;
+
+			if (!l_message_body.deserialize(l_message_body_byte_buffer, l_message_body_deserialization_status_response))
+			{
+				LOG_ERROR("[ AUTHENTICATED CONNECTION ] Error deserializing the body of message_rsp_relay.");
+				l_authenticated_connection->close();
+				return;
+			}
+
+			// Push the received relay request onto the vector
+			l_relay_responses->push_back(
+				std::tuple(
+					this,
+					l_message_body
+				));
+
+			break;
+		}
+		case messaging::message_types::rqt_index:
+		{
+			// Lock the mutex preventing concurrent reads/writes to the vector
+			locked_resource l_index_requests = m_index_requests.lock();
+
+			message_rqt_index l_message_body;
+
+			// Create a deserialization status response
+			message_rqt_index::deserialization_status_response_type l_message_body_deserialization_status_response;
+
+			if (!l_message_body.deserialize(l_message_body_byte_buffer, l_message_body_deserialization_status_response))
+			{
+				LOG_ERROR("[ AUTHENTICATED CONNECTION ] Error deserializing the body of message_rqt_index.");
+				l_authenticated_connection->close();
+				return;
+			}
+
+			// Push the received relay request onto the vector
+			l_index_requests->push_back(
+				std::tuple(
+					this,
+					l_message_body
+				));
+
+			break;
+		}
+		case messaging::message_types::rsp_index:
+		{
+			// Lock the mutex preventing concurrent reads/writes to the vector
+			locked_resource l_index_responses = m_index_responses.lock();
+
+			message_rsp_index l_message_body;
+
+			// Create a deserialization status response
+			message_rsp_index::deserialization_status_response_type l_message_body_deserialization_status_response;
+
+			if (!l_message_body.deserialize(l_message_body_byte_buffer, l_message_body_deserialization_status_response))
+			{
+				LOG_ERROR("[ AUTHENTICATED CONNECTION ] Error deserializing the body of message_rsp_index.");
+				l_authenticated_connection->close();
+				return;
+			}
+
+			// Push the received relay request onto the vector
+			l_index_responses->push_back(
+				std::tuple(
+					this,
+					l_message_body
+				));
+
+			break;
+		}
+		default:
+		{
+			LOG_ERROR("[ AUTHENTICATED CONNECTION ] Error: message_type was invalid.");
+			l_authenticated_connection->close();
+			return;
+		}
+	}
+
+}
+
 void application::process_relay_requests(
 
 )
@@ -539,7 +748,7 @@ void application::process_relay_request(
 		message_rsp_relay l_response(message_rqt_relay::processing_status_response_type::error_identity_not_reached);
 
 		// Send the response
-		l_sender_connection->async_send_message(l_response);
+		async_send_message(l_sender_connection, l_response);
 
 		// Erase the request from the vector
 		a_relay_requests.erase(a_relay_request);
@@ -583,7 +792,7 @@ void application::process_relay_request(
 		message_rsp_relay l_response(message_rqt_relay::processing_status_response_type::error_identity_not_connected);
 
 		// Send the response
-		l_sender_connection->async_send_message(l_response);
+		async_send_message(l_sender_connection, l_response);
 
 		// Erase the request from the vector
 		a_relay_requests.erase(a_relay_request);
@@ -596,6 +805,7 @@ void application::process_relay_request(
 
 	// Create a pending_relay object
 	ptr<pending_relay> l_pending_relay = new pending_relay(
+		*this,
 		l_sender_connection,
 		*l_recipient_connection
 	);
@@ -641,6 +851,11 @@ void application::process_relay_response(
 	// Get the response out from the std::tuple
 	message_rsp_relay l_response = std::get<1>((*a_relay_response));
 
+
+	// Erase the relay response EARLY
+	a_relay_responses.erase(a_relay_response);
+
+
 	// Find the pending relay object associated with this response
 	std::vector<affix_base::data::ptr<pending_relay>>::iterator l_pending_relay =
 		std::find_if(l_pending_relays->begin(), l_pending_relays->end(),
@@ -648,33 +863,27 @@ void application::process_relay_response(
 			{
 				// Get whether the identities match
 				bool l_recipient_identity_matches =
-					a_pending_relay->m_recipient_authenticated_connection->m_transmission_security_manager.m_security_information->m_remote_identity ==
-					l_authenticated_connection->m_transmission_security_manager.m_security_information->m_remote_identity;
+					a_pending_relay->m_recipient_authenticated_connection->remote_identity() == l_authenticated_connection->remote_identity();
 
-				// Lock mutex for send_request_started
-				locked_resource l_send_request_started = a_pending_relay->m_send_request_started.lock();
+				// Lock mutex for whether a response is expected
+				locked_resource l_response_expected = a_pending_relay->m_response_expected.lock();
 
-				// Determine whether it would make sense to receive a response given solely whether or not 
+				// Determine whether it would make sense for a pending relay to handle a response given solely whether or not it is ready to
 				bool l_should_receive_response =
-					(*l_send_request_started) && !a_pending_relay->m_request_dispatcher.dispatched();
+					(*l_response_expected) && !a_pending_relay->m_request_dispatcher.dispatched();
 
 				return l_recipient_identity_matches && l_should_receive_response;
 
 			});
 
-	if (l_pending_relay == l_pending_relays->end())
+	if (l_pending_relay != l_pending_relays->end())
 	{
-		// There was no pending relay that matched the criteria 
+		// A matching pending relay object was found given the criteria
 
-		// Erase the relay response
-		a_relay_responses.erase(a_relay_response);
+		// Send the response to the original request sender
+		(*l_pending_relay)->send_response(l_response);
 
-		// Just return
-		return;
 	}
-
-	// Send the response to the original request sender
-	(*l_pending_relay)->send_response(l_response);
 
 }
 
@@ -696,42 +905,21 @@ void application::process_pending_relay(
 	std::vector<affix_base::data::ptr<pending_relay>>::iterator a_pending_relay
 )
 {
-	// Get whether the sender is currently connected
-	locked_resource l_sender_connected = (*a_pending_relay)->m_sender_authenticated_connection->m_connected.lock();
-
-	// Get whether the recipient is currently connected
-	locked_resource l_recipient_connected = (*a_pending_relay)->m_recipient_authenticated_connection->m_connected.lock();
-
-	// Get whether both connections are still connected
-	bool l_both_connections_connected = (*l_sender_connected) && (*l_recipient_connected);
-
-
-	// Get whether sending the request has been marked as successful
-	locked_resource l_send_request_started = (*a_pending_relay)->m_send_request_started.lock();
-
-	// Get whether sending the response has been marked as successful
-	locked_resource l_send_response_started = (*a_pending_relay)->m_send_response_started.lock();
-
-	// Get whether sending both the request and response was successful
-	bool l_both_request_and_response_started = (*l_send_request_started) && (*l_send_response_started);
-
+	// Get whether the relay has been marked as finished
+	locked_resource l_finished = (*a_pending_relay)->m_finished.lock();
 
 	// Get whether either the request or response dispatcher for the pending_relay is dispatched
 	bool l_either_dispatcher_dispatched = (*a_pending_relay)->m_request_dispatcher.dispatched() || (*a_pending_relay)->m_response_dispatcher.dispatched();
 
-
-	// Two conditions for erasing:
-	// 1. Success:
-	//		- Neither dispatcher is dispatched at the moment, meaning all callbacks have been triggered
-	//      - Both request and response have started
-	// 2. Failure:
-    //      - Neither dispatcher is dispatched at the moment
-	//		- Either connection is no longer connected
-
-	if (!l_either_dispatcher_dispatched && (!l_both_connections_connected || l_both_request_and_response_started))
+	if ((*l_finished) && !l_either_dispatcher_dispatched)
 	{
 		// If either connection exits, erase the pending relay.
 		a_pending_relays.erase(a_pending_relay);
+
+		// Try to begin receiving messages from both connections again 
+		// (if they aren't connected, this will immediately trigger a fail callback, so no worries.)
+		async_receive_message((*a_pending_relay)->m_sender_authenticated_connection);
+		async_receive_message((*a_pending_relay)->m_recipient_authenticated_connection);
 
 	}
 

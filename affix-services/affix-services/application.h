@@ -64,9 +64,9 @@ namespace affix_services
 		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>>, affix_base::threading::cross_thread_mutex> m_authenticated_connections;
 
 		/// <summary>
-		/// A vector of all pending miscellaneous functions that need to be called after a certain delay, hence the uint64_t in the tuple.
+		/// A vector of all the message data received from authenticated connections.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<std::tuple<uint64_t, std::function<void()>>>, affix_base::threading::cross_thread_mutex> m_pending_function_calls;
+		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, affix_base::data::ptr<std::vector<uint8_t>>>>, affix_base::threading::cross_thread_mutex> m_received_messages;
 
 	public:
 		/// <summary>
@@ -94,6 +94,12 @@ namespace affix_services
 		/// A vector of all pending relays
 		/// </summary>
 		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::pending_relay>>, affix_base::threading::cross_thread_mutex> m_pending_relays;
+
+		/// <summary>
+		/// A vector of all pending miscellaneous functions that need to be called after a certain delay, hence the uint64_t in the tuple.
+		/// </summary>
+		affix_base::threading::guarded_resource<std::vector<std::tuple<uint64_t, std::function<void()>>>, affix_base::threading::cross_thread_mutex> m_pending_function_calls;
+
 
 		///// <summary>
 		///// A vector of all pending indexes
@@ -148,6 +154,124 @@ namespace affix_services
 		void restart_pending_outbound_connection(
 			asio::ip::tcp::endpoint a_remote_endpoint,
 			const bool& a_remote_localhost
+		);
+
+		template<typename MESSAGE_TYPE>
+		void async_send_message(
+			const std::string& a_remote_identity,
+			MESSAGE_TYPE a_message_body,
+			const std::function<void(bool)>& a_callback = [](bool) {}
+		)
+		{
+			// Lock mutex preventing concurrent reads/writes to the connections vector
+			affix_base::threading::locked_resource l_authenticated_connections = m_authenticated_connections.lock();
+
+			// Try to find a connection associated with the remote identity
+			std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>>::iterator l_authenticated_connection =
+				find_connection(l_authenticated_connections.resource(), a_remote_identity);
+
+			if (l_authenticated_connection == l_authenticated_connections->end())
+			{
+				// No associated connection was found.
+				a_callback(false);
+				return;
+			}
+
+			async_send_message((*l_authenticated_connection), a_message_body, a_callback);
+
+		}
+
+		template<typename MESSAGE_TYPE>
+		void async_send_message(
+			affix_base::data::ptr<affix_services::networking::authenticated_connection> a_authenticated_connection,
+			MESSAGE_TYPE a_message_body,
+			const std::function<void(bool)>& a_callback = [](bool) {}
+		)
+		{
+			// Lock mutex preventing concurrent reads/writes to the connections vector
+			affix_base::threading::locked_resource l_authenticated_connections = m_authenticated_connections.lock();
+
+			// Create the message header from the message body's message type
+			affix_services::messaging::message_header l_message_header(
+				MESSAGE_TYPE::s_message_type
+			);
+
+			// The byte buffer into which the message header data is to be stored
+			affix_base::data::byte_buffer l_message_header_byte_buffer;
+
+			// The serialization status response for the message header.
+			affix_services::messaging::message_header::serialization_status_response_type l_message_header_serialization_status_response;
+
+			if (!l_message_header.serialize(l_message_header_byte_buffer, l_message_header_serialization_status_response))
+			{
+				// Failed to serialize message header.
+				std::cerr << "[ AUTHENTICATED CONNECTION ] Error: failed to serialize message header." << std::endl;
+
+				// Trigger the callback with a failure response
+				a_callback(false);
+
+				// Close the conection.
+				a_authenticated_connection->close();
+
+				// Just return on failure
+				return;
+
+			}
+
+			// The byte buffer into which the message body will be serialized
+			affix_base::data::byte_buffer l_message_body_byte_buffer;
+
+			// The serialization status response for the message body.
+			typename MESSAGE_TYPE::serialization_status_response_type l_message_body_serialization_status_response;
+
+			if (!a_message_body.serialize(l_message_body_byte_buffer, l_message_body_serialization_status_response))
+			{
+				// Failed to serialize message header.
+				std::cerr << "[ AUTHENTICATED CONNECTION ] Error: failed to serialize message body." << std::endl;
+
+				// Trigger the callback with a failure response
+				a_callback(false);
+
+				// Close the conection.
+				a_authenticated_connection->close();
+
+				// Just return on failure
+				return;
+
+			}
+
+
+			// The final message data byte buffer
+			affix_base::data::byte_buffer l_message_data_byte_buffer;
+
+			// Push the contents of the message header byte buffer into the final byte buffer
+			l_message_data_byte_buffer.push_back(l_message_header_byte_buffer.data());
+
+			// Push the contents of the message body byte buffer into the final byte buffer
+			l_message_data_byte_buffer.push_back(l_message_body_byte_buffer.data());
+
+			// Finally, send the message data
+			a_authenticated_connection->async_send(l_message_data_byte_buffer, a_callback);
+
+		}
+
+		/// <summary>
+		/// Begins receiving messages from an authenticated connection, the data from which will appear in the received_messages vector
+		/// </summary>
+		/// <param name="a_authenticated_connection"></param>
+		void async_receive_message(
+			affix_base::data::ptr<affix_services::networking::authenticated_connection> a_authenticated_connection
+		);
+
+		/// <summary>
+		/// Finds an authenticated connection object given a remote identity.
+		/// </summary>
+		/// <param name="a_authenticated_connections"></param>
+		/// <param name="a_remote_identity"></param>
+		/// <returns></returns>
+		std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>>::iterator find_connection(
+			std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>>& a_authenticated_connections,
+			const std::string& a_remote_identity
 		);
 
 		/// <summary>
@@ -249,6 +373,23 @@ namespace affix_services
 		);
 
 		/// <summary>
+		/// Processes all received messages (which are in their serialized form)
+		/// </summary>
+		void process_received_messages(
+
+		);
+
+		/// <summary>
+		/// Processes a single received message (which is in a serialized form)
+		/// </summary>
+		/// <param name="a_received_messages"></param>
+		/// <param name="a_received_message"></param>
+		void process_received_message(
+			std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, affix_base::data::ptr<std::vector<uint8_t>>>>& a_received_messages,
+			std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, affix_base::data::ptr<std::vector<uint8_t>>>>::iterator a_received_message
+		);
+
+		/// <summary>
 		/// Processes all relay requests that have been received.
 		/// </summary>
 		void process_relay_requests(
@@ -329,8 +470,6 @@ namespace affix_services
 			std::vector<std::tuple<uint64_t, std::function<void()>>>& a_pending_function_calls,
 			std::vector<std::tuple<uint64_t, std::function<void()>>>::iterator a_pending_function_call
 		);
-
-	public:
 
 	protected:
 		void async_accept_next(

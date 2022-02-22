@@ -4,9 +4,16 @@
 
 namespace affix_services
 {
+	class application;
+
 	class pending_relay
 	{
 	public:
+		/// <summary>
+		/// The owner application.
+		/// </summary>
+		affix_services::application& m_application;
+
 		/// <summary>
 		/// Authenticated connection with the sender
 		/// </summary>
@@ -18,14 +25,14 @@ namespace affix_services
 		affix_base::data::ptr<affix_services::networking::authenticated_connection> m_recipient_authenticated_connection;
 
 		/// <summary>
-		/// Boolean describing whether sending the request has finished.
+		/// Boolean describing whether sending the request has finished. (does not indicate the success nature of the send)
 		/// </summary>
-		affix_base::threading::guarded_resource<bool, affix_base::threading::cross_thread_mutex> m_send_request_started = false;
+		affix_base::threading::guarded_resource<bool, affix_base::threading::cross_thread_mutex> m_response_expected = false;
 
 		/// <summary>
-		/// Boolean describing whether sending the response has finished.
+		/// Boolean describing whether the pending relay has finished (this does not indicate the success/failure of the relay)
 		/// </summary>
-		affix_base::threading::guarded_resource<bool, affix_base::threading::cross_thread_mutex> m_send_response_started = false;
+		affix_base::threading::guarded_resource<bool, affix_base::threading::cross_thread_mutex> m_finished = false;
 
 		/// <summary>
 		/// Dispatcher for sending the request to the recipient
@@ -44,6 +51,7 @@ namespace affix_services
 		/// <param name="a_sender_authenticated_connection"></param>
 		/// <param name="a_recipient_authenticated_connection"></param>
 		pending_relay(
+			affix_services::application& a_application,
 			affix_base::data::ptr<affix_services::networking::authenticated_connection> a_sender_authenticated_connection,
 			affix_base::data::ptr<affix_services::networking::authenticated_connection> a_recipient_authenticated_connection
 		);
