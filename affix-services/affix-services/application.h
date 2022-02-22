@@ -99,8 +99,7 @@ namespace affix_services
 		/// A vector of all pending miscellaneous functions that need to be called after a certain delay, hence the uint64_t in the tuple.
 		/// </summary>
 		affix_base::threading::guarded_resource<std::vector<std::tuple<uint64_t, std::function<void()>>>, affix_base::threading::cross_thread_mutex> m_pending_function_calls;
-
-
+		
 		///// <summary>
 		///// A vector of all pending indexes
 		///// </summary>
@@ -166,6 +165,7 @@ namespace affix_services
 		template<typename MESSAGE_TYPE>
 		void async_send_message(
 			const std::string& a_remote_identity,
+			const std::string& a_discourse_identifier,
 			MESSAGE_TYPE a_message_body,
 			const std::function<void(bool)>& a_callback = [](bool) {}
 		)
@@ -184,7 +184,7 @@ namespace affix_services
 				return;
 			}
 
-			async_send_message((*l_authenticated_connection), a_message_body, a_callback);
+			async_send_message((*l_authenticated_connection), a_message_body, a_callback, a_discourse_identifier);
 
 		}
 
@@ -198,6 +198,7 @@ namespace affix_services
 		template<typename MESSAGE_TYPE>
 		void async_send_message(
 			affix_base::data::ptr<affix_services::networking::authenticated_connection> a_authenticated_connection,
+			const std::string& a_discourse_identifier,
 			MESSAGE_TYPE a_message_body,
 			const std::function<void(bool)>& a_callback = [](bool) {}
 		)
@@ -207,7 +208,8 @@ namespace affix_services
 
 			// Create the message header from the message body's message type
 			affix_services::messaging::message_header l_message_header(
-				MESSAGE_TYPE::s_message_type
+				MESSAGE_TYPE::s_message_type,
+				a_discourse_identifier
 			);
 
 			// The byte buffer into which the message header data is to be stored

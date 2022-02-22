@@ -13,18 +13,29 @@ message_header::message_header(
 
 )
 {
-	CryptoPP::AutoSeededRandomPool l_random;
-	m_discourse_identifier.resize(s_discourse_identifier_size);
-	l_random.GenerateBlock((CryptoPP::byte*)m_discourse_identifier.data(), m_discourse_identifier.size());
+
 }
 
 message_header::message_header(
-	const message_types& a_message_type
+	const message_types& a_message_type,
+	const std::string& a_discourse_identifier
 ) :
 	m_affix_services_version(details::i_affix_services_version),
-	m_message_type(a_message_type)
+	m_message_type(a_message_type),
+	m_discourse_identifier(a_discourse_identifier)
 {
 
+}
+
+std::string message_header::random_discourse_identifier(
+
+)
+{
+	std::string l_result;
+	CryptoPP::AutoSeededRandomPool l_random;
+	l_result.resize(s_discourse_identifier_size);
+	l_random.GenerateBlock((CryptoPP::byte*)l_result.data(), l_result.size());
+	return l_result;
 }
 
 bool message_header::serialize(
@@ -41,6 +52,12 @@ bool message_header::serialize(
 	if (!a_output.push_back(m_message_type))
 	{
 		a_result = serialization_status_response_type::error_packing_message_type;
+		return false;
+	}
+
+	if (!a_output.push_back(m_discourse_identifier))
+	{
+		a_result = serialization_status_response_type::error_packing_discourse_identifier;
 		return false;
 	}
 
@@ -68,6 +85,12 @@ bool message_header::deserialize(
 	if (!a_input.pop_front(m_message_type))
 	{
 		a_result = deserialization_status_response_type::error_unpacking_message_type;
+		return false;
+	}
+
+	if (!a_input.pop_front(m_discourse_identifier))
+	{
+		a_result = deserialization_status_response_type::error_unpacking_discourse_identifier;
 		return false;
 	}
 

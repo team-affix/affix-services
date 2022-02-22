@@ -14,6 +14,9 @@ namespace affix_services {
 		class message_header
 		{
 		public:
+			/// <summary>
+			/// The default size of discourse identifiers
+			/// </summary>
 			static size_t s_discourse_identifier_size;
 
 		public:
@@ -22,6 +25,7 @@ namespace affix_services {
 				unknown = 0,
 				error_packing_affix_services_version,
 				error_packing_message_type,
+				error_packing_discourse_identifier,
 			};
 			enum class deserialization_status_response_type : uint8_t
 			{
@@ -29,6 +33,7 @@ namespace affix_services {
 				error_unpacking_affix_services_version,
 				error_affix_services_version_mismatch,
 				error_unpacking_message_type,
+				error_unpacking_discourse_identifier,
 			};
 
 		public:
@@ -62,13 +67,14 @@ namespace affix_services {
 			/// <param name="a_message_type"></param>
 			/// <param name="a_transmission_result"></param>
 			message_header(
-				const message_types& a_message_type
+				const message_types& a_message_type,
+				const std::string& a_discourse_identifier = random_discourse_identifier()
 			);
 
 			/// <summary>
 			/// Generates a random discourse id, which must be unique for proper functionality.
 			/// </summary>
-			void generate_random_discourse_identifier(
+			static std::string random_discourse_identifier(
 
 			);
 
@@ -82,6 +88,7 @@ namespace affix_services {
 				affix_base::data::byte_buffer& a_output,
 				serialization_status_response_type& a_result
 			);
+
 			/// <summary>
 			/// Deserializes the message header, returning a boolean suggesting the success of the operation (true == success)
 			/// </summary>
