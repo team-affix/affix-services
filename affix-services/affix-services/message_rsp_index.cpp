@@ -22,7 +22,7 @@ bool message_rsp_index::serialize(
 
 bool message_rsp_index::deserialize(
 	affix_base::data::byte_buffer& a_input,
-	deserialization_status_response_type& a_result
+	message_rsp_index::deserialization_status_response_type& a_result
 )
 {
 	if (!a_input.pop_front(m_identities))

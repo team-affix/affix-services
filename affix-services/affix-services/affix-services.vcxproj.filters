@@ -114,6 +114,9 @@
     <ClInclude Include="pending_relay.h">
       <Filter>Header Files\processing</Filter>
     </ClInclude>
+    <ClInclude Include="message_rsp_index.h">
+      <Filter>Header Files\messaging</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rolling_token.cpp">
@@ -155,13 +158,7 @@
     <ClCompile Include="message_rsp_relay.cpp">
       <Filter>Source Files\messaging</Filter>
     </ClCompile>
-    <ClCompile Include="message_rsp_index.h">
-      <Filter>Header Files\messaging</Filter>
-    </ClCompile>
     <ClCompile Include="message_rqt_index.cpp">
-      <Filter>Source Files\messaging</Filter>
-    </ClCompile>
-    <ClCompile Include="message_rsp_index.cpp">
       <Filter>Source Files\messaging</Filter>
     </ClCompile>
     <ClCompile Include="pending_connection.cpp">
@@ -169,6 +166,9 @@
     </ClCompile>
     <ClCompile Include="pending_relay.cpp">
       <Filter>Source Files\processing</Filter>
+    </ClCompile>
+    <ClCompile Include="message_rsp_index.cpp">
+      <Filter>Source Files\messaging</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -1,7 +1,6 @@
 #include "application.h"
 #include "cryptopp/osrng.h"
 #include "affix-base/vector_extensions.h"
-#include "messaging.h"
 #include "transmission_result.h"
 #include "pending_connection.h"
 #include "affix-base/string_extensions.h"
@@ -239,6 +238,7 @@ void application::process(
 	process_authentication_attempts();
 	process_authentication_attempt_results();
 	process_authenticated_connections();
+	process_received_messages();
 	process_relay_requests();
 	process_relay_responses();
 	process_pending_relays();

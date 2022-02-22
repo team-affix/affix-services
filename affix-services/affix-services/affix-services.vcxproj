@@ -158,6 +158,7 @@
   <ItemGroup>
     <ClInclude Include="message_rqt_index.h" />
     <ClInclude Include="message_rqt_relay.h" />
+    <ClInclude Include="message_rsp_index.h" />
     <ClInclude Include="message_rsp_relay.h" />
     <ClInclude Include="pending_authentication.h" />
     <ClInclude Include="authentication_result.h" />
@@ -186,7 +187,6 @@
     <ClCompile Include="message_rqt_index.cpp" />
     <ClCompile Include="message_rqt_relay.cpp" />
     <ClCompile Include="message_rsp_index.cpp" />
-    <ClCompile Include="message_rsp_index.h" />
     <ClCompile Include="message_rsp_relay.cpp" />
     <ClCompile Include="pending_authentication.cpp" />
     <ClCompile Include="authentication_result.cpp" />
