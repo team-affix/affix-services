@@ -74,7 +74,7 @@ int main()
 
 		affix_base::threading::locked_resource l_authenticated_connections = l_application.m_authenticated_connections.lock();
 
-		if (l_authenticated_connections->size() == 1 && !l_ran_tests)
+		if (l_authenticated_connections->size() == 1)// && !l_ran_tests)
 		{
 			message_rqt_relay l_request(
 				{

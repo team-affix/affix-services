@@ -75,7 +75,7 @@ void authenticated_connection::async_send(
 
 	// SEND TRANSMISSION
 	m_socket_io_guard.async_send(l_exported_transmission_data, 
-		m_dispatcher.dispatch([&, a_callback](bool a_result)
+		m_send_dispatcher.dispatch([&, a_callback](bool a_result)
 		{
 			if (!a_result)
 			{
@@ -107,7 +107,7 @@ void authenticated_connection::async_receive(
 
 	// Try to receive data asynchronously
 	m_socket_io_guard.async_receive(*l_received_exported_message_data,
-		m_dispatcher.dispatch([&, l_received_exported_message_data, a_callback](bool a_result) {
+		m_receive_dispatcher.dispatch([&, l_received_exported_message_data, a_callback](bool a_result) {
 
 			// Set the last interaction time to the current utc time.
 			locked_resource l_last_interaction_time = m_last_interaction_time.lock();

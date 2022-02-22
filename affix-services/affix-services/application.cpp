@@ -503,8 +503,13 @@ void application::process_authenticated_connection(
 		l_connected = *l_connection_connected;
 	}
 
-	// Boolean describing whether or not callbacks are currently dispatched that have not been triggered yet.
-	bool l_callbacks_currently_dispatched = (*a_authenticated_connection)->m_dispatcher.dispatched();
+	// Get whether there are still send callbacks dispatched
+	locked_resource l_send_dispatcher_dispatched_count = (*a_authenticated_connection)->m_send_dispatcher.dispatched_count();
+
+	// Get whether there are still receive callbacks dispatched
+	locked_resource l_receive_dispatcher_dispatched_count = (*a_authenticated_connection)->m_receive_dispatcher.dispatched_count();
+
+	bool l_callbacks_currently_dispatched = ((*l_send_dispatcher_dispatched_count) > 0) || ((*l_receive_dispatcher_dispatched_count) > 0);
 
 	if (l_connected && l_connection_timed_out)
 	{
@@ -740,6 +745,9 @@ void application::process_relay_request(
 	// Get the request out from the std::tuple
 	message_rqt_relay l_request = std::get<1>((*a_relay_request));
 
+	// Erase the request from the vector
+	a_relay_requests.erase(a_relay_request);
+
 	if (l_request.m_path[l_request.m_path_index] != m_local_identity)
 	{
 		// Something went wrong; the local identity does not match the identity that should have received this request
@@ -750,10 +758,11 @@ void application::process_relay_request(
 		// Send the response
 		async_send_message(l_sender_connection, l_response);
 
-		// Erase the request from the vector
-		a_relay_requests.erase(a_relay_request);
+		// Begin receiving the next message
+		async_receive_message(l_sender_connection);
 
 		return;
+
 	}
 
 	if (l_request.m_path_index == l_request.m_path.size() - 1)
@@ -766,8 +775,14 @@ void application::process_relay_request(
 		// Add the payload
 		l_received_relay_payloads->push_back(l_request.m_payload);
 
-		// Erase the request from the vector
-		a_relay_requests.erase(a_relay_request);
+		// Create the response
+		message_rsp_relay l_response(message_rqt_relay::processing_status_response_type::success);
+
+		// Send the response
+		async_send_message(l_sender_connection, l_response);
+
+		// Begin receiving the next message
+		async_receive_message(l_sender_connection);
 
 		return;
 	}
@@ -794,8 +809,8 @@ void application::process_relay_request(
 		// Send the response
 		async_send_message(l_sender_connection, l_response);
 
-		// Erase the request from the vector
-		a_relay_requests.erase(a_relay_request);
+		// Begin receiving the next message
+		async_receive_message(l_sender_connection);
 
 		return;
 	}
@@ -815,9 +830,6 @@ void application::process_relay_request(
 
 	// Add the pending relay to the vector
 	l_pending_relays->push_back(l_pending_relay);
-
-	// Erase the processed relay request from the vector in which it lived
-	a_relay_requests.erase(a_relay_request);
 
 }
 
@@ -868,9 +880,12 @@ void application::process_relay_response(
 				// Lock mutex for whether a response is expected
 				locked_resource l_response_expected = a_pending_relay->m_response_expected.lock();
 
+
 				// Determine whether it would make sense for a pending relay to handle a response given solely whether or not it is ready to
+				locked_resource l_dispatched_count = a_pending_relay->m_request_dispatcher.dispatched_count();
+
 				bool l_should_receive_response =
-					(*l_response_expected) && !a_pending_relay->m_request_dispatcher.dispatched();
+					(*l_response_expected) && *l_dispatched_count == 0;
 
 				return l_recipient_identity_matches && l_should_receive_response;
 
@@ -908,8 +923,11 @@ void application::process_pending_relay(
 	// Get whether the relay has been marked as finished
 	locked_resource l_finished = (*a_pending_relay)->m_finished.lock();
 
+	locked_resource l_request_dispatcher_dispatched_count = (*a_pending_relay)->m_request_dispatcher.dispatched_count();
+	locked_resource l_response_dispatcher_dispatched_count = (*a_pending_relay)->m_response_dispatcher.dispatched_count();
+
 	// Get whether either the request or response dispatcher for the pending_relay is dispatched
-	bool l_either_dispatcher_dispatched = (*a_pending_relay)->m_request_dispatcher.dispatched() || (*a_pending_relay)->m_response_dispatcher.dispatched();
+	bool l_either_dispatcher_dispatched = *l_request_dispatcher_dispatched_count > 0 || *l_response_dispatcher_dispatched_count > 0;
 
 	if ((*l_finished) && !l_either_dispatcher_dispatched)
 	{

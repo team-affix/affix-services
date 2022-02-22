@@ -156,6 +156,13 @@ namespace affix_services
 			const bool& a_remote_localhost
 		);
 
+		/// <summary>
+		/// Sends a message to the authenticated connection asynchronously, where the connection is identified by the argued remote identity.
+		/// </summary>
+		/// <typeparam name="MESSAGE_TYPE"></typeparam>
+		/// <param name="a_remote_identity"></param>
+		/// <param name="a_message_body"></param>
+		/// <param name="a_callback"></param>
 		template<typename MESSAGE_TYPE>
 		void async_send_message(
 			const std::string& a_remote_identity,
@@ -181,6 +188,13 @@ namespace affix_services
 
 		}
 
+		/// <summary>
+		/// Sends a message to the authenticated connection asynchronously.
+		/// </summary>
+		/// <typeparam name="MESSAGE_TYPE"></typeparam>
+		/// <param name="a_authenticated_connection"></param>
+		/// <param name="a_message_body"></param>
+		/// <param name="a_callback"></param>
 		template<typename MESSAGE_TYPE>
 		void async_send_message(
 			affix_base::data::ptr<affix_services::networking::authenticated_connection> a_authenticated_connection,
