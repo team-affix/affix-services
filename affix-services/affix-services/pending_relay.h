@@ -44,6 +44,16 @@ namespace affix_services
 		/// </summary>
 		affix_base::callback::dispatcher<affix_base::threading::cross_thread_mutex, void, bool> m_response_dispatcher;
 
+		/// <summary>
+		/// The message which was sent to us (the mediators). (This is the original request received from a sender)
+		/// </summary>
+		message<message_rqt_relay_body> m_original_request;
+
+		/// <summary>
+		/// The message which relayed to the recipient from us (the mediators).
+		/// </summary>
+		message<message_rqt_relay_body> m_relayed_request;
+
 	public:
 		/// <summary>
 		/// Constructs a pending relay between two connections.
@@ -60,7 +70,7 @@ namespace affix_services
 		/// Sends a relay request to the recipient.
 		/// </summary>
 		/// <param name="a_request"></param>
-		void send_request(
+		void relay_request(
 			const affix_services::message<affix_services::message_rqt_relay_body>& a_request
 		);
 
@@ -68,7 +78,7 @@ namespace affix_services
 		/// This gets called when 
 		/// </summary>
 		/// <param name="a_response"></param>
-		void send_response(
+		void relay_response(
 			const affix_services::message<affix_services::message_rsp_relay_body>& a_response
 		);
 

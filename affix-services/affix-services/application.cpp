@@ -88,7 +88,7 @@ void application::start_pending_outbound_connections(
 		l_remote_endpoint.port(std::stoi(l_remote_endpoint_string_split[1]));
 
 		// Start pending outbound connection
-		LOG(" [ APPLICATION ] Connecting to: " << l_remote_endpoints[i]);
+		LOG("[ APPLICATION ] Connecting to: " << l_remote_endpoints[i]);
 		start_pending_outbound_connection(l_remote_endpoint, l_remote_localhost);
 
 	}
@@ -180,6 +180,7 @@ void application::async_receive_message(
 			if (!a_result)
 				return;
 
+			// Lock mutex preventing concurrent reads/writes to the vector of received messages
 			locked_resource l_received_messages = m_received_messages.lock();
 
 			// Push the raw bytes of the message to a queue to be processed
@@ -752,10 +753,10 @@ void application::process_relay_request(
 		// This module is the intended recipient
 
 		// Lock the mutex of received relays
-		locked_resource l_received_relay_payloads = m_received_relay_payloads.lock();
+		locked_resource l_module_received_relay_requests = m_module_received_relay_requests.lock();
 
 		// Add the payload
-		l_received_relay_payloads->push_back(std::tuple(l_sender_connection->remote_identity(), l_request.m_message_body.m_payload));
+		l_module_received_relay_requests->push_back(std::tuple(l_sender_connection, l_request));
 
 		// Create the response body
 		message_rsp_relay_body l_response_body(message_rqt_relay_body::processing_status_response_type::success);
@@ -778,7 +779,7 @@ void application::process_relay_request(
 	std::vector<ptr<authenticated_connection>>::iterator l_recipient_connection = std::find_if(l_authenticated_connections->begin(), l_authenticated_connections->end(),
 			[&](ptr<authenticated_connection> a_recipient_authenticated_connection)
 			{
-				return a_recipient_authenticated_connection->m_transmission_security_manager.m_security_information->m_remote_identity == l_recipient_identity;
+				return a_recipient_authenticated_connection->remote_identity() == l_recipient_identity;
 			});
 
 	if (l_recipient_connection == l_authenticated_connections->end())
@@ -797,12 +798,6 @@ void application::process_relay_request(
 		return;
 	}
 
-	// Construct the request body which is to be sent to the recipient
-	message_rqt_relay_body l_recipient_request_body(l_request.m_message_body.m_path, l_recipient_path_index, l_request.m_message_body.m_payload);
-
-	// Construct the recipient request
-	message l_recipient_request(l_recipient_request_body.create_message_header(), l_recipient_request_body);
-
 	// Create a pending_relay object
 	ptr<pending_relay> l_pending_relay = new pending_relay(
 		*this,
@@ -811,7 +806,7 @@ void application::process_relay_request(
 	);
 
 	// Begin sending the relayed request asynchronously
-	l_pending_relay->send_request(l_recipient_request);
+	l_pending_relay->relay_request(l_request);
 
 	// Add the pending relay to the vector
 	l_pending_relays->push_back(l_pending_relay);
@@ -848,10 +843,8 @@ void application::process_relay_response(
 	// Get the response out from the std::tuple
 	message<message_rsp_relay_body> l_response = std::get<1>((*a_relay_response));
 
-
 	// Erase the relay response EARLY
 	a_relay_responses.erase(a_relay_response);
-
 
 	// Find the pending relay object associated with this response
 	std::vector<affix_base::data::ptr<pending_relay>>::iterator l_pending_relay =
@@ -862,6 +855,10 @@ void application::process_relay_response(
 				bool l_recipient_identity_matches =
 					a_pending_relay->m_recipient_authenticated_connection->remote_identity() == l_authenticated_connection->remote_identity();
 
+				// Check if the discourse identifier matches
+				bool l_discourse_identitifier_matches =
+					a_pending_relay->m_relayed_request.m_message_header.m_discourse_identifier == l_response.m_message_header.m_discourse_identifier;
+
 				// Lock mutex for whether a response is expected
 				locked_resource l_response_expected = a_pending_relay->m_response_expected.lock();
 
@@ -871,18 +868,24 @@ void application::process_relay_response(
 				bool l_should_receive_response =
 					(*l_response_expected) && *l_dispatched_count == 0;
 
-				return l_recipient_identity_matches && l_should_receive_response;
+				return l_recipient_identity_matches && l_discourse_identitifier_matches && l_should_receive_response;
 
 			});
-
-	if (l_pending_relay != l_pending_relays->end())
+	
+	if (l_pending_relay == l_pending_relays->end())
 	{
-		// A matching pending relay object was found given the criteria
+		// No pending relay object was found given the criteria (the relay must have originated in this module)
 
-		// Send the response to the original request sender
-		(*l_pending_relay)->send_response(l_response);
+		locked_resource l_module_received_relay_responses = m_module_received_relay_responses.lock();
+
+		l_module_received_relay_responses->push_back(std::tuple(l_authenticated_connection, l_response));
+
+		return;
 
 	}
+
+	// Send the response to the original request sender
+	(*l_pending_relay)->relay_response(l_response);
 
 }
 

@@ -107,9 +107,14 @@ namespace affix_services
 
 	public:
 		/// <summary>
-		/// Vector of relayed payloads that have been received and were destined for this module.
+		/// Vector of relayed messages that have been received and were destined for this module.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<std::tuple<std::string, std::vector<uint8_t>>>, affix_base::threading::cross_thread_mutex> m_received_relay_payloads;
+		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_rqt_relay_body>>>, affix_base::threading::cross_thread_mutex> m_module_received_relay_requests;
+
+		/// <summary>
+		/// Vector of relay responses for relay requests that originated in this module.
+		/// </summary>
+		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_rsp_relay_body>>>, affix_base::threading::cross_thread_mutex> m_module_received_relay_responses;
 
 	public:
 		/// <summary>
