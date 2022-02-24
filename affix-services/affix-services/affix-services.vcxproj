@@ -156,10 +156,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="message_rqt_index.h" />
-    <ClInclude Include="message_rqt_relay.h" />
-    <ClInclude Include="message_rsp_index.h" />
-    <ClInclude Include="message_rsp_relay.h" />
+    <ClInclude Include="message.h" />
+    <ClInclude Include="message_rqt_index_body.h" />
+    <ClInclude Include="message_rqt_relay_body.h" />
+    <ClInclude Include="message_rsp_index_body.h" />
+    <ClInclude Include="message_rsp_relay_body.h" />
     <ClInclude Include="pending_authentication.h" />
     <ClInclude Include="authentication_result.h" />
     <ClInclude Include="message_processor_configuration.h" />
@@ -184,10 +185,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application_configuration.cpp" />
-    <ClCompile Include="message_rqt_index.cpp" />
-    <ClCompile Include="message_rqt_relay.cpp" />
-    <ClCompile Include="message_rsp_index.cpp" />
-    <ClCompile Include="message_rsp_relay.cpp" />
+    <ClCompile Include="message_rqt_index_body.cpp" />
+    <ClCompile Include="message_rqt_relay_body.cpp" />
+    <ClCompile Include="message_rsp_index_body.cpp" />
+    <ClCompile Include="message_rsp_relay_body.cpp" />
     <ClCompile Include="pending_authentication.cpp" />
     <ClCompile Include="authentication_result.cpp" />
     <ClCompile Include="authenticated_connection.cpp" />

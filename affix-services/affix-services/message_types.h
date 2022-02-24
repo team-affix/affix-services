@@ -2,19 +2,17 @@
 #include "affix-base/pch.h"
 
 namespace affix_services {
-	namespace messaging {
 
-		enum class message_types : uint8_t {
+	enum class message_types : uint8_t {
 
-			unknown = 0,
+		unknown = 0,
 
-			rqt_relay,				// relay data to connected party
-			rsp_relay,
+		rqt_relay,				// relay data to connected party
+		rsp_relay,
 
-			rqt_index,
-			rsp_index
+		rqt_index,
+		rsp_index
 
-		};
-
-	}
+	};
+		
 }

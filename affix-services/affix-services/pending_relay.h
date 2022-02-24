@@ -1,6 +1,6 @@
 #pragma once
 #include "authenticated_connection.h"
-#include "message_rqt_relay.h"
+#include "message_rqt_relay_body.h"
 
 namespace affix_services
 {
@@ -61,7 +61,7 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_request"></param>
 		void send_request(
-			const affix_services::message_rqt_relay& a_request
+			const affix_services::message<affix_services::message_rqt_relay_body>& a_request
 		);
 
 		/// <summary>
@@ -69,7 +69,7 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_response"></param>
 		void send_response(
-			const affix_services::message_rsp_relay& a_response
+			const affix_services::message<affix_services::message_rsp_relay_body>& a_response
 		);
 
 	};

@@ -102,19 +102,22 @@
     <ClInclude Include="application.h">
       <Filter>Header Files\processing</Filter>
     </ClInclude>
-    <ClInclude Include="message_rqt_relay.h">
+    <ClInclude Include="message_rqt_relay_body.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
-    <ClInclude Include="message_rsp_relay.h">
+    <ClInclude Include="message_rsp_relay_body.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
-    <ClInclude Include="message_rqt_index.h">
+    <ClInclude Include="message_rqt_index_body.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
     <ClInclude Include="pending_relay.h">
       <Filter>Header Files\processing</Filter>
     </ClInclude>
-    <ClInclude Include="message_rsp_index.h">
+    <ClInclude Include="message_rsp_index_body.h">
+      <Filter>Header Files\messaging</Filter>
+    </ClInclude>
+    <ClInclude Include="message.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
   </ItemGroup>
@@ -152,13 +155,13 @@
     <ClCompile Include="application.cpp">
       <Filter>Source Files\processing</Filter>
     </ClCompile>
-    <ClCompile Include="message_rqt_relay.cpp">
+    <ClCompile Include="message_rqt_relay_body.cpp">
       <Filter>Source Files\messaging</Filter>
     </ClCompile>
-    <ClCompile Include="message_rsp_relay.cpp">
+    <ClCompile Include="message_rsp_relay_body.cpp">
       <Filter>Source Files\messaging</Filter>
     </ClCompile>
-    <ClCompile Include="message_rqt_index.cpp">
+    <ClCompile Include="message_rqt_index_body.cpp">
       <Filter>Source Files\messaging</Filter>
     </ClCompile>
     <ClCompile Include="pending_connection.cpp">
@@ -167,7 +170,7 @@
     <ClCompile Include="pending_relay.cpp">
       <Filter>Source Files\processing</Filter>
     </ClCompile>
-    <ClCompile Include="message_rsp_index.cpp">
+    <ClCompile Include="message_rsp_index_body.cpp">
       <Filter>Source Files\messaging</Filter>
     </ClCompile>
   </ItemGroup>

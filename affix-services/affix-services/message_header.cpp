@@ -2,8 +2,7 @@
 #include "cryptopp/osrng.h"
 #include "affix-base/string_extensions.h"
 
-using affix_services::messaging::message_header;
-using namespace affix_services::messaging;
+using affix_services::message_header;
 using affix_base::data::byte_buffer;
 using affix_services::networking::transmission_result;
 
@@ -41,7 +40,7 @@ std::string message_header::random_discourse_identifier(
 bool message_header::serialize(
 	affix_base::data::byte_buffer& a_output,
 	serialization_status_response_type& a_result
-)
+) const
 {
 	if (!a_output.push_back(m_affix_services_version))
 	{

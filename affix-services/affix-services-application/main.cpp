@@ -13,7 +13,6 @@ using affix_base::data::ptr;
 using affix_services::application;
 using affix_services::connection_information;
 using affix_services::pending_connection;
-using affix_services::message_rqt_relay;
 using namespace affix_services;
 using namespace asio::ip;
 namespace fs = std::filesystem;
@@ -74,14 +73,16 @@ int main()
 
 		affix_base::threading::locked_resource l_authenticated_connections = l_application.m_authenticated_connections.lock();
 
-		if (l_authenticated_connections->size() == 1)// && !l_ran_tests)
+		if (l_authenticated_connections->size() >= 1)// && !l_ran_tests)
 		{
-			message_rqt_relay l_request(
+			message_rqt_relay_body l_request_body(
 				{
 					"MIICIDANBgkqhkiG9w0BAQEFAAOCAg0AMIICCAKCAgEAswopTFSw/Q3DjMY3dckiCoTuO5ddzNAF2cowZKeS24X0/POiK/13Z81gP3iuNsueYiEZv6LCn234DGgUnWkcRtVvhJWP7hX1sPbyFe/Qp12R/L1CRVmJKAyAoHAOkzdapQxpPl1IvVimtvAEfdjDPLg6GBBmQyeJIOj/gDOYAF3VXYMAxUKjdvCyv1+vFtVzmoU7X/lvMskM7TkKrj9V7W0aqUjyWsVlF5ws8U5o4MPd6xTwoVOSU+sBI+puhuW0TgTyHbQLVIybItsbUex+ExdeQoUo3/D+l3YWGZQs54+VtsTAtM6Ri8GuPCZnBF7L7DmdcF9f5kRJmkOvDXwYACpolW4o+vfmqHwLKw4jM5g16RW1lVZXlZeZCusJ145BOYX0kPz1UH757fS07oCaELb4hXqgYi0HbsTBYTwSIhuRISszk9g86o8Fn96DjQze2sPP5rxFkGnbcpLdnDOecWUPQ5mojk8S5fNF0HSH8UvdFNMOEaAnd8TE14bRLx1XIcoSX0vHJC4csIkCU3RgkwOqaxb3KwiuU5jWHXy4b0WfMQGKsninj6Cu+nFZ4917gOLQtUrOhnG8kYzlaHUoRqdMH7FAPAfoAX7Q0/YyXCAZGZlZfIfQXy3LtckNLQdOs7Gl4bA65DNm5bJKBu+OC2yJ7iZvdBWBnOW8ZTUH6+sCARE="
 				},
 				0,
-				{ 1, 2, 3, 4, 5, 6, 7, 8, 9 });
+				std::vector<uint8_t>(1000));
+
+			message l_request(l_request_body.create_message_header(), l_request_body);
 
 			l_application.async_send_message(
 				std::string("MIICIDANBgkqhkiG9w0BAQEFAAOCAg0AMIICCAKCAgEAswopTFSw/Q3DjMY3dckiCoTuO5ddzNAF2cowZKeS24X0/POiK/13Z81gP3iuNsueYiEZv6LCn234DGgUnWkcRtVvhJWP7hX1sPbyFe/Qp12R/L1CRVmJKAyAoHAOkzdapQxpPl1IvVimtvAEfdjDPLg6GBBmQyeJIOj/gDOYAF3VXYMAxUKjdvCyv1+vFtVzmoU7X/lvMskM7TkKrj9V7W0aqUjyWsVlF5ws8U5o4MPd6xTwoVOSU+sBI+puhuW0TgTyHbQLVIybItsbUex+ExdeQoUo3/D+l3YWGZQs54+VtsTAtM6Ri8GuPCZnBF7L7DmdcF9f5kRJmkOvDXwYACpolW4o+vfmqHwLKw4jM5g16RW1lVZXlZeZCusJ145BOYX0kPz1UH757fS07oCaELb4hXqgYi0HbsTBYTwSIhuRISszk9g86o8Fn96DjQze2sPP5rxFkGnbcpLdnDOecWUPQ5mojk8S5fNF0HSH8UvdFNMOEaAnd8TE14bRLx1XIcoSX0vHJC4csIkCU3RgkwOqaxb3KwiuU5jWHXy4b0WfMQGKsninj6Cu+nFZ4917gOLQtUrOhnG8kYzlaHUoRqdMH7FAPAfoAX7Q0/YyXCAZGZlZfIfQXy3LtckNLQdOs7Gl4bA65DNm5bJKBu+OC2yJ7iZvdBWBnOW8ZTUH6+sCARE="),

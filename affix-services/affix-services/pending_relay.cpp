@@ -17,7 +17,7 @@ pending_relay::pending_relay(
 }
 
 void pending_relay::send_request(
-	const affix_services::message_rqt_relay& a_request
+	const affix_services::message<affix_services::message_rqt_relay_body>& a_request
 )
 {
 	m_application.async_send_message(m_recipient_authenticated_connection, a_request, m_request_dispatcher.dispatch(
@@ -38,7 +38,7 @@ void pending_relay::send_request(
 }
 
 void pending_relay::send_response(
-	const affix_services::message_rsp_relay& a_response
+	const affix_services::message<affix_services::message_rsp_relay_body>& a_response
 )
 {
 	m_application.async_send_message(m_sender_authenticated_connection, a_response, m_response_dispatcher.dispatch(

@@ -1,30 +1,33 @@
-#include "message_rsp_relay.h"
+#include "message_rsp_relay_body.h"
 
 using namespace affix_services;
 
-affix_services::messaging::message_types message_rsp_relay::s_message_type(
-	affix_services::messaging::message_types::rsp_relay
-);
-
-message_rsp_relay::message_rsp_relay(
+message_rsp_relay_body::message_rsp_relay_body(
 
 )
 {
 
 }
 
-message_rsp_relay::message_rsp_relay(
-	message_rqt_relay::processing_status_response_type a_processing_status_response
+message_rsp_relay_body::message_rsp_relay_body(
+	message_rqt_relay_body::processing_status_response_type a_processing_status_response
 ) :
 	m_processing_status_response(a_processing_status_response)
 {
 
 }
 
-bool message_rsp_relay::serialize(
+message_header message_rsp_relay_body::create_message_header(
+	const message_header& a_request_message_header
+) const
+{
+	return message_header(message_types::rsp_relay, a_request_message_header.m_discourse_identifier);
+}
+
+bool message_rsp_relay_body::serialize(
 	affix_base::data::byte_buffer& a_output,
 	serialization_status_response_type& a_result
-)
+) const
 {
 	// Try to push the processing status response onto the byte buffer
 	if (!a_output.push_back(m_processing_status_response))
@@ -37,7 +40,7 @@ bool message_rsp_relay::serialize(
 
 }
 
-bool message_rsp_relay::deserialize(
+bool message_rsp_relay_body::deserialize(
 	affix_base::data::byte_buffer& a_input,
 	deserialization_status_response_type& a_result
 )
