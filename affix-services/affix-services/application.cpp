@@ -406,11 +406,8 @@ void application::process_authentication_attempt_result(
 	std::vector<affix_base::data::ptr<authentication_result>>::iterator a_authentication_attempt_result
 )
 {
-	// Boolean suggesting the approved state of the identity.
-	bool l_identity_approved = identity_approved(
-		(*a_authentication_attempt_result)->m_security_information->m_remote_public_key);
-
-	if ((*a_authentication_attempt_result)->m_successful && l_identity_approved)
+	if ((*a_authentication_attempt_result)->m_successful && 
+		identity_approved((*a_authentication_attempt_result)->m_security_information->m_remote_public_key))
 	{
 		// Lock mutex for authenticated connections
 		locked_resource l_authenticated_connections = m_authenticated_connections.lock();
