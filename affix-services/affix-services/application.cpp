@@ -907,16 +907,23 @@ void application::process_pending_relay(
 	std::vector<affix_base::data::ptr<pending_relay>>::iterator a_pending_relay
 )
 {
-	// Get whether the relay has been marked as finished
-	locked_resource l_finished = (*a_pending_relay)->m_finished.lock();
+	bool l_finished = false;
+	bool l_either_dispatcher_dispatched = false;
 
-	locked_resource l_request_dispatcher_dispatched_count = (*a_pending_relay)->m_request_dispatcher.dispatched_count();
-	locked_resource l_response_dispatcher_dispatched_count = (*a_pending_relay)->m_response_dispatcher.dispatched_count();
+	{
+		// Get whether the relay has been marked as finished
+		locked_resource l_finished_locked_resource = (*a_pending_relay)->m_finished.lock();
 
-	// Get whether either the request or response dispatcher for the pending_relay is dispatched
-	bool l_either_dispatcher_dispatched = *l_request_dispatcher_dispatched_count > 0 || *l_response_dispatcher_dispatched_count > 0;
+		l_finished = *l_finished_locked_resource;
 
-	if ((*l_finished) && !l_either_dispatcher_dispatched)
+		locked_resource l_request_dispatcher_dispatched_count = (*a_pending_relay)->m_request_dispatcher.dispatched_count();
+		locked_resource l_response_dispatcher_dispatched_count = (*a_pending_relay)->m_response_dispatcher.dispatched_count();
+
+		// Get whether either the request or response dispatcher for the pending_relay is dispatched
+		l_either_dispatcher_dispatched = *l_request_dispatcher_dispatched_count > 0 || *l_response_dispatcher_dispatched_count > 0;
+	}
+
+	if (l_finished && !l_either_dispatcher_dispatched)
 	{
 		// If either connection exits, erase the pending relay.
 		a_pending_relays.erase(a_pending_relay);
