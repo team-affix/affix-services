@@ -27,12 +27,7 @@ namespace affix_services
 		/// <summary>
 		/// Boolean describing whether sending the request has finished. (does not indicate the success nature of the send)
 		/// </summary>
-		affix_base::threading::guarded_resource<bool, affix_base::threading::cross_thread_mutex> m_response_expected = false;
-
-		/// <summary>
-		/// Boolean describing whether the pending relay has finished (this does not indicate the success/failure of the relay)
-		/// </summary>
-		affix_base::threading::guarded_resource<bool, affix_base::threading::cross_thread_mutex> m_finished = false;
+		affix_base::threading::guarded_resource<bool, affix_base::threading::cross_thread_mutex> m_relay_request_sent = false;
 
 		/// <summary>
 		/// Dispatcher for sending the request to the recipient

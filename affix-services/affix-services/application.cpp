@@ -860,7 +860,7 @@ void application::process_relay_response(
 					a_pending_relay->m_relayed_request.m_message_header.m_discourse_identifier == l_response.m_message_header.m_discourse_identifier;
 
 				// Lock mutex for whether a response is expected
-				locked_resource l_response_expected = a_pending_relay->m_response_expected.lock();
+				locked_resource l_response_expected = a_pending_relay->m_relay_request_sent.lock();
 
 				// Determine whether it would make sense for a pending relay to handle a response given solely whether or not it is ready to
 				locked_resource l_dispatched_count = a_pending_relay->m_request_dispatcher.dispatched_count();
@@ -907,23 +907,16 @@ void application::process_pending_relay(
 	std::vector<affix_base::data::ptr<pending_relay>>::iterator a_pending_relay
 )
 {
-	bool l_finished = false;
 	bool l_either_dispatcher_dispatched = false;
 
 	{
-		// Get whether the relay has been marked as finished
-		locked_resource l_finished_locked_resource = (*a_pending_relay)->m_finished.lock();
-
-		l_finished = *l_finished_locked_resource;
-
+		// Get whether either the request or response dispatcher for the pending_relay is dispatched
 		locked_resource l_request_dispatcher_dispatched_count = (*a_pending_relay)->m_request_dispatcher.dispatched_count();
 		locked_resource l_response_dispatcher_dispatched_count = (*a_pending_relay)->m_response_dispatcher.dispatched_count();
-
-		// Get whether either the request or response dispatcher for the pending_relay is dispatched
 		l_either_dispatcher_dispatched = *l_request_dispatcher_dispatched_count > 0 || *l_response_dispatcher_dispatched_count > 0;
 	}
 
-	if (l_finished && !l_either_dispatcher_dispatched)
+	if (!l_either_dispatcher_dispatched)
 	{
 		// If either connection exits, erase the pending relay.
 		a_pending_relays.erase(a_pending_relay);

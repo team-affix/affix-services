@@ -32,15 +32,8 @@ void pending_relay::relay_request(
 	m_application.async_send_message(m_recipient_authenticated_connection, m_relayed_request, m_request_dispatcher.dispatch(
 		[&](bool a_result)
 		{
-			if (!a_result)
-			{
-				locked_resource l_finished = m_finished.lock();
-				(*l_finished) = true;
-				return;
-			}
-
-			locked_resource l_response_expected = m_response_expected.lock();
-			(*l_response_expected) = true;
+			locked_resource l_relay_request_sent = m_relay_request_sent.lock();
+			(*l_relay_request_sent) = true;
 
 		}));
 
@@ -53,11 +46,6 @@ void pending_relay::relay_response(
 	// Construct the response which is to arrive at the original request sender's inbox
 	message l_relayed_response(a_response.m_message_body.create_message_header(m_original_request.m_message_header), a_response.m_message_body);
 
-	m_application.async_send_message(m_sender_authenticated_connection, l_relayed_response, m_response_dispatcher.dispatch(
-		[&](bool)
-		{
-			locked_resource l_finished = m_finished.lock();
-			(*l_finished) = true;
-		}));
+	m_application.async_send_message(m_sender_authenticated_connection, l_relayed_response, m_response_dispatcher.dispatch([&](bool){}));
 
 }
