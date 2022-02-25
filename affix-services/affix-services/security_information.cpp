@@ -14,5 +14,6 @@ security_information::security_information(
 	m_remote_public_key(a_remote_public_key),
 	m_remote_token(a_remote_token)
 {
-	m_remote_identity = rsa_to_base64_string(a_remote_public_key);
+	if (!rsa_to_base64_string(a_remote_public_key, m_remote_identity))
+		throw std::exception("Error converting RSA public key to base64 string format.");
 }

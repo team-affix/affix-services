@@ -111,8 +111,17 @@ application_configuration::application_configuration(
 	m_local_key_pair.set_push(
 		[&](rsa_key_pair& a_resource)
 		{
-			std::string l_private_key_string = affix_base::cryptography::rsa_to_base64_string(a_resource.private_key);
-			std::string l_public_key_string = affix_base::cryptography::rsa_to_base64_string(a_resource.public_key);
+			std::string l_private_key_string;
+			if (!affix_base::cryptography::rsa_to_base64_string(a_resource.private_key, l_private_key_string))
+			{
+				throw std::exception("Local RSA private key not in correct format.");
+			}
+
+			std::string l_public_key_string;
+			if (!affix_base::cryptography::rsa_to_base64_string(a_resource.public_key, l_public_key_string))
+			{
+				throw std::exception("Local RSA public key not in correct format.");
+			}
 
 			// Write base64 strings to json structure
 			m_resource["local_private_key"] = l_private_key_string;

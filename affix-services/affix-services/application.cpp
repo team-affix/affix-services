@@ -38,7 +38,8 @@ application::application(
 	m_application_configuration(a_application_configuration)
 {
 	// Get the local identity string from the local public key.
-	m_local_identity = rsa_to_base64_string(a_application_configuration->m_local_key_pair.resource().public_key);
+	if (!rsa_to_base64_string(a_application_configuration->m_local_key_pair.resource().public_key, m_local_identity))
+		throw std::exception("The inputted base64 RSA public key string is not in correct format.");
 
 	if (m_application_configuration->m_enable_server.resource())
 		// If the server is enabled, start it
@@ -214,7 +215,9 @@ bool application::identity_approved(
 	try
 	{
 		// Extract the identity of the remote peer
-		std::string l_identity = rsa_to_base64_string(a_identity);
+		std::string l_identity;
+		if (!rsa_to_base64_string(a_identity, l_identity))
+			return false;
 
 		// Get current approved identities
 		std::vector<std::string>& l_approved_identities = m_application_configuration->m_approved_identities.resource();
@@ -416,7 +419,7 @@ void application::process_authentication_attempt_result(
 		LOG("============================================================");
 		LOG("[ PROCESSOR ] Success: authentication attempt successful: " << std::endl);
 		LOG("Remote IPv4: " << (*a_authentication_attempt_result)->m_connection_information->m_socket->remote_endpoint().address().to_string() << ":" << (*a_authentication_attempt_result)->m_connection_information->m_socket->remote_endpoint().port());
-		LOG("Remote Identity (base64): " << std::endl << rsa_to_base64_string((*a_authentication_attempt_result)->m_security_information->m_remote_public_key) << std::endl);
+		LOG("Remote Identity (base64): " << std::endl << (*a_authentication_attempt_result)->m_security_information->m_remote_identity << std::endl);
 		LOG("Remote Seed: " << to_string((*a_authentication_attempt_result)->m_security_information->m_remote_token.m_seed, "-"));
 		LOG("Local Seed:  " << to_string((*a_authentication_attempt_result)->m_security_information->m_local_token.m_seed, "-"));
 		LOG("============================================================");
@@ -450,7 +453,7 @@ void application::process_authentication_attempt_result(
 		{
 			// Log the success of the authentication attempt
 			LOG("[ PROCESSOR ] Error: authentication attempt succeeded but identity not approved: ");
-			LOG("Remote Identity (base64): " << std::endl << rsa_to_base64_string((*a_authentication_attempt_result)->m_security_information->m_remote_public_key) << std::endl);
+			LOG("Remote Identity (base64): " << std::endl << (*a_authentication_attempt_result)->m_security_information->m_remote_identity << std::endl);
 
 		}
 
