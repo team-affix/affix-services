@@ -57,7 +57,7 @@ int main()
 			}
 		});
 
-	bool l_ran_tests = false;
+	uint64_t l_start_time = affix_base::timing::utc_time();
 
 	// Processing loop
 	for(int i = 0; true; i++)
@@ -73,7 +73,7 @@ int main()
 
 		affix_base::threading::locked_resource l_authenticated_connections = l_application.m_authenticated_connections.lock();
 
-		if (l_authenticated_connections->size() >= 1)// && !l_ran_tests)
+		if (l_authenticated_connections->size() >= 1 && affix_base::timing::utc_time() - l_start_time <= 10)// && !l_ran_tests)
 		{
 			std::vector<std::string> l_path =
 			{
@@ -96,7 +96,7 @@ int main()
 
 				});
 
-			l_ran_tests = true;
+
 		}
 
 		Sleep(10);
