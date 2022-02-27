@@ -12,15 +12,15 @@ namespace affix_services
 		enum class serialization_status_response_type : uint8_t
 		{
 			unknown = 0,
-			error_packing_message_header,
-			error_packing_deserialization_status_response,
+			error_packing_path,
+			error_packing_path_index,
 			error_packing_processing_status_response,
 		};
 		enum class deserialization_status_response_type : uint8_t
 		{
 			unknown = 0,
-			error_unpacking_message_header,
-			error_unpacking_deserialization_status_response,
+			error_unpacking_path,
+			error_unpacking_path_index,
 			error_unpacking_processing_status_response,
 		};
 		enum class processing_status_response_type : uint8_t
@@ -30,6 +30,8 @@ namespace affix_services
 		};
 
 	public:
+		std::vector<std::string> m_path;
+		size_t m_path_index = 0;
 		message_rqt_relay_body::processing_status_response_type m_processing_status_response =
 			message_rqt_relay_body::processing_status_response_type::unknown;
 
@@ -38,7 +40,9 @@ namespace affix_services
 
 		);
 		message_rsp_relay_body(
-			message_rqt_relay_body::processing_status_response_type a_processing_status_response
+			const std::vector<std::string>& a_path,
+			message_rqt_relay_body::processing_status_response_type a_processing_status_response,
+			const size_t& a_path_index
 		);
 
 		message_header create_message_header(

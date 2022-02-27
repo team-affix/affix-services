@@ -111,9 +111,6 @@
     <ClInclude Include="message_rqt_index_body.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
-    <ClInclude Include="pending_relay.h">
-      <Filter>Header Files\processing</Filter>
-    </ClInclude>
     <ClInclude Include="message_rsp_index_body.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
@@ -166,9 +163,6 @@
     </ClCompile>
     <ClCompile Include="pending_connection.cpp">
       <Filter>Source Files\networking</Filter>
-    </ClCompile>
-    <ClCompile Include="pending_relay.cpp">
-      <Filter>Source Files\processing</Filter>
     </ClCompile>
     <ClCompile Include="message_rsp_index_body.cpp">
       <Filter>Source Files\messaging</Filter>

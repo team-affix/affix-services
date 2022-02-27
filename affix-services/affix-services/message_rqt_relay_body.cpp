@@ -12,12 +12,12 @@ message_rqt_relay_body::message_rqt_relay_body(
 
 message_rqt_relay_body::message_rqt_relay_body(
 	const std::vector<std::string>& a_path,
-	const size_t& a_path_index,
-	const std::vector<uint8_t>& a_payload
+	const std::vector<uint8_t>& a_payload,
+	const size_t& a_path_index
 ) :
 	m_path(a_path),
-	m_path_index(a_path_index),
-	m_payload(a_payload)
+	m_payload(a_payload),
+	m_path_index(a_path_index)
 {
 
 }

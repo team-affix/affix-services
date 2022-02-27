@@ -83,7 +83,6 @@ int main()
 
 			message_rqt_relay_body l_request_body(
 				l_path,
-				0,
 				std::vector<uint8_t>(1000));
 
 			message l_request(l_request_body.create_message_header(), l_request_body);

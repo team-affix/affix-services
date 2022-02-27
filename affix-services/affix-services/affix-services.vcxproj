@@ -170,7 +170,6 @@
     <ClInclude Include="pending_connection.h" />
     <ClInclude Include="application.h" />
     <ClInclude Include="application_configuration.h" />
-    <ClInclude Include="pending_relay.h" />
     <ClInclude Include="security_information.h" />
     <ClInclude Include="transmission_security_manager.h" />
     <ClInclude Include="connection_result.h" />
@@ -196,7 +195,6 @@
     <ClCompile Include="connection_information.cpp" />
     <ClCompile Include="pending_connection.cpp" />
     <ClCompile Include="application.cpp" />
-    <ClCompile Include="pending_relay.cpp" />
     <ClCompile Include="security_information.cpp" />
     <ClCompile Include="transmission_security_manager.cpp" />
     <ClCompile Include="rolling_token.cpp" />

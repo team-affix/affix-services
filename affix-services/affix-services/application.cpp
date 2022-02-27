@@ -247,7 +247,6 @@ void application::process(
 	process_received_messages();
 	process_relay_requests();
 	process_relay_responses();
-	process_pending_relays();
 	process_pending_function_calls();
 }
 
@@ -719,9 +718,6 @@ void application::process_relay_request(
 	// Lock the mutex preventing concurrent reads/writes to the authenticated connections vector
 	locked_resource l_authenticated_connections = m_authenticated_connections.lock();
 
-	// Lock the mutex preventing concurrent reads/writes to the pending relays vector
-	locked_resource l_pending_relays = m_pending_relays.lock();
-
 	// Get the authenticated connection out from the std::tuple
 	ptr<authenticated_connection> l_sender_connection = std::get<0>((*a_relay_request));
 
@@ -736,7 +732,11 @@ void application::process_relay_request(
 		// Something went wrong; the local identity does not match the identity that should have received this request
 
 		// Construct the response body
-		message_rsp_relay_body l_response_body(message_rqt_relay_body::processing_status_response_type::error_identity_not_reached);
+		message_rsp_relay_body l_response_body(
+			l_request.m_message_body.m_path,
+			message_rqt_relay_body::processing_status_response_type::error_identity_not_reached,
+			l_request.m_message_body.m_path_index - 1
+		);
 		
 		// Construct the response
 		message l_response(l_response_body.create_message_header(l_request.m_message_header), l_response_body);
@@ -759,7 +759,11 @@ void application::process_relay_request(
 		l_module_received_relay_requests->push_back(std::tuple(l_sender_connection, l_request));
 
 		// Create the response body
-		message_rsp_relay_body l_response_body(message_rqt_relay_body::processing_status_response_type::success);
+		message_rsp_relay_body l_response_body(
+			l_request.m_message_body.m_path,
+			message_rqt_relay_body::processing_status_response_type::success,
+			l_request.m_message_body.m_path_index - 1
+		);
 
 		// Construct the response
 		message l_response(l_response_body.create_message_header(l_request.m_message_header), l_response_body);
@@ -787,7 +791,11 @@ void application::process_relay_request(
 		// Something went wrong; the recipient identity does not match the identity of any connected module
 
 		// Construct the response body
-		message_rsp_relay_body l_response_body(message_rqt_relay_body::processing_status_response_type::error_identity_not_connected);
+		message_rsp_relay_body l_response_body(
+			l_request.m_message_body.m_path,
+			message_rqt_relay_body::processing_status_response_type::error_identity_not_connected,
+			l_request.m_message_body.m_path_index - 1
+		);
 
 		// Construct the response
 		message l_response(l_response_body.create_message_header(l_request.m_message_header), l_response_body);
@@ -798,18 +806,20 @@ void application::process_relay_request(
 		return;
 	}
 
-	// Create a pending_relay object
-	ptr<pending_relay> l_pending_relay = new pending_relay(
-		*this,
-		l_sender_connection,
-		*l_recipient_connection
-	);
+	{
+		// Relay the request, finally
+		// Construct the relayed request
+		message l_relayed_request = l_request;
 
-	// Begin sending the relayed request asynchronously
-	l_pending_relay->relay_request(l_request);
+		// Increment the path index by one
+		l_relayed_request.m_message_body.m_path_index = l_recipient_path_index;
 
-	// Add the pending relay to the vector
-	l_pending_relays->push_back(l_pending_relay);
+		// Change affix_services version in header to this version
+		l_relayed_request.m_message_header.m_affix_services_version = affix_services::details::i_affix_services_version;
+
+		async_send_message(*l_recipient_connection, l_relayed_request);
+
+	}
 
 }
 
@@ -834,11 +844,8 @@ void application::process_relay_response(
 	// Lock the mutex preventing concurrent reads/writes to the authenticated connections vector
 	locked_resource l_authenticated_connections = m_authenticated_connections.lock();
 
-	// Lock the mutex preventing concurrent reads/writes to the pending relays vector
-	locked_resource l_pending_relays = m_pending_relays.lock();
-
 	// Get the authenticated connection out from the std::tuple
-	ptr<authenticated_connection> l_authenticated_connection = std::get<0>((*a_relay_response));
+	ptr<authenticated_connection> l_responder_connection = std::get<0>((*a_relay_response));
 
 	// Get the response out from the std::tuple
 	message<message_rsp_relay_body> l_response = std::get<1>((*a_relay_response));
@@ -846,104 +853,47 @@ void application::process_relay_response(
 	// Erase the relay response EARLY
 	a_relay_responses.erase(a_relay_response);
 
-	// Find the pending relay object associated with this response
-	std::vector<affix_base::data::ptr<pending_relay>>::iterator l_pending_relay =
-		std::find_if(l_pending_relays->begin(), l_pending_relays->end(),
-			[&](ptr<pending_relay> a_pending_relay)
-			{
-				// Get whether the identities match
-				bool l_recipient_identity_matches =
-					a_pending_relay->m_recipient_authenticated_connection->remote_identity() == l_authenticated_connection->remote_identity();
-
-				// Check if the discourse identifier matches
-				bool l_discourse_identitifier_matches =
-					a_pending_relay->m_relayed_request.m_message_header.m_discourse_identifier == l_response.m_message_header.m_discourse_identifier;
-
-				// Lock mutex for whether a response is expected
-				locked_resource l_response_expected = a_pending_relay->m_relay_request_sent.lock();
-
-				// Determine whether it would make sense for a pending relay to handle a response given solely whether or not it is ready to
-				locked_resource l_dispatched_count = a_pending_relay->m_request_dispatcher.dispatched_count();
-
-				bool l_should_receive_response =
-					(*l_response_expected) && *l_dispatched_count == 0;
-
-				return l_recipient_identity_matches && l_discourse_identitifier_matches && l_should_receive_response;
-
-			});
-	
-	if (l_pending_relay == l_pending_relays->end())
+	if (l_response.m_message_body.m_path[l_response.m_message_body.m_path_index] != m_local_identity)
 	{
-		// No pending relay object was found given the criteria (the relay must have originated in this module)
+		LOG_ERROR("[ APPLICATION ] Error: identity mismatch during relay response.");
+		return;
+	}
 
+	if (l_response.m_message_body.m_path_index == 0)
+	{
+		// The response was destined for this module.
 		locked_resource l_module_received_relay_responses = m_module_received_relay_responses.lock();
+		l_module_received_relay_responses->push_back(std::tuple(l_responder_connection, l_response));
+	}
 
-		l_module_received_relay_responses->push_back(std::tuple(l_authenticated_connection, l_response));
+	// Get the index of the recipient in the path
+	size_t l_recipient_path_index = l_response.m_message_body.m_path_index - 1;
 
+	// Get the recipient's identity from the request
+	std::string l_recipient_identity = l_response.m_message_body.m_path[l_recipient_path_index];
+
+	std::vector<ptr<authenticated_connection>>::iterator l_recipient_connection = std::find_if(l_authenticated_connections->begin(), l_authenticated_connections->end(),
+		[&](ptr<authenticated_connection> a_recipient_authenticated_connection)
+		{
+			return a_recipient_authenticated_connection->remote_identity() == l_recipient_identity;
+		});
+
+	if (l_recipient_connection == l_authenticated_connections->end())
+		// Recipient connection was not online, just return.
 		return;
 
-	}
+	// Construct relayed response
+	message l_relayed_response = l_response;
 
-	// Send the response to the original request sender
-	(*l_pending_relay)->relay_response(l_response);
+	// Decrement the path index for the recipient
+	l_relayed_response.m_message_body.m_path_index = l_recipient_path_index;
 
-}
+	// Set the affix_services version to this affix_services version.
+	l_relayed_response.m_message_header.m_affix_services_version = details::i_affix_services_version;
 
-void application::process_pending_relays(
-
-)
-{
-	// Lock the mutex preventing concurrent reads/writes to the vector
-	locked_resource l_pending_relays = m_pending_relays.lock();
-
-	// Decrement through vector since elements of the vector might be removed
-	for (int i = l_pending_relays->size() - 1; i >= 0; i--)
-		process_pending_relay(l_pending_relays.resource(), l_pending_relays->begin() + i);
+	async_send_message(*l_recipient_connection, l_relayed_response);
 
 }
-
-void application::process_pending_relay(
-	std::vector<affix_base::data::ptr<pending_relay>>& a_pending_relays,
-	std::vector<affix_base::data::ptr<pending_relay>>::iterator a_pending_relay
-)
-{
-	bool l_either_dispatcher_dispatched = false;
-
-	{
-		// Get whether either the request or response dispatcher for the pending_relay is dispatched
-		locked_resource l_request_dispatcher_dispatched_count = (*a_pending_relay)->m_request_dispatcher.dispatched_count();
-		locked_resource l_response_dispatcher_dispatched_count = (*a_pending_relay)->m_response_dispatcher.dispatched_count();
-		l_either_dispatcher_dispatched = *l_request_dispatcher_dispatched_count > 0 || *l_response_dispatcher_dispatched_count > 0;
-	}
-
-	if (!l_either_dispatcher_dispatched)
-	{
-		// If either connection exits, erase the pending relay.
-		a_pending_relays.erase(a_pending_relay);
-
-	}
-
-}
-
-//void connection_processor::process_pending_indexes(
-//
-//)
-//{
-//	// Lock the mutex preventing concurrent reads/writes to the vector
-//	locked_resource l_pending_indexeds = m_pending_indexes.lock();
-//
-//	for (int i = l_pending_indexeds->size() - 1; i >= 0; i--)
-//		process_pending_index(l_pending_indexeds.resource(), l_pending_indexeds->begin() + i);
-//
-//}
-//
-//void connection_processor::process_pending_index(
-//	std::vector<affix_base::data::ptr<pending_index>>& a_pending_index,
-//	std::vector<affix_base::data::ptr<pending_index>>::iterator a_pending_indexes
-//)
-//{
-//
-//}
 
 void application::process_pending_function_calls(
 

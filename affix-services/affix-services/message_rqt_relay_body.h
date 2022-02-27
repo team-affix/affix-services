@@ -36,9 +36,8 @@ namespace affix_services
 
 	public:
 		std::vector<std::string> m_path;
-		size_t m_path_index = 0;
-
 		std::vector<uint8_t> m_payload;
+		size_t m_path_index = 1;
 
 	public:
 		message_rqt_relay_body(
@@ -47,8 +46,8 @@ namespace affix_services
 
 		message_rqt_relay_body(
 			const std::vector<std::string>& a_path,
-			const size_t& a_path_index,
-			const std::vector<uint8_t>& a_payload
+			const std::vector<uint8_t>& a_payload,
+			const size_t& a_path_index = 1
 		);
 
 		message_header create_message_header(

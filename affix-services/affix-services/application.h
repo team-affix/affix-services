@@ -10,7 +10,6 @@
 #include "messaging.h"
 #include "pending_connection.h"
 #include "application_configuration.h"
-#include "pending_relay.h"
 
 namespace affix_services
 {
@@ -90,11 +89,6 @@ namespace affix_services
 		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_rsp_index_body>>>, affix_base::threading::cross_thread_mutex> m_index_responses;
 
 	protected:
-		/// <summary>
-		/// A vector of all pending relays
-		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::pending_relay>>, affix_base::threading::cross_thread_mutex> m_pending_relays;
-
 		/// <summary>
 		/// A vector of all pending miscellaneous functions that need to be called after a certain delay, hence the uint64_t in the tuple.
 		/// </summary>
@@ -405,38 +399,6 @@ namespace affix_services
 			std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_rsp_relay_body>>>& a_relay_responses,
 			std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message< message_rsp_relay_body>>>::iterator a_relay_response
 		);
-
-		/// <summary>
-		/// Processes all received relay requests in the vector.
-		/// </summary>
-		void process_pending_relays(
-
-		);
-
-		/// <summary>
-		/// Processes a single received relay request.
-		/// </summary>
-		/// <param name="a_received_relay_requests"></param>
-		/// <param name="a_received_relay_request"></param>
-		void process_pending_relay(
-			std::vector<affix_base::data::ptr<pending_relay>>& a_pending_relays,
-			std::vector<affix_base::data::ptr<pending_relay>>::iterator a_pending_relay
-		);
-
-		///// <summary>
-		///// Processes all received index requests in the vector.
-		///// </summary>
-		//void process_pending_indexes(
-
-		//);
-
-		///// <summary>
-		///// Processes a single received index request.
-		///// </summary>
-		//void process_pending_index(
-		//	std::vector<affix_base::data::ptr<pending_index>>& a_pending_index,
-		//	std::vector<affix_base::data::ptr<pending_index>>::iterator a_pending_indexes
-		//);
 
 		/// <summary>
 		/// Processes all pending function call.
