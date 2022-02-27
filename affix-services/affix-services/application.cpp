@@ -499,21 +499,26 @@ void application::process_authenticated_connection(
 	// Boolean describing whether the authenticated connection is still active (connected)
 	bool l_connected = false;
 
+	// Boolean describing whether there are callbacks currently dispatched that have not yet been triggered
+	bool l_callbacks_currently_dispatched = false;
+
 	{
 		// This must stay it's own scope
 		locked_resource l_connection_connected = (*a_authenticated_connection)->m_connected.lock();
+
 		l_connected = *l_connection_connected;
+
+		// Get whether there are still send callbacks dispatched
+		locked_resource l_send_dispatcher_dispatched_count = (*a_authenticated_connection)->m_send_dispatcher.dispatched_count();
+
+		// Get whether there are still receive callbacks dispatched
+		locked_resource l_receive_dispatcher_dispatched_count = (*a_authenticated_connection)->m_receive_dispatcher.dispatched_count();
+
+		l_callbacks_currently_dispatched = ((*l_send_dispatcher_dispatched_count) > 0) || ((*l_receive_dispatcher_dispatched_count) > 0);
+
 	}
 
-	// Get whether there are still send callbacks dispatched
-	locked_resource l_send_dispatcher_dispatched_count = (*a_authenticated_connection)->m_send_dispatcher.dispatched_count();
-
-	// Get whether there are still receive callbacks dispatched
-	locked_resource l_receive_dispatcher_dispatched_count = (*a_authenticated_connection)->m_receive_dispatcher.dispatched_count();
-
-	bool l_callbacks_currently_dispatched = ((*l_send_dispatcher_dispatched_count) > 0) || ((*l_receive_dispatcher_dispatched_count) > 0);
-
-	if (l_connected && l_connection_timed_out)
+	if (l_connection_timed_out && (l_connected || l_callbacks_currently_dispatched))
 	{
 		// Handle disposing of connection.
 
