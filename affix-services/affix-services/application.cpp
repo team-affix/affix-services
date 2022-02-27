@@ -864,6 +864,7 @@ void application::process_relay_response(
 		// The response was destined for this module.
 		locked_resource l_module_received_relay_responses = m_module_received_relay_responses.lock();
 		l_module_received_relay_responses->push_back(std::tuple(l_responder_connection, l_response));
+		return;
 	}
 
 	// Get the index of the recipient in the path
