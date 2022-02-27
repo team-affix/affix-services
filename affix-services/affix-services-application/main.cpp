@@ -57,7 +57,8 @@ int main()
 			}
 		});
 
-	bool l_tested = false;
+	size_t l_relayed_messages = 0;
+	size_t l_max_relay_messages = 10;
 
 	// Processing loop
 	for(int i = 0; true; i++)
@@ -73,9 +74,9 @@ int main()
 
 		affix_base::threading::locked_resource l_authenticated_connections = l_application.m_authenticated_connections.lock();
 
-		if (l_authenticated_connections->size() >= 1 && !l_tested)
+		if (l_authenticated_connections->size() >= 1 && l_relayed_messages < l_max_relay_messages)
 		{
-			l_tested = true;
+			l_relayed_messages++;
 
 			std::vector<std::string> l_path =
 			{
