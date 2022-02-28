@@ -121,6 +121,24 @@ namespace affix_services
 		);
 
 		/// <summary>
+		/// Runs main functions necessary for functionality of the Affix-Services module. This should be called repeatedly for ideal performance.
+		/// </summary>
+		void process(
+
+		);
+
+		/// <summary>
+		/// A function that implements relaying of messages to a remote module.
+		/// </summary>
+		/// <param name="a_exclusive_path"></param>
+		/// <param name="a_payload"></param>
+		void relay(
+			const std::vector<std::string>& a_exclusive_path,
+			const std::vector<uint8_t>& a_payload
+		);
+
+	protected:
+		/// <summary>
 		/// Starts the server associated with this affix-services module.
 		/// </summary>
 		void start_server(
@@ -134,7 +152,6 @@ namespace affix_services
 
 		);
 
-	public:
 		/// <summary>
 		/// Starts a single pending outbound connection to a remote peer.
 		/// </summary>
@@ -164,8 +181,7 @@ namespace affix_services
 		template<typename MESSAGE_TYPE>
 		void async_send_message(
 			const std::string& a_remote_identity,
-			const message<MESSAGE_TYPE>& a_message,
-			const std::function<void(bool)>& a_callback = [](bool) {}
+			const message<MESSAGE_TYPE>& a_message
 		)
 		{
 			// Lock mutex preventing concurrent reads/writes to the connections vector
@@ -178,11 +194,10 @@ namespace affix_services
 			if (l_authenticated_connection == l_authenticated_connections->end())
 			{
 				// No associated connection was found.
-				a_callback(false);
 				return;
 			}
 
-			async_send_message((*l_authenticated_connection), a_message, a_callback);
+			async_send_message((*l_authenticated_connection), a_message);
 
 		}
 
@@ -196,8 +211,7 @@ namespace affix_services
 		template<typename MESSAGE_TYPE>
 		void async_send_message(
 			affix_base::data::ptr<affix_services::networking::authenticated_connection> a_authenticated_connection,
-			const message<MESSAGE_TYPE>& a_message,
-			const std::function<void(bool)>& a_callback = [](bool) {}
+			const message<MESSAGE_TYPE>& a_message
 		)
 		{
 			// Lock mutex preventing concurrent reads/writes to the connections vector
@@ -216,9 +230,6 @@ namespace affix_services
 				// Failed to serialize message header.
 				std::cerr << "[ APPLICATION ] Error: failed to serialize message." << std::endl;
 
-				// Trigger the callback with a failure response
-				a_callback(false);
-
 				// Close the conection.
 				a_authenticated_connection->close();
 
@@ -228,7 +239,7 @@ namespace affix_services
 			}
 
 			// Finally, send the message data
-			a_authenticated_connection->async_send(l_message_byte_buffer, a_callback);
+			a_authenticated_connection->async_send(l_message_byte_buffer);
 
 		}
 
@@ -258,13 +269,6 @@ namespace affix_services
 		/// <returns></returns>
 		bool identity_approved(
 			const CryptoPP::RSA::PublicKey& a_identity
-		);
-
-		/// <summary>
-		/// Runs main functions necessary for functionality of the Affix-Services module. This should be called repeatedly for ideal performance.
-		/// </summary>
-		void process(
-
 		);
 
 	protected:

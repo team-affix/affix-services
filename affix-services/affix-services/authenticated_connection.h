@@ -103,8 +103,7 @@ namespace affix_services {
 			/// <param name="a_byte_buffer"></param>
 			/// <param name="a_callback"></param>
 			void async_send(
-				const affix_base::data::byte_buffer& a_byte_buffer,
-				const std::function<void(bool)>& a_callback
+				const affix_base::data::byte_buffer& a_byte_buffer
 			);
 
 			/// <summary>
@@ -114,7 +113,7 @@ namespace affix_services {
 			/// </summary>
 			void async_receive(
 				std::vector<uint8_t>& a_received_message_data,
-				const std::function<void(bool)>& a_callback
+				const std::function<void()>& a_callback
 			);
 
 		public:

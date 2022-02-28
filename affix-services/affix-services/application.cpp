@@ -50,6 +50,44 @@ application::application(
 	
 }
 
+void application::process(
+
+)
+{
+	process_pending_outbound_connections();
+	process_connection_results();
+	process_authentication_attempts();
+	process_authentication_attempt_results();
+	process_authenticated_connections();
+	process_received_messages();
+	process_relay_requests();
+	process_relay_responses();
+	process_pending_function_calls();
+}
+
+void application::relay(
+	const std::vector<std::string>& a_exclusive_path,
+	const std::vector<uint8_t>& a_payload
+)
+{
+	// Generate the path which includes this module's identity
+	std::vector<std::string> l_inclusive_path;
+
+	// Insert all identities necessary into the inclusive path
+	l_inclusive_path.insert(l_inclusive_path.end(), m_local_identity);
+	l_inclusive_path.insert(l_inclusive_path.end(), a_exclusive_path.begin(), a_exclusive_path.end());
+
+	// Generate message body
+	message_rqt_relay_body l_message_body = message_rqt_relay_body(l_inclusive_path, a_payload);
+
+	// Generate full message
+	message l_message(l_message_body.create_message_header(), l_message_body);
+
+	// Send the message
+	async_send_message(a_exclusive_path[0], l_message);
+
+}
+
 void application::start_server(
 
 )
@@ -176,11 +214,8 @@ void application::async_receive_message(
 
 	// Begin receiving data asynchronously, the dynamically allocated vector above will be captured by the lambda for use after callback.
 	a_authenticated_connection->async_receive(*l_message_data,
-		[&, a_authenticated_connection, l_message_data](bool a_result)
+		[&, a_authenticated_connection, l_message_data]()
 		{
-			if (!a_result)
-				return;
-
 			// Lock mutex preventing concurrent reads/writes to the vector of received messages
 			locked_resource l_received_messages = m_received_messages.lock();
 
@@ -233,21 +268,6 @@ bool application::identity_approved(
 		return false;
 
 	}
-}
-
-void application::process(
-
-)
-{
-	process_pending_outbound_connections();
-	process_connection_results();
-	process_authentication_attempts();
-	process_authentication_attempt_results();
-	process_authenticated_connections();
-	process_received_messages();
-	process_relay_requests();
-	process_relay_responses();
-	process_pending_function_calls();
 }
 
 void application::process_pending_outbound_connections(

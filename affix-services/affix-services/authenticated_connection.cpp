@@ -48,8 +48,7 @@ authenticated_connection::authenticated_connection(
 }
 
 void authenticated_connection::async_send(
-	const affix_base::data::byte_buffer& a_byte_buffer,
-	const std::function<void(bool)>& a_callback
+	const affix_base::data::byte_buffer& a_byte_buffer
 )
 {
 	// Set the last interaction time to the current utc time.
@@ -64,9 +63,6 @@ void authenticated_connection::async_send(
 	if (!m_transmission_security_manager.export_transmission(a_byte_buffer.data(), l_exported_transmission_data, l_transmission_result)) {
 		LOG_ERROR("[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result]);
 
-		// Trigger the callback with a failure response.
-		a_callback(false);
-
 		// Close the connection.
 		close();
 
@@ -75,14 +71,11 @@ void authenticated_connection::async_send(
 
 	// SEND TRANSMISSION
 	m_socket_io_guard.async_send(l_exported_transmission_data, 
-		m_send_dispatcher.dispatch([&, a_callback](bool a_result)
+		m_send_dispatcher.dispatch([&](bool a_result)
 		{
 			if (!a_result)
 			{
 				LOG_ERROR("[ CONNECTION ] Error sending data.");
-
-				// Trigger the callback with a failure response.
-				a_callback(false);
 
 				// Close the connection.
 				close();
@@ -90,16 +83,13 @@ void authenticated_connection::async_send(
 				return;
 			}
 
-			// Trigger the argued callback function
-			a_callback(true);
-
 		}));
 
 }
 
 void authenticated_connection::async_receive(
 	std::vector<uint8_t>& a_received_message_data,
-	const std::function<void(bool)>& a_callback
+	const std::function<void()>& a_callback
 )
 {
 	// DYNAMICALLY ALLOCATE VECTOR SO IT CAN STAY IN SCOPE FOR LAMBDA CALLBACKS
@@ -122,9 +112,6 @@ void authenticated_connection::async_receive(
 				LOG_ERROR("[ CONNECTION ] Error receiving data.");
 				LOG_ERROR("[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result]);
 
-				// Trigger the callback with a failure response.
-				a_callback(false);
-
 				// Close the connection.
 				close();
 
@@ -132,7 +119,7 @@ void authenticated_connection::async_receive(
 			}
 
 			// Call the argued callback function
-			a_callback(true);
+			a_callback();
 
 	}));
 
