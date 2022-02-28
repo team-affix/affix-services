@@ -60,6 +60,9 @@ int main()
 	size_t l_relayed_messages = 0;
 	size_t l_max_relay_messages = 100;
 
+	bool l_displayed_requests = false;
+	bool l_displayed_responses = false;
+
 	// Processing loop
 	for(int i = 0; true; i++)
 	{
@@ -74,6 +77,22 @@ int main()
 
 		affix_base::threading::locked_resource l_authenticated_connections = l_application.m_authenticated_connections.lock();
 
+		affix_base::threading::locked_resource l_module_received_relay_requests = l_application.m_module_received_relay_requests.lock();
+
+		affix_base::threading::locked_resource l_module_received_relay_responses = l_application.m_module_received_relay_responses.lock();
+
+		if (!l_displayed_requests && l_module_received_relay_requests->size() == l_max_relay_messages)
+		{
+			l_displayed_requests = true;
+			std::cout << "ALL REQUESTS RECEIVED" << std::endl;
+		}
+
+		if (!l_displayed_responses && l_module_received_relay_responses->size() == l_max_relay_messages)
+		{
+			l_displayed_responses = true;
+			std::cout << "ALL RESPONSES RECEIVED" << std::endl;
+		}
+
 		if (l_authenticated_connections->size() >= 1 && l_relayed_messages < l_max_relay_messages)
 		{
 			l_relayed_messages++;
@@ -81,7 +100,7 @@ int main()
 			std::vector<std::string> l_path =
 			{
 				l_application.m_local_identity,
-				l_application.m_local_identity,
+				l_application.m_local_identity
 			};
 
 			l_application.relay(
