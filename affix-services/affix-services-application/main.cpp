@@ -54,7 +54,7 @@ int main()
 		});
 
 	size_t l_relayed_messages = 0;
-	size_t l_max_relay_messages = 10;
+	size_t l_max_relay_messages = 10000;
 
 	bool l_displayed_requests = false;
 	bool l_displayed_responses = false;

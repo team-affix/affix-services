@@ -154,4 +154,5 @@ std::vector<uint8_t> transmission_security_manager::local_aes_key(
 	);
 
 	return l_local_token_hash;
+
 }
