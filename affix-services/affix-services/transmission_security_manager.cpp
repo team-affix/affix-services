@@ -38,17 +38,11 @@ bool transmission_security_manager::export_transmission(
 		return false;
 	}
 
+	// ENCRYPT BUFFER
+	a_output = affix_base::cryptography::aes_encrypt(l_byte_buffer.data(), local_aes_key());
+
 	// Increment the local token (necessary for next send request to be valid)
 	m_security_information->m_local_token.increment();
-
-	std::vector<uint8_t> l_local_aes_key = local_aes_key();
-
-	// ENCRYPT BUFFER
-	a_output = affix_base::cryptography::aes_encrypt(l_byte_buffer.data(), l_local_aes_key);
-
-	for (uint8_t& l_byte : l_local_aes_key)
-		std::cout << std::to_string(l_byte) << " ";
-	std::cout << std::endl;
 
 	return true;
 
