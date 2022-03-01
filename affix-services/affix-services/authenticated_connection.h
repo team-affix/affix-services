@@ -14,6 +14,8 @@
 #include "connection_information.h"
 #include "affix-base/dispatcher.h"
 #include "messaging.h"
+#include "affix-base/guarded_resource.h"
+#include "affix-base/cross_thread_mutex.h"
 
 namespace affix_services {
 
@@ -33,7 +35,7 @@ namespace affix_services {
 			/// <summary>
 			/// Security manager, in charge of all security when sending / receiving data.
 			/// </summary>
-			affix_services::security::transmission_security_manager m_transmission_security_manager;
+			affix_base::threading::guarded_resource<affix_services::security::transmission_security_manager, affix_base::threading::cross_thread_mutex> m_transmission_security_manager;
 
 			/// <summary>
 			/// Boolean describing if the connection is still valid.
@@ -65,11 +67,6 @@ namespace affix_services {
 			/// Time of last interaction between either of the parties.
 			/// </summary>
 			affix_base::threading::guarded_resource<uint64_t, affix_base::threading::cross_thread_mutex> m_last_interaction_time = 0;
-
-			///// <summary>
-			///// Boolean describing whether there is a receive in progress currently.
-			///// </summary>
-			//affix_base::threading::guarded_resource<bool, affix_base::threading::cross_thread_mutex> m_receive_in_progress = false;
 
 		public:
 			/// <summary>
@@ -143,7 +140,7 @@ namespace affix_services {
 			/// <returns></returns>
 			const std::string& remote_identity(
 
-			) const;
+			);
 
 		};
 

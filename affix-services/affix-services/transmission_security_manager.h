@@ -42,15 +42,14 @@ namespace affix_services {
 				std::vector<uint8_t>& a_output,
 				affix_services::networking::transmission_result& a_result
 			);
-			bool pack_signature(
-				affix_base::data::byte_buffer& a_data,
-				affix_services::networking::transmission_result& a_result
-			);
-			bool unpack_signature(
-				affix_base::data::byte_buffer& a_data,
-				std::vector<uint8_t>& a_output,
-				affix_services::networking::transmission_result& a_result
-			);
+
+		protected:
+			std::vector<uint8_t> remote_aes_key(
+
+			) const;
+			std::vector<uint8_t> local_aes_key(
+
+			) const;
 
 		};
 	}

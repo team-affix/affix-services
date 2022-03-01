@@ -2,6 +2,9 @@
 #include "affix-base/pch.h"
 #include "affix-base/rsa.h"
 #include "rolling_token.h"
+#include "affix-base/guarded_resource.h"
+#include "affix-base/cross_thread_mutex.h"
+
 
 namespace affix_services
 {

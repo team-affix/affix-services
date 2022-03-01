@@ -239,7 +239,7 @@ std::vector<affix_base::data::ptr<authenticated_connection>>::iterator applicati
 	return std::find_if(a_authenticated_connections.begin(), a_authenticated_connections.end(),
 		[&](affix_base::data::ptr<authenticated_connection> a_authenticated_connection)
 		{
-			return a_authenticated_connection->m_transmission_security_manager.m_security_information->m_remote_identity == a_remote_identity;
+			return a_authenticated_connection->remote_identity() == a_remote_identity;
 		});
 }
 

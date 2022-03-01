@@ -15,10 +15,8 @@ namespace affix_services {
 			rolling_token();
 			rolling_token(const std::vector<uint8_t>& a_seed, const uint64_t& a_index = 0);
 
-		public:
-			rolling_token& operator++();
-			rolling_token& operator++(
-				int a_n
+			void increment(
+
 			);
 
 		public:

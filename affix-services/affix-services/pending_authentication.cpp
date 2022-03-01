@@ -52,13 +52,13 @@ pending_authentication::pending_authentication(
 				// This scope represents if the authentication of the local and remote were successful.
 
 				// Get remote public key.
-				CryptoPP::RSA::PublicKey l_remote_public_key = m_async_authenticate->m_authenticate_remote->m_remote_public_key;
+				CryptoPP::RSA::PublicKey l_remote_public_key = m_async_authenticate->m_remote_public_key;
 
 				// Get remote seed.
-				std::vector<uint8_t> l_remote_seed = m_async_authenticate->m_authenticate_remote->m_remote_seed;
+				std::vector<uint8_t> l_remote_seed = m_async_authenticate->m_remote_seed;
 
 				// Get local seed.
-				std::vector<uint8_t> l_local_seed = m_async_authenticate->m_authenticate_local->m_local_seed;
+				std::vector<uint8_t> l_local_seed = m_async_authenticate->m_local_seed;
 				
 				// Generate the security information structure
 				ptr<security_information> l_security_information = new security_information(

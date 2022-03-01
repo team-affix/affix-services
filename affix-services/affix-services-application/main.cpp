@@ -20,43 +20,6 @@ namespace fs = std::filesystem;
 
 int main()
 {
-	// Redirect std::clog to nullbuffer
-	/*std::ofstream l_nullstream;
-	std::clog.rdbuf(l_nullstream.rdbuf());*/
-	// Create IO context object, which will be used for entire program's networking
-
-	std::vector<uint8_t> l_data(1000);
-
-	affix_base::cryptography::rsa_key_pair l_key_pair = affix_base::cryptography::rsa_generate_key_pair(4096);
-
-	const int ITERATIONS = 100;
-
-	affix_base::timing::stopwatch sw;
-
-	sw.start();
-
-	for (int i = 0; i < ITERATIONS; i++)
-	{
-		std::vector<uint8_t> l_encrypted = affix_base::cryptography::rsa_encrypt_in_chunks(l_data, l_key_pair.public_key);
-		std::vector<uint8_t> l_decrypted = affix_base::cryptography::rsa_decrypt_in_chunks(l_encrypted, l_key_pair.private_key);
-	}
-
-	std::cout << std::to_string(sw.duration_milliseconds()) << std::endl;
-
-
-
-	std::vector<uint8_t> l_aes_key(16);
-
-	sw.start();
-
-	for (int i = 0; i < ITERATIONS; i++)
-	{
-		std::vector<uint8_t> l_encrypted = affix_base::cryptography::aes_encrypt(l_data, l_aes_key);
-		std::vector<uint8_t> l_decrypted = affix_base::cryptography::aes_decrypt(l_encrypted, l_aes_key);
-	}
-
-	std::cout << std::to_string(sw.duration_milliseconds()) << std::endl;
-
 	asio::io_context l_io_context;
 
 	if (!fs::exists("config/"))
@@ -91,7 +54,7 @@ int main()
 		});
 
 	size_t l_relayed_messages = 0;
-	size_t l_max_relay_messages = 100;
+	size_t l_max_relay_messages = 10;
 
 	bool l_displayed_requests = false;
 	bool l_displayed_responses = false;
@@ -132,7 +95,6 @@ int main()
 
 			std::vector<std::string> l_path =
 			{
-				l_application.m_local_identity,
 				l_application.m_local_identity
 			};
 
@@ -143,7 +105,6 @@ int main()
 
 		}
 
-		Sleep(10);
 	}
 
 	l_context_thread_continue = false;

@@ -26,15 +26,11 @@ rolling_token::rolling_token(
 
 }
 
-rolling_token& rolling_token::operator++() {
-	this->operator++(1);
-	return *this;
-}
+void rolling_token::increment(
 
-rolling_token& rolling_token::operator++(int a_n)
+)
 {
-	m_index += a_n;
-	return *this;
+	m_index++;
 }
 
 vector<uint8_t> rolling_token::serialize() const {
