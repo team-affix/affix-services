@@ -220,7 +220,8 @@ void application::async_receive_message(
 			locked_resource l_received_messages = m_received_messages.lock();
 
 			// Push the raw bytes of the message to a queue to be processed
-			l_received_messages->push_back(
+			l_received_messages->insert(
+				l_received_messages->begin(),
 				std::tuple(a_authenticated_connection, l_message_data)
 			);
 
