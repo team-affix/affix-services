@@ -29,14 +29,23 @@ int main()
 	}
 
 	// Get configuration for the connection processor
-	std::clog << "[ APPLICATION ] Importing connection processor configuration..." << std::endl;
-	ptr<application_configuration> l_application_configuration(new application_configuration("config/application_configuration.json"));
-	l_application_configuration->import_resource();
-	l_application_configuration->export_resource();
+	std::clog << "[ APPLICATION ] Importing application configuration..." << std::endl;
+	ptr<application_configuration> l_application_configuration_0(new application_configuration("config/application_configuration_0.json"));
+	l_application_configuration_0->import_resource();
+	l_application_configuration_0->export_resource();
 
-	application l_application(
+	application l_application_0(
 		l_io_context,
-		l_application_configuration
+		l_application_configuration_0
+	);
+
+	ptr<application_configuration> l_application_configuration_1(new application_configuration("config/application_configuration_1.json"));
+	l_application_configuration_1->import_resource();
+	l_application_configuration_1->export_resource();
+
+	application l_application_1(
+		l_io_context,
+		l_application_configuration_1
 	);
 
 	// Boolean describing whether the context thread should continue
@@ -54,7 +63,7 @@ int main()
 		});
 
 	size_t l_relayed_messages = 0;
-	size_t l_max_relay_messages = 100;
+	size_t l_max_relay_messages = 10000;
 
 	bool l_displayed_requests = false;
 	bool l_displayed_responses = false;
@@ -64,18 +73,17 @@ int main()
 	{
 		try
 		{
-			l_application.process();
+			l_application_0.process();
+			l_application_1.process();
 		}
 		catch (std::exception a_ex)
 		{
 			std::cerr << a_ex.what() << std::endl;
 		}
 
-		affix_base::threading::locked_resource l_authenticated_connections = l_application.m_authenticated_connections.lock();
-
-		affix_base::threading::locked_resource l_module_received_relay_requests = l_application.m_module_received_relay_requests.lock();
-
-		affix_base::threading::locked_resource l_module_received_relay_responses = l_application.m_module_received_relay_responses.lock();
+		affix_base::threading::locked_resource l_authenticated_connections = l_application_0.m_authenticated_connections.lock();
+		affix_base::threading::locked_resource l_module_received_relay_requests = l_application_0.m_module_received_relay_requests.lock();
+		affix_base::threading::locked_resource l_module_received_relay_responses = l_application_0.m_module_received_relay_responses.lock();
 
 		if (!l_displayed_requests && l_module_received_relay_requests->size() == l_max_relay_messages)
 		{
@@ -95,11 +103,11 @@ int main()
 
 			std::vector<std::string> l_path =
 			{
-				"MIICIDANBgkqhkiG9w0BAQEFAAOCAg0AMIICCAKCAgEAswopTFSw/Q3DjMY3dckiCoTuO5ddzNAF2cowZKeS24X0/POiK/13Z81gP3iuNsueYiEZv6LCn234DGgUnWkcRtVvhJWP7hX1sPbyFe/Qp12R/L1CRVmJKAyAoHAOkzdapQxpPl1IvVimtvAEfdjDPLg6GBBmQyeJIOj/gDOYAF3VXYMAxUKjdvCyv1+vFtVzmoU7X/lvMskM7TkKrj9V7W0aqUjyWsVlF5ws8U5o4MPd6xTwoVOSU+sBI+puhuW0TgTyHbQLVIybItsbUex+ExdeQoUo3/D+l3YWGZQs54+VtsTAtM6Ri8GuPCZnBF7L7DmdcF9f5kRJmkOvDXwYACpolW4o+vfmqHwLKw4jM5g16RW1lVZXlZeZCusJ145BOYX0kPz1UH757fS07oCaELb4hXqgYi0HbsTBYTwSIhuRISszk9g86o8Fn96DjQze2sPP5rxFkGnbcpLdnDOecWUPQ5mojk8S5fNF0HSH8UvdFNMOEaAnd8TE14bRLx1XIcoSX0vHJC4csIkCU3RgkwOqaxb3KwiuU5jWHXy4b0WfMQGKsninj6Cu+nFZ4917gOLQtUrOhnG8kYzlaHUoRqdMH7FAPAfoAX7Q0/YyXCAZGZlZfIfQXy3LtckNLQdOs7Gl4bA65DNm5bJKBu+OC2yJ7iZvdBWBnOW8ZTUH6+sCARE=",
-				l_application.m_local_identity
+				l_application_1.m_local_identity,
+				l_application_0.m_local_identity
 			};
 
-			l_application.relay(
+			l_application_0.relay(
 				l_path,
 				{ 1,2,3,4,5 }
 			);
