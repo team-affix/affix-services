@@ -29,7 +29,7 @@ int main()
 	}
 
 	// Get configuration for the connection processor
-	std::clog << "[ APPLICATION ] Importing application configuration..." << std::endl;
+	std::clog << "[ APPLICATION ] Importing application_0 configuration..." << std::endl;
 	ptr<application_configuration> l_application_configuration_0(new application_configuration("config/application_configuration_0.json"));
 	l_application_configuration_0->import_resource();
 	l_application_configuration_0->export_resource();
@@ -39,6 +39,7 @@ int main()
 		l_application_configuration_0
 	);
 
+	std::clog << "[ APPLICATION ] Importing application_1 configuration..." << std::endl;
 	ptr<application_configuration> l_application_configuration_1(new application_configuration("config/application_configuration_1.json"));
 	l_application_configuration_1->import_resource();
 	l_application_configuration_1->export_resource();
@@ -63,7 +64,7 @@ int main()
 		});
 
 	size_t l_relayed_messages = 0;
-	size_t l_max_relay_messages = 10000;
+	size_t l_max_relay_messages = 1000;
 
 	bool l_displayed_requests = false;
 	bool l_displayed_responses = false;
@@ -103,8 +104,9 @@ int main()
 
 			std::vector<std::string> l_path =
 			{
+				l_application_0.m_local_identity,
 				l_application_1.m_local_identity,
-				l_application_0.m_local_identity
+				l_application_0.m_local_identity,
 			};
 
 			l_application_0.relay(

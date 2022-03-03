@@ -163,7 +163,6 @@
     <ClInclude Include="message_rsp_relay_body.h" />
     <ClInclude Include="pending_authentication.h" />
     <ClInclude Include="authentication_result.h" />
-    <ClInclude Include="message_processor_configuration.h" />
     <ClInclude Include="details.h" />
     <ClInclude Include="messaging.h" />
     <ClInclude Include="connection_information.h" />

@@ -133,7 +133,7 @@ namespace affix_services
 		/// <param name="a_exclusive_path"></param>
 		/// <param name="a_payload"></param>
 		void relay(
-			const std::vector<std::string>& a_exclusive_path,
+			const std::vector<std::string>& a_path,
 			const std::vector<uint8_t>& a_payload
 		);
 
@@ -220,12 +220,8 @@ namespace affix_services
 			// The byte buffer into which the message header data is to be stored
 			affix_base::data::byte_buffer l_message_byte_buffer;
 
-			// The serialization status response for the message header && body.
-			message_header::serialization_status_response_type l_message_header_serialization_status_response;
-			typename MESSAGE_TYPE::serialization_status_response_type l_message_body_serialization_status_response;
-
-			if (!a_message.m_message_header.serialize(l_message_byte_buffer, l_message_header_serialization_status_response) ||
-				!a_message.m_message_body.serialize(l_message_byte_buffer, l_message_body_serialization_status_response))
+			if (!a_message.m_message_header.serialize(l_message_byte_buffer) ||
+				!a_message.m_message_body.serialize(l_message_byte_buffer))
 			{
 				// Failed to serialize message header.
 				std::cerr << "[ APPLICATION ] Error: failed to serialize message." << std::endl;

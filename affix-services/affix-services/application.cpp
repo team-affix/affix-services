@@ -12,6 +12,7 @@
 #define LOG(x)
 #define LOG_ERROR(x)
 #endif
+
 using namespace affix_services;
 using namespace asio::ip;
 using std::vector;
@@ -66,25 +67,18 @@ void application::process(
 }
 
 void application::relay(
-	const std::vector<std::string>& a_exclusive_path,
+	const std::vector<std::string>& a_path,
 	const std::vector<uint8_t>& a_payload
 )
 {
-	// Generate the path which includes this module's identity
-	std::vector<std::string> l_inclusive_path;
-
-	// Insert all identities necessary into the inclusive path
-	l_inclusive_path.insert(l_inclusive_path.end(), m_local_identity);
-	l_inclusive_path.insert(l_inclusive_path.end(), a_exclusive_path.begin(), a_exclusive_path.end());
-
 	// Generate message body
-	message_rqt_relay_body l_message_body = message_rqt_relay_body(l_inclusive_path, a_payload);
+	message_rqt_relay_body l_message_body = message_rqt_relay_body(a_path, a_payload);
 
 	// Generate full message
 	message l_message(l_message_body.create_message_header(), l_message_body);
 
 	// Send the message
-	async_send_message(a_exclusive_path[0], l_message);
+	async_send_message(a_path[1], l_message);
 
 }
 
@@ -599,8 +593,7 @@ void application::process_received_message(
 
 	// Get message header out of byte buffer
 	message_header l_message_header;
-	message_header::deserialization_status_response_type l_message_header_deserialization_status_response;
-	if (!l_message_header.deserialize(l_message_data_byte_buffer, l_message_header_deserialization_status_response))
+	if (!l_message_header.deserialize(l_message_data_byte_buffer))
 	{
 		LOG_ERROR("[ APPLICATION ] Error unpacking message header (or) body.");
 		l_authenticated_connection->close();
@@ -616,10 +609,7 @@ void application::process_received_message(
 
 			message_rqt_relay_body l_message_body;
 
-			// Create a deserialization status response
-			message_rqt_relay_body::deserialization_status_response_type l_message_body_deserialization_status_response;
-
-			if (!l_message_body.deserialize(l_message_data_byte_buffer, l_message_body_deserialization_status_response))
+			if (!l_message_body.deserialize(l_message_data_byte_buffer))
 			{
 				LOG_ERROR("[ APPLICATION ] Error deserializing the body of message_rqt_relay.");
 				l_authenticated_connection->close();
@@ -642,10 +632,7 @@ void application::process_received_message(
 
 			message_rsp_relay_body l_message_body;
 
-			// Create a deserialization status response
-			message_rsp_relay_body::deserialization_status_response_type l_message_body_deserialization_status_response;
-
-			if (!l_message_body.deserialize(l_message_data_byte_buffer, l_message_body_deserialization_status_response))
+			if (!l_message_body.deserialize(l_message_data_byte_buffer))
 			{
 				LOG_ERROR("[ APPLICATION ] Error deserializing the body of message_rsp_relay.");
 				l_authenticated_connection->close();
@@ -668,10 +655,7 @@ void application::process_received_message(
 
 			message_rqt_index_body l_message_body;
 
-			// Create a deserialization status response
-			message_rqt_index_body::deserialization_status_response_type l_message_body_deserialization_status_response;
-
-			if (!l_message_body.deserialize(l_message_data_byte_buffer, l_message_body_deserialization_status_response))
+			if (!l_message_body.deserialize(l_message_data_byte_buffer))
 			{
 				LOG_ERROR("[ APPLICATION ] Error deserializing the body of message_rqt_index.");
 				l_authenticated_connection->close();
@@ -694,10 +678,7 @@ void application::process_received_message(
 
 			message_rsp_index_body l_message_body;
 
-			// Create a deserialization status response
-			message_rsp_index_body::deserialization_status_response_type l_message_body_deserialization_status_response;
-
-			if (!l_message_body.deserialize(l_message_data_byte_buffer, l_message_body_deserialization_status_response))
+			if (!l_message_body.deserialize(l_message_data_byte_buffer))
 			{
 				LOG_ERROR("[ APPLICATION ] Error deserializing the body of message_rsp_index.");
 				l_authenticated_connection->close();
@@ -760,8 +741,8 @@ void application::process_relay_request(
 		// Construct the response body
 		message_rsp_relay_body l_response_body(
 			l_request.m_message_body.m_path,
-			message_rqt_relay_body::processing_status_response_type::error_identity_not_reached,
-			l_request.m_message_body.m_path_index - 1
+			l_request.m_message_body.m_path_index - 1,
+			message_rqt_relay_body::processing_status_response_type::error_identity_not_reached
 		);
 		
 		// Construct the response
@@ -787,8 +768,8 @@ void application::process_relay_request(
 		// Create the response body
 		message_rsp_relay_body l_response_body(
 			l_request.m_message_body.m_path,
-			message_rqt_relay_body::processing_status_response_type::success,
-			l_request.m_message_body.m_path_index - 1
+			l_request.m_message_body.m_path_index - 1,
+			message_rqt_relay_body::processing_status_response_type::success
 		);
 
 		// Construct the response
@@ -819,8 +800,8 @@ void application::process_relay_request(
 		// Construct the response body
 		message_rsp_relay_body l_response_body(
 			l_request.m_message_body.m_path,
-			message_rqt_relay_body::processing_status_response_type::error_identity_not_connected,
-			l_request.m_message_body.m_path_index - 1
+			l_request.m_message_body.m_path_index - 1,
+			message_rqt_relay_body::processing_status_response_type::error_identity_not_connected
 		);
 
 		// Construct the response
@@ -841,7 +822,7 @@ void application::process_relay_request(
 		l_relayed_request.m_message_body.m_path_index = l_recipient_path_index;
 
 		// Change affix_services version in header to this version
-		l_relayed_request.m_message_header.m_affix_services_version = affix_services::details::i_affix_services_version;
+		l_relayed_request.m_message_header.m_affix_services_version = affix_services::i_affix_services_version;
 
 		async_send_message(*l_recipient_connection, l_relayed_request);
 
@@ -916,7 +897,7 @@ void application::process_relay_response(
 	l_relayed_response.m_message_body.m_path_index = l_recipient_path_index;
 
 	// Set the affix_services version to this affix_services version.
-	l_relayed_response.m_message_header.m_affix_services_version = details::i_affix_services_version;
+	l_relayed_response.m_message_header.m_affix_services_version = i_affix_services_version;
 
 	async_send_message(*l_recipient_connection, l_relayed_response);
 

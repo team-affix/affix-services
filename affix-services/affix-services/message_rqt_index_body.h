@@ -7,29 +7,10 @@
 
 namespace affix_services
 {
-	class message_rqt_index_body
+	class message_rqt_index_body : public affix_base::data::serializable
 	{
 	public:
-		enum class serialization_status_response_type : uint8_t
-		{
-			unknown = 0,
-			error_packing_message_header,
-			error_packing_identities,
-		};
-		enum class deserialization_status_response_type : uint8_t
-		{
-			unknown = 0,
-			error_unpacking_message_header,
-			error_unpacking_identities,
-		};
-		enum class processing_status_response_type : uint8_t
-		{
-			unknown = 0,
-
-		};
-
-	public:
-		affix_base::data::tree<std::string> m_identities;
+		affix_base::data::tree<std::tuple<std::string, std::string>> m_agents;
 
 	public:
 		message_rqt_index_body(
@@ -37,22 +18,16 @@ namespace affix_services
 		);
 
 		message_rqt_index_body(
-			const affix_base::data::tree<std::string>& a_identities
+			const affix_base::data::tree<std::tuple<std::string, std::string>>& a_agents
+		);
+
+		message_rqt_index_body(
+			const message_rqt_index_body& a_message_rqt_index_body
 		);
 
 		message_header create_message_header(
 
 		) const;
-
-	public:
-		bool serialize(
-			affix_base::data::byte_buffer& a_output,
-			serialization_status_response_type& a_result
-		) const;
-		bool deserialize(
-			affix_base::data::byte_buffer& a_input,
-			deserialization_status_response_type& a_result
-		);
 
 	};
 }
