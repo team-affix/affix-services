@@ -3,7 +3,7 @@
 #include "affix-base/utc_time.h"
 #include "affix-base/rsa.h"
 #include "affix-base/catch_friendly_assert.h"
-#include "application.h"
+#include "client.h"
 
 #if 1
 #define LOG(x) std::clog << x << std::endl

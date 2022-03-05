@@ -11,7 +11,7 @@ message_rqt_index_body::message_rqt_index_body(
 }
 
 message_rqt_index_body::message_rqt_index_body(
-	const affix_base::data::tree<std::tuple<std::string, std::string>>& a_agents
+	const affix_base::data::tree<std::string>& a_agents
 ) :
 	affix_base::data::serializable(m_agents),
 	m_agents(a_agents)

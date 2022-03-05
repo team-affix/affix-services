@@ -19,7 +19,7 @@
 
 namespace affix_services {
 
-	class application;
+	class client;
 
 	namespace networking {
 

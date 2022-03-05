@@ -9,17 +9,17 @@
 #include "authentication_result.h"
 #include "messaging.h"
 #include "pending_connection.h"
-#include "application_configuration.h"
+#include "client_configuration.h"
 
 namespace affix_services
 {
-	class application
+	class client
 	{
 	public:
 		/// <summary>
-		/// Contains the configuration for this application instance; this object governs how to behave as a connection processor.
+		/// Contains the configuration for this client instance; this object governs how to behave as a connection processor.
 		/// </summary>
-		affix_base::data::ptr<application_configuration> m_application_configuration;
+		affix_base::data::ptr<client_configuration> m_client_configuration;
 
 		/// <summary>
 		/// The local public key exported into base64 format.
@@ -112,12 +112,12 @@ namespace affix_services
 
 	public:
 		/// <summary>
-		/// Constructs the affix services application given an io context as well as an application configuration.
+		/// Constructs the affix services client given an io context as well as an client configuration.
 		/// </summary>
 		/// <param name="a_local_key_pair"></param>
-		application(
+		client(
 			asio::io_context& a_io_context,
-			affix_base::data::ptr<application_configuration> a_application_configuration
+			affix_base::data::ptr<client_configuration> a_client_configuration
 		);
 
 		/// <summary>

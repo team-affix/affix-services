@@ -1,4 +1,4 @@
-#include "application.h"
+#include "client.h"
 #include "cryptopp/osrng.h"
 #include "affix-base/vector_extensions.h"
 #include "transmission_result.h"
@@ -31,18 +31,18 @@ using affix_services::connection_information;
 using namespace affix_base::threading;
 using namespace affix_base::data;
 
-application::application(
+client::client(
 	asio::io_context& a_io_context,
-	affix_base::data::ptr<application_configuration> a_application_configuration
+	affix_base::data::ptr<client_configuration> a_client_configuration
 ) :
 	m_io_context(a_io_context),
-	m_application_configuration(a_application_configuration)
+	m_client_configuration(a_client_configuration)
 {
 	// Get the local identity string from the local public key.
-	if (!rsa_to_base64_string(a_application_configuration->m_local_key_pair.resource().public_key, m_local_identity))
+	if (!rsa_to_base64_string(a_client_configuration->m_local_key_pair.resource().public_key, m_local_identity))
 		throw std::exception("The inputted base64 RSA public key string is not in correct format.");
 
-	if (m_application_configuration->m_enable_server.resource())
+	if (m_client_configuration->m_enable_server.resource())
 		// If the server is enabled, start it
 		start_server();
 
@@ -51,7 +51,7 @@ application::application(
 	
 }
 
-void application::process(
+void client::process(
 
 )
 {
@@ -66,13 +66,13 @@ void application::process(
 	process_pending_function_calls();
 }
 
-void application::relay(
+void client::relay(
 	const std::vector<std::string>& a_path,
 	const std::vector<uint8_t>& a_payload
 )
 {
 	// Generate message body
-	message_rqt_relay_body l_message_body = message_rqt_relay_body(a_path, a_payload);
+	message_rqt_relay_body l_message_body = message_rqt_relay_body(a_path, 1, a_payload);
 
 	// Generate full message
 	message l_message(l_message_body.create_message_header(), l_message_body);
@@ -82,7 +82,7 @@ void application::relay(
 
 }
 
-void application::start_server(
+void client::start_server(
 
 )
 {
@@ -90,18 +90,18 @@ void application::start_server(
 	LOG("[ CONNECTION PROCESSOR ] Starting server.");
 
 	// Create acceptor object using the specified endpoint
-	m_acceptor = new tcp::acceptor(m_io_context, tcp::endpoint(tcp::v4(), m_application_configuration->m_server_bind_port.resource()));
+	m_acceptor = new tcp::acceptor(m_io_context, tcp::endpoint(tcp::v4(), m_client_configuration->m_server_bind_port.resource()));
 
 	// Begin accepting connections
 	async_accept_next();
 }
 
-void application::start_pending_outbound_connections(
+void client::start_pending_outbound_connections(
 
 )
 {
 	// Get remote endpoints to which we should connect
-	std::vector<std::string> l_remote_endpoints = m_application_configuration->m_remote_endpoint_strings.resource();
+	std::vector<std::string> l_remote_endpoints = m_client_configuration->m_remote_endpoint_strings.resource();
 
 	// Connect to remote parties
 	for (int i = 0; i < l_remote_endpoints.size(); i++)
@@ -127,7 +127,7 @@ void application::start_pending_outbound_connections(
 	}
 }
 
-void application::start_pending_outbound_connection(
+void client::start_pending_outbound_connection(
 	asio::ip::tcp::endpoint a_remote_endpoint,
 	const bool& a_remote_localhost
 )
@@ -178,7 +178,7 @@ void application::start_pending_outbound_connection(
 
 }
 
-void application::restart_pending_outbound_connection(
+void client::restart_pending_outbound_connection(
 	asio::ip::tcp::endpoint a_remote_endpoint,
 	const bool& a_remote_localhost
 )
@@ -186,7 +186,7 @@ void application::restart_pending_outbound_connection(
 	locked_resource l_pending_function_calls = m_pending_function_calls.lock();
 
 	// The inclusive minimum UTC time at which this pending function should trigger.
-	uint64_t l_time_to_reconnect = affix_base::timing::utc_time() + m_application_configuration->m_reconnect_delay_in_seconds.resource();
+	uint64_t l_time_to_reconnect = affix_base::timing::utc_time() + m_client_configuration->m_reconnect_delay_in_seconds.resource();
 
 	// Create delayed function call
 	l_pending_function_calls->push_back(
@@ -200,7 +200,7 @@ void application::restart_pending_outbound_connection(
 		));
 }
 
-void application::async_receive_message(
+void client::async_receive_message(
 	affix_base::data::ptr<affix_services::networking::authenticated_connection> a_authenticated_connection
 )
 {
@@ -226,7 +226,7 @@ void application::async_receive_message(
 
 }
 
-std::vector<affix_base::data::ptr<authenticated_connection>>::iterator application::find_connection(
+std::vector<affix_base::data::ptr<authenticated_connection>>::iterator client::find_connection(
 	std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>>& a_authenticated_connections,
 	const std::string& a_remote_identity
 )
@@ -238,7 +238,7 @@ std::vector<affix_base::data::ptr<authenticated_connection>>::iterator applicati
 		});
 }
 
-bool application::identity_approved(
+bool client::identity_approved(
 	const CryptoPP::RSA::PublicKey& a_identity
 )
 {
@@ -250,7 +250,7 @@ bool application::identity_approved(
 			return false;
 
 		// Get current approved identities
-		std::vector<std::string>& l_approved_identities = m_application_configuration->m_approved_identities.resource();
+		std::vector<std::string>& l_approved_identities = m_client_configuration->m_approved_identities.resource();
 
 		return std::find(l_approved_identities.begin(), l_approved_identities.end(), l_identity) !=
 			l_approved_identities.end();
@@ -265,7 +265,7 @@ bool application::identity_approved(
 	}
 }
 
-void application::process_pending_outbound_connections(
+void client::process_pending_outbound_connections(
 
 )
 {
@@ -278,7 +278,7 @@ void application::process_pending_outbound_connections(
 
 }
 
-void application::process_pending_outbound_connection(
+void client::process_pending_outbound_connection(
 	std::vector<affix_base::data::ptr<pending_connection>>& a_pending_outbound_connections,
 	std::vector<affix_base::data::ptr<pending_connection>>::iterator a_pending_outbound_connection
 )
@@ -302,7 +302,7 @@ void application::process_pending_outbound_connection(
 
 }
 
-void application::process_connection_results(
+void client::process_connection_results(
 
 )
 {
@@ -315,7 +315,7 @@ void application::process_connection_results(
 
 }
 
-void application::process_connection_result(
+void client::process_connection_result(
 	std::vector<affix_base::data::ptr<connection_result>>& a_connection_results,
 	std::vector<affix_base::data::ptr<connection_result>>::iterator a_connection_result
 )
@@ -337,10 +337,10 @@ void application::process_connection_result(
 			new pending_authentication(
 				(*a_connection_result)->m_connection_information,
 				l_remote_seed,
-				m_application_configuration->m_local_key_pair.resource(),
+				m_client_configuration->m_local_key_pair.resource(),
 				m_authentication_attempt_results,
-				m_application_configuration->m_enable_pending_authentication_timeout.resource(),
-				m_application_configuration->m_pending_authentication_timeout_in_seconds.resource()
+				m_client_configuration->m_enable_pending_authentication_timeout.resource(),
+				m_client_configuration->m_pending_authentication_timeout_in_seconds.resource()
 			)
 		);
 
@@ -363,7 +363,7 @@ void application::process_connection_result(
 
 }
 
-void application::process_authentication_attempts(
+void client::process_authentication_attempts(
 
 )
 {
@@ -376,7 +376,7 @@ void application::process_authentication_attempts(
 
 }
 
-void application::process_authentication_attempt(
+void client::process_authentication_attempt(
 	std::vector<affix_base::data::ptr<pending_authentication>>& a_authentication_attempts,
 	std::vector<affix_base::data::ptr<pending_authentication>>::iterator a_authentication_attempt
 )
@@ -405,7 +405,7 @@ void application::process_authentication_attempt(
 
 }
 
-void application::process_authentication_attempt_results(
+void client::process_authentication_attempt_results(
 
 )
 {
@@ -418,7 +418,7 @@ void application::process_authentication_attempt_results(
 
 }
 
-void application::process_authentication_attempt_result(
+void client::process_authentication_attempt_result(
 	std::vector<affix_base::data::ptr<authentication_result>>& a_authentication_attempt_results,
 	std::vector<affix_base::data::ptr<authentication_result>>::iterator a_authentication_attempt_result
 )
@@ -490,7 +490,7 @@ void application::process_authentication_attempt_result(
 	
 }
 
-void application::process_authenticated_connections(
+void client::process_authenticated_connections(
 
 )
 {
@@ -502,14 +502,14 @@ void application::process_authenticated_connections(
 		process_authenticated_connection(l_authenticated_connections.resource(), l_authenticated_connections->begin() + i);
 }
 
-void application::process_authenticated_connection(
+void client::process_authenticated_connection(
 	std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>>& a_authenticated_connections,
 	std::vector<affix_base::data::ptr<authenticated_connection>>::iterator a_authenticated_connection
 )
 {
-	bool l_connection_timed_out = m_application_configuration->m_enable_authenticated_connection_timeout.resource() &&
+	bool l_connection_timed_out = m_client_configuration->m_enable_authenticated_connection_timeout.resource() &&
 		(*a_authenticated_connection)->idletime() >
-		m_application_configuration->m_authenticated_connection_timeout_in_seconds.resource();
+		m_client_configuration->m_authenticated_connection_timeout_in_seconds.resource();
 
 	// Boolean describing whether the authenticated connection is still active (connected)
 	bool l_connected = false;
@@ -562,7 +562,7 @@ void application::process_authenticated_connection(
 
 }
 
-void application::process_received_messages(
+void client::process_received_messages(
 
 )
 {
@@ -574,7 +574,7 @@ void application::process_received_messages(
 
 }
 
-void application::process_received_message(
+void client::process_received_message(
 	std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, affix_base::data::ptr<std::vector<uint8_t>>>>& a_received_messages,
 	std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, affix_base::data::ptr<std::vector<uint8_t>>>>::iterator a_received_message
 )
@@ -704,7 +704,7 @@ void application::process_received_message(
 
 }
 
-void application::process_relay_requests(
+void client::process_relay_requests(
 
 )
 {
@@ -717,7 +717,7 @@ void application::process_relay_requests(
 
 }
 
-void application::process_relay_request(
+void client::process_relay_request(
 	std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_rqt_relay_body>>>& a_relay_requests,
 	std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_rqt_relay_body>>>::iterator a_relay_request
 )
@@ -830,7 +830,7 @@ void application::process_relay_request(
 
 }
 
-void application::process_relay_responses(
+void client::process_relay_responses(
 
 )
 {
@@ -843,7 +843,7 @@ void application::process_relay_responses(
 
 }
 
-void application::process_relay_response(
+void client::process_relay_response(
 	std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_rsp_relay_body>>>& a_relay_responses,
 	std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_rsp_relay_body>>>::iterator a_relay_response
 )
@@ -903,7 +903,7 @@ void application::process_relay_response(
 
 }
 
-void application::process_pending_function_calls(
+void client::process_pending_function_calls(
 
 )
 {
@@ -916,7 +916,7 @@ void application::process_pending_function_calls(
 
 }
 
-void application::process_pending_function_call(
+void client::process_pending_function_call(
 	std::vector<std::tuple<uint64_t, std::function<void()>>>& a_pending_function_calls,
 	std::vector<std::tuple<uint64_t, std::function<void()>>>::iterator a_pending_function_call
 )
@@ -941,7 +941,7 @@ void application::process_pending_function_call(
 
 }
 
-void application::async_accept_next(
+void client::async_accept_next(
 
 )
 {

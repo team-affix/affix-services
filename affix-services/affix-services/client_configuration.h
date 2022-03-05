@@ -8,7 +8,7 @@
 
 namespace affix_services
 {
-	struct application_configuration : affix_base::data::cache<nlohmann::ordered_json>
+	struct client_configuration : affix_base::data::cache<nlohmann::ordered_json>
 	{
 	public:
 		/// <summary>
@@ -72,7 +72,7 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_connection_enable_disconnect_after_maximum_idle_time"></param>
 		/// <param name="a_connection_maximum_idle_time_in_seconds"></param>
-		application_configuration(
+		client_configuration(
 			const std::string& a_json_file_path
 		);
 

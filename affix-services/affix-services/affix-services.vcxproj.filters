@@ -96,10 +96,10 @@
     <ClInclude Include="security_information.h">
       <Filter>Header Files\security</Filter>
     </ClInclude>
-    <ClInclude Include="application_configuration.h">
+    <ClInclude Include="client_configuration.h">
       <Filter>Header Files\processing</Filter>
     </ClInclude>
-    <ClInclude Include="application.h">
+    <ClInclude Include="client.h">
       <Filter>Header Files\processing</Filter>
     </ClInclude>
     <ClInclude Include="message_rqt_relay_body.h">
@@ -146,10 +146,10 @@
     <ClCompile Include="security_information.cpp">
       <Filter>Source Files\security</Filter>
     </ClCompile>
-    <ClCompile Include="application_configuration.cpp">
+    <ClCompile Include="client_configuration.cpp">
       <Filter>Source Files\processing</Filter>
     </ClCompile>
-    <ClCompile Include="application.cpp">
+    <ClCompile Include="client.cpp">
       <Filter>Source Files\processing</Filter>
     </ClCompile>
     <ClCompile Include="message_rqt_relay_body.cpp">

@@ -10,7 +10,7 @@ namespace affix_services
 	class message_rqt_index_body : public affix_base::data::serializable
 	{
 	public:
-		affix_base::data::tree<std::tuple<std::string, std::string>> m_agents;
+		affix_base::data::tree<std::string> m_agents;
 
 	public:
 		message_rqt_index_body(
@@ -18,7 +18,7 @@ namespace affix_services
 		);
 
 		message_rqt_index_body(
-			const affix_base::data::tree<std::tuple<std::string, std::string>>& a_agents
+			const affix_base::data::tree<std::string>& a_agents
 		);
 
 		message_rqt_index_body(

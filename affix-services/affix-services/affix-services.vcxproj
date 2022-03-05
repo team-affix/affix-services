@@ -167,8 +167,8 @@
     <ClInclude Include="messaging.h" />
     <ClInclude Include="connection_information.h" />
     <ClInclude Include="pending_connection.h" />
-    <ClInclude Include="application.h" />
-    <ClInclude Include="application_configuration.h" />
+    <ClInclude Include="client.h" />
+    <ClInclude Include="client_configuration.h" />
     <ClInclude Include="security_information.h" />
     <ClInclude Include="transmission_security_manager.h" />
     <ClInclude Include="connection_result.h" />
@@ -182,7 +182,7 @@
     <ClInclude Include="transmission_result.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="application_configuration.cpp" />
+    <ClCompile Include="client_configuration.cpp" />
     <ClCompile Include="message_rqt_index_body.cpp" />
     <ClCompile Include="message_rqt_relay_body.cpp" />
     <ClCompile Include="message_rsp_index_body.cpp" />
@@ -193,7 +193,7 @@
     <ClCompile Include="message_header.cpp" />
     <ClCompile Include="connection_information.cpp" />
     <ClCompile Include="pending_connection.cpp" />
-    <ClCompile Include="application.cpp" />
+    <ClCompile Include="client.cpp" />
     <ClCompile Include="security_information.cpp" />
     <ClCompile Include="transmission_security_manager.cpp" />
     <ClCompile Include="rolling_token.cpp" />

@@ -1,4 +1,4 @@
-#include "application_configuration.h"
+#include "client_configuration.h"
 #include "json.hpp"
 #include <fstream>
 #include <iostream>
@@ -10,7 +10,7 @@ using affix_base::data::cache;
 using affix_base::cryptography::rsa_key_pair;
 using namespace affix_base::cryptography;
 
-application_configuration::application_configuration(
+client_configuration::client_configuration(
 	const std::string& a_json_file_path
 ) :
 	m_json_file_path(a_json_file_path)
