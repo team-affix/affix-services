@@ -102,27 +102,24 @@
     <ClInclude Include="client.h">
       <Filter>Header Files\processing</Filter>
     </ClInclude>
-    <ClInclude Include="message_rqt_relay_body.h">
+    <ClInclude Include="message_relay_body.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
-    <ClInclude Include="message_rsp_relay_body.h">
-      <Filter>Header Files\messaging</Filter>
-    </ClInclude>
-    <ClInclude Include="message_rqt_index_body.h">
-      <Filter>Header Files\messaging</Filter>
-    </ClInclude>
-    <ClInclude Include="message_rsp_index_body.h">
+    <ClInclude Include="message_index_body.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
     <ClInclude Include="message.h">
       <Filter>Header Files\messaging</Filter>
+    </ClInclude>
+    <ClInclude Include="agent_information.h">
+      <Filter>Header Files\details</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rolling_token.cpp">
       <Filter>Source Files\security</Filter>
     </ClCompile>
-    <ClCompile Include="authenticated_connection.cpp">
+    <ClCompile Include="agent_connection.cpp">
       <Filter>Source Files\networking</Filter>
     </ClCompile>
     <ClCompile Include="message_header.cpp">
@@ -152,20 +149,17 @@
     <ClCompile Include="client.cpp">
       <Filter>Source Files\processing</Filter>
     </ClCompile>
-    <ClCompile Include="message_rqt_relay_body.cpp">
+    <ClCompile Include="message_relay_body.cpp">
       <Filter>Source Files\messaging</Filter>
     </ClCompile>
-    <ClCompile Include="message_rsp_relay_body.cpp">
-      <Filter>Source Files\messaging</Filter>
-    </ClCompile>
-    <ClCompile Include="message_rqt_index_body.cpp">
+    <ClCompile Include="message_index_body.cpp">
       <Filter>Source Files\messaging</Filter>
     </ClCompile>
     <ClCompile Include="pending_connection.cpp">
       <Filter>Source Files\networking</Filter>
     </ClCompile>
-    <ClCompile Include="message_rsp_index_body.cpp">
-      <Filter>Source Files\messaging</Filter>
+    <ClCompile Include="agent_information.cpp">
+      <Filter>Source Files\details</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

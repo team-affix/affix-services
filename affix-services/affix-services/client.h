@@ -10,6 +10,8 @@
 #include "messaging.h"
 #include "pending_connection.h"
 #include "client_configuration.h"
+#include "agent_information.h"
+#include "messaging.h"
 
 namespace affix_services
 {
@@ -20,6 +22,11 @@ namespace affix_services
 		/// Contains the configuration for this client instance; this object governs how to behave as a connection processor.
 		/// </summary>
 		affix_base::data::ptr<client_configuration> m_client_configuration;
+
+		/// <summary>
+		/// Contains information about the agent which is running this client.
+		/// </summary>
+		affix_base::data::ptr<affix_services::agent_information> m_agent_information;
 
 		/// <summary>
 		/// The local public key exported into base64 format.
@@ -71,22 +78,12 @@ namespace affix_services
 		/// <summary>
 		/// Vector of asynchronously received relay requests.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_rqt_relay_body>>>, affix_base::threading::cross_thread_mutex> m_relay_requests;
-
-		/// <summary>
-		/// Vector of asynchronously received relay responses.
-		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_rsp_relay_body>>>, affix_base::threading::cross_thread_mutex> m_relay_responses;
+		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_relay_body>>>, affix_base::threading::cross_thread_mutex> m_relay_requests;
 
 		/// <summary>
 		/// Vector of asynchronously received index requests.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_rqt_index_body>>>, affix_base::threading::cross_thread_mutex> m_index_requests;
-
-		/// <summary>
-		/// Vector of asynchronously received index responses.
-		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_rsp_index_body>>>, affix_base::threading::cross_thread_mutex> m_index_responses;
+		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_index_body>>>, affix_base::threading::cross_thread_mutex> m_index_requests;
 
 	protected:
 		/// <summary>
@@ -103,12 +100,7 @@ namespace affix_services
 		/// <summary>
 		/// Vector of relayed messages that have been received and were destined for this module.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_rqt_relay_body>>>, affix_base::threading::cross_thread_mutex> m_module_received_relay_requests;
-
-		/// <summary>
-		/// Vector of relay responses for relay requests that originated in this module.
-		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_rsp_relay_body>>>, affix_base::threading::cross_thread_mutex> m_module_received_relay_responses;
+		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_relay_body>>>, affix_base::threading::cross_thread_mutex> m_module_received_relay_requests;
 
 	public:
 		/// <summary>
@@ -117,7 +109,8 @@ namespace affix_services
 		/// <param name="a_local_key_pair"></param>
 		client(
 			asio::io_context& a_io_context,
-			affix_base::data::ptr<client_configuration> a_client_configuration
+			affix_base::data::ptr<client_configuration> a_client_configuration,
+			affix_base::data::ptr<agent_information> a_agent_information
 		);
 
 		/// <summary>
@@ -379,25 +372,8 @@ namespace affix_services
 		/// <param name="a_relay_requests"></param>
 		/// <param name="a_relay_request"></param>
 		void process_relay_request(
-			std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_rqt_relay_body>>>& a_relay_requests,
-			std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_rqt_relay_body>>>::iterator a_relay_request
-		);
-
-		/// <summary>
-		/// Processes all relay responses that have been received.
-		/// </summary>
-		void process_relay_responses(
-
-		);
-
-		/// <summary>
-		/// Processes a single received relay response.
-		/// </summary>
-		/// <param name="a_relay_responses"></param>
-		/// <param name="a_relay_response"></param>
-		void process_relay_response(
-			std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_rsp_relay_body>>>& a_relay_responses,
-			std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message< message_rsp_relay_body>>>::iterator a_relay_response
+			std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_relay_body>>>& a_relay_requests,
+			std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_relay_body>>>::iterator a_relay_request
 		);
 
 		/// <summary>

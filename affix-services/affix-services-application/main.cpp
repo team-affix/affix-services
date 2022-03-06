@@ -28,6 +28,9 @@ int main()
 		fs::create_directory("config/");
 	}
 
+	// Create agent information
+	ptr<agent_information> l_agent_information(new agent_information("default-agent"));
+
 	// Get configuration for the connection processor
 	std::clog << "[ APPLICATION ] Importing client_0 configuration..." << std::endl;
 	ptr<client_configuration> l_client_configuration_0(new client_configuration("config/application_configuration_0.json"));
@@ -36,7 +39,8 @@ int main()
 
 	client l_client_0(
 		l_io_context,
-		l_client_configuration_0
+		l_client_configuration_0,
+		l_agent_information
 	);
 
 	std::clog << "[ APPLICATION ] Importing client_1 configuration..." << std::endl;
@@ -46,7 +50,8 @@ int main()
 
 	client l_client_1(
 		l_io_context,
-		l_client_configuration_1
+		l_client_configuration_1,
+		l_agent_information
 	);
 
 	// Boolean describing whether the context thread should continue
@@ -84,18 +89,11 @@ int main()
 
 		affix_base::threading::locked_resource l_authenticated_connections = l_client_0.m_authenticated_connections.lock();
 		affix_base::threading::locked_resource l_module_received_relay_requests = l_client_0.m_module_received_relay_requests.lock();
-		affix_base::threading::locked_resource l_module_received_relay_responses = l_client_0.m_module_received_relay_responses.lock();
-
+		
 		if (!l_displayed_requests && l_module_received_relay_requests->size() == l_max_relay_messages)
 		{
 			l_displayed_requests = true;
 			std::cout << "ALL REQUESTS RECEIVED" << std::endl;
-		}
-
-		if (!l_displayed_responses && l_module_received_relay_responses->size() == l_max_relay_messages)
-		{
-			l_displayed_responses = true;
-			std::cout << "ALL RESPONSES RECEIVED" << std::endl;
 		}
 
 		if (l_authenticated_connections->size() >= 1 && l_relayed_messages < l_max_relay_messages)

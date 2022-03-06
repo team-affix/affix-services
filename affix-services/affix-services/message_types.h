@@ -7,11 +7,8 @@ namespace affix_services {
 
 		unknown = 0,
 
-		rqt_relay,				// relay data to connected party
-		rsp_relay,
-
-		rqt_index,
-		rsp_index
+		relay,				// relay data to connected party
+		index,
 
 	};
 		

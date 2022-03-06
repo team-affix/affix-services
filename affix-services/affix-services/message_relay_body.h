@@ -7,36 +7,26 @@
 
 namespace affix_services
 {
-	class message_rqt_relay_body : public affix_base::data::serializable
+	class message_relay_body : public affix_base::data::serializable
 	{
-	public:
-		enum class processing_status_response_type
-		{
-			unknown = 0,
-			success,
-			error_identity_not_connected,
-			error_identity_not_reached,
-
-		};
-
 	public:
 		std::vector<std::string> m_path;
 		size_t m_path_index = 1;
 		std::vector<uint8_t> m_payload;
 
 	public:
-		message_rqt_relay_body(
+		message_relay_body(
 
 		);
 
-		message_rqt_relay_body(
+		message_relay_body(
 			const std::vector<std::string>& a_path,
 			const size_t& a_path_index,
 			const std::vector<uint8_t>& a_payload
 		);
 
-		message_rqt_relay_body(
-			const message_rqt_relay_body& a_message_rqt_relay_body
+		message_relay_body(
+			const message_relay_body& a_message_rqt_relay_body
 		);
 
 		message_header create_message_header(
