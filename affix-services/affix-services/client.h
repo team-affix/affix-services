@@ -78,12 +78,12 @@ namespace affix_services
 		/// <summary>
 		/// Vector of asynchronously received relay requests.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_relay_body>>>, affix_base::threading::cross_thread_mutex> m_relay_requests;
+		affix_base::threading::guarded_resource<std::vector<message<message_relay_body>>, affix_base::threading::cross_thread_mutex> m_relay_requests;
 
 		/// <summary>
 		/// Vector of asynchronously received index requests.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_index_body>>>, affix_base::threading::cross_thread_mutex> m_index_requests;
+		affix_base::threading::guarded_resource<std::vector<message<message_index_body>>, affix_base::threading::cross_thread_mutex> m_index_requests;
 
 	protected:
 		/// <summary>
@@ -100,7 +100,12 @@ namespace affix_services
 		/// <summary>
 		/// Vector of relayed messages that have been received and were destined for this module.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_relay_body>>>, affix_base::threading::cross_thread_mutex> m_module_received_relay_requests;
+		affix_base::threading::guarded_resource<std::vector<message<message_relay_body>>, affix_base::threading::cross_thread_mutex> m_module_received_relay_requests;
+
+		/// <summary>
+		/// Vector of index requests that have been received and were destined for this module.
+		/// </summary>
+		affix_base::threading::guarded_resource<std::vector<message<message_index_body>>, affix_base::threading::cross_thread_mutex> m_module_received_index_requests;
 
 	public:
 		/// <summary>
@@ -128,6 +133,10 @@ namespace affix_services
 		void relay(
 			const std::vector<std::string>& a_path,
 			const std::vector<uint8_t>& a_payload
+		);
+
+		void index(
+
 		);
 
 	protected:
@@ -372,8 +381,25 @@ namespace affix_services
 		/// <param name="a_relay_requests"></param>
 		/// <param name="a_relay_request"></param>
 		void process_relay_request(
-			std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_relay_body>>>& a_relay_requests,
-			std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, message<message_relay_body>>>::iterator a_relay_request
+			std::vector<message<message_relay_body>>& a_relay_requests,
+			std::vector<message<message_relay_body>>::iterator a_relay_request
+		);
+
+		/// <summary>
+		/// Processes every received index request.
+		/// </summary>
+		void process_index_requests(
+
+		);
+
+		/// <summary>
+		/// Processes a single received index request.
+		/// </summary>
+		/// <param name="a_index_requests"></param>
+		/// <param name="a_index_request"></param>
+		void process_index_request(
+			std::vector<message<message_index_body>>& a_index_requests,
+			std::vector<message<message_index_body>>::iterator a_index_request
 		);
 
 		/// <summary>

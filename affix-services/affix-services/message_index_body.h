@@ -12,6 +12,7 @@ namespace affix_services
 	{
 	public:
 		affix_base::data::tree<std::string> m_client_identities;
+		std::vector<std::string> m_current_client_identity_path;
 		std::map<std::string, affix_services::agent_information> m_agents;
 
 	public:
@@ -21,6 +22,7 @@ namespace affix_services
 
 		message_index_body(
 			const affix_base::data::tree<std::string>& a_client_identities,
+			const std::vector<std::string>& a_current_client_identity_resource_path,
 			const std::map<std::string, affix_services::agent_information> a_agents
 		);
 

@@ -21,11 +21,6 @@ namespace affix_services {
 
 	public:
 		/// <summary>
-		/// The version of affix services in the sender module
-		/// </summary>
-		affix_base::details::semantic_version_number m_affix_services_version = affix_services::i_affix_services_version;
-
-		/// <summary>
 		/// The type of message being sent
 		/// </summary>
 		message_types m_message_type = message_types::unknown;
@@ -34,6 +29,11 @@ namespace affix_services {
 		/// A random string used to identify all future messages corresponding to this one.
 		/// </summary>
 		std::string m_discourse_identifier;
+		
+		/// <summary>
+		/// The version of affix services in the sender module
+		/// </summary>
+		affix_base::details::semantic_version_number m_affix_services_version = affix_services::i_affix_services_version;
 
 	public:
 		/// <summary>
@@ -51,7 +51,8 @@ namespace affix_services {
 		/// <param name="a_transmission_result"></param>
 		message_header(
 			const message_types& a_message_type,
-			const std::string& a_discourse_identifier
+			const std::string& a_discourse_identifier,
+			const affix_base::details::semantic_version_number& a_affix_services_version = i_affix_services_version
 		);
 
 		/// <summary>

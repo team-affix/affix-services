@@ -11,19 +11,20 @@ size_t message_header::s_discourse_identifier_size(25);
 message_header::message_header(
 
 ) :
-	affix_base::data::serializable(m_affix_services_version, m_message_type, m_discourse_identifier)
+	affix_base::data::serializable(m_message_type, m_discourse_identifier, m_affix_services_version)
 {
 
 }
 
 message_header::message_header(
 	const message_types& a_message_type,
-	const std::string& a_discourse_identifier
+	const std::string& a_discourse_identifier,
+	const affix_base::details::semantic_version_number& a_affix_services_version
 ) :
-	affix_base::data::serializable(m_affix_services_version, m_message_type, m_discourse_identifier),
-	m_affix_services_version(i_affix_services_version),
+	affix_base::data::serializable(m_message_type, m_discourse_identifier, m_affix_services_version),
 	m_message_type(a_message_type),
-	m_discourse_identifier(a_discourse_identifier)
+	m_discourse_identifier(a_discourse_identifier),
+	m_affix_services_version(a_affix_services_version)
 {
 
 }
@@ -31,7 +32,7 @@ message_header::message_header(
 message_header::message_header(
 	const message_header& a_message_header
 ) :
-	message_header(a_message_header.m_message_type, a_message_header.m_discourse_identifier)
+	message_header(a_message_header.m_message_type, a_message_header.m_discourse_identifier, a_message_header.m_affix_services_version)
 {
 
 }
