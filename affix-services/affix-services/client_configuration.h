@@ -66,6 +66,11 @@ namespace affix_services
 		/// </summary>
 		affix_base::data::cache<uint16_t> m_server_bind_port;
 
+		/// <summary>
+		/// Defines the duration in seconds for which a given relay path will be considered valid.
+		/// </summary>
+		uint64_t m_path_timeout_in_seconds;
+
 	public:
 		/// <summary>
 		/// Constructor which takes an argument for each field it is to populate.

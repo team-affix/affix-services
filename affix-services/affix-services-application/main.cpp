@@ -112,8 +112,8 @@ int main()
 				{ 1,2,3,4,5 }
 			);
 
-			l_client_0.index();
-			l_client_1.index();
+			l_client_0.trace_paths();
+			l_client_1.trace_paths();
 
 		}
 

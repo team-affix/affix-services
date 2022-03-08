@@ -64,7 +64,7 @@ void client::process(
 	process_authenticated_connections();
 	process_received_messages();
 	process_relay_requests();
-	process_index_requests();
+	process_trace_path_requests();
 	process_pending_function_calls();
 }
 
@@ -77,7 +77,7 @@ void client::relay(
 	locked_resource l_relay_requests = m_relay_requests.lock();
 
 	// Generate message body
-	message_relay_body l_message_body = message_relay_body(a_path, 0, a_payload);
+	message_relay_body l_message_body = message_relay_body(a_path, a_payload, m_local_identity, *m_agent_information);
 
 	// Generate full message
 	message l_message(l_message_body.create_message_header(), l_message_body);
@@ -87,21 +87,21 @@ void client::relay(
 
 }
 
-void client::index(
+void client::trace_paths(
 
 )
 {
-	// Lock the vector of index requests allowing for pushing back
-	locked_resource l_index_requests = m_index_requests.lock();
+	// Lock the vector of trace path requests allowing for pushing back
+	locked_resource l_trace_path_requests = m_trace_path_requests.lock();
 
 	// Generate the index message body
-	message_index_body l_message_index_body;
+	message_trace_path_body l_message_index_body;
 
 	// Construct the whole message
 	message l_message(l_message_index_body.create_message_header(), l_message_index_body);
 
 	// Push the index request to the queue to process
-	l_index_requests->push_back(l_message);
+	l_trace_path_requests->push_back(l_message);
 
 }
 
@@ -645,22 +645,22 @@ void client::process_received_message(
 
 			break;
 		}
-		case message_types::index:
+		case message_types::trace_path:
 		{
 			// Lock the mutex preventing concurrent reads/writes to the vector
-			locked_resource l_index_requests = m_index_requests.lock();
+			locked_resource l_trace_path_requests = m_trace_path_requests.lock();
 
-			message_index_body l_message_body;
+			message_trace_path_body l_message_body;
 
 			if (!l_message_body.deserialize(l_message_data_byte_buffer))
 			{
-				LOG_ERROR("[ APPLICATION ] Error deserializing the body of message_rqt_index.");
+				LOG_ERROR("[ APPLICATION ] Error deserializing the body of a message_trace_path_body.");
 				l_authenticated_connection->close();
 				return;
 			}
 
 			// Push the received relay request onto the vector
-			l_index_requests->push_back(
+			l_trace_path_requests->push_back(
 					message{ l_message_header, l_message_body });
 
 			break;
@@ -702,11 +702,14 @@ void client::process_relay_request(
 	// Erase the request from the vector
 	a_relay_requests.erase(a_relay_request);
 
-	if (l_request.m_message_body.m_path[l_request.m_message_body.m_path_index] != m_local_identity)
+	if (l_request.m_message_body.m_path.front() != m_local_identity)
 		// Something went wrong; the local identity does not match the identity that should have received this request
 		return;
 
-	if (l_request.m_message_body.m_path_index == l_request.m_message_body.m_path.size() - 1)
+	// Erase the local identity from the path
+	l_request.m_message_body.m_path.erase(l_request.m_message_body.m_path.begin());
+
+	if (l_request.m_message_body.m_path.size() == 0)
 	{
 		// This module is the intended recipient
 
@@ -716,15 +719,32 @@ void client::process_relay_request(
 		// Add the payload
 		l_agent_received_messages->push_back(l_request);
 
+		// Lock the vector of registered agents
+		locked_resource l_registered_agents = m_registered_agents.lock();
+
+		std::map<std::string, agent_information>::iterator l_registered_agent =
+			l_registered_agents->find(l_request.m_message_body.m_client_identity);
+
+		if (l_registered_agent != l_registered_agents->end())
+		{
+			// Get the previously stored agent information out from the iterator
+			agent_information& l_agent_information = std::get<1>(*l_registered_agent);
+			
+			// Save the agent information
+			l_agent_information = l_request.m_message_body.m_agent_information;
+		}
+		else
+		{
+			// Insert a new entry, registering the agent
+			l_registered_agents->insert({ l_request.m_message_body.m_client_identity, l_request.m_message_body.m_agent_information });
+		}
+
 		return;
 
 	}
 
-	// Get the index of the recipient in the path
-	size_t l_recipient_path_index = l_request.m_message_body.m_path_index + 1;
-
 	// Get the recipient's identity from the request
-	std::string l_recipient_identity = l_request.m_message_body.m_path[l_recipient_path_index];
+	std::string l_recipient_identity = l_request.m_message_body.m_path.front();
 
 	std::vector<ptr<authenticated_connection>>::iterator l_recipient_connection = std::find_if(l_authenticated_connections->begin(), l_authenticated_connections->end(),
 			[&](ptr<authenticated_connection> a_recipient_authenticated_connection)
@@ -736,64 +756,48 @@ void client::process_relay_request(
 		// The recipient is not connected
 		return;
 
-	// Relay the request, finally
-	// Construct the relayed request
-	message l_relayed_request = l_request;
-
-	// Increment the path index by one
-	l_relayed_request.m_message_body.m_path_index = l_recipient_path_index;
-
 	// Set the version in the message header
-	l_relayed_request.m_message_header.m_affix_services_version = affix_services::i_affix_services_version;
+	l_request.m_message_header.m_affix_services_version = affix_services::i_affix_services_version;
 
-	async_send_message(*l_recipient_connection, l_relayed_request);
+	async_send_message(*l_recipient_connection, l_request);
 
 }
 
-void client::process_index_requests(
+void client::process_trace_path_requests(
 
 )
 {
 	// Lock the mutex preventing concurrent reads/writes to the index_requests vector
-	locked_resource l_index_requests = m_index_requests.lock();
+	locked_resource l_trace_path_requests = m_trace_path_requests.lock();
 
-	for (int i = l_index_requests->size() - 1; i >= 0; i--)
-		process_index_request(l_index_requests.resource(), l_index_requests->begin() + i);
+	for (int i = l_trace_path_requests->size() - 1; i >= 0; i--)
+		process_trace_path_request(l_trace_path_requests.resource(), l_trace_path_requests->begin() + i);
 
 }
 
-void client::process_index_request(
-	std::vector<message<message_index_body>>& a_index_requests,
-	std::vector<message<message_index_body>>::iterator a_index_request
+void client::process_trace_path_request(
+	std::vector<message<message_trace_path_body>>& a_trace_path_requests,
+	std::vector<message<message_trace_path_body>>::iterator a_trace_path_request
 )
 {
 	// Extract data out from iterator
-	message l_request = *a_index_request;
+	message l_request = *a_trace_path_request;
 
 	// Erase the iterator before doing work with the data retrieved from it
-	a_index_requests.erase(a_index_request);
+	a_trace_path_requests.erase(a_trace_path_request);
 
 	l_request.m_message_header.m_affix_services_version = i_affix_services_version;
 
 	// Push the local identity onto the FRONT of the vector, so the path we build is 
 	// the path through which a message can travel to arrive at the original sender's client.
-	l_request.m_message_body.m_client_identity_path.insert(
-		l_request.m_message_body.m_client_identity_path.begin(), m_local_identity);
-
-	if (l_request.m_message_body.m_client_identity_path.size() == 1)
-	{
-		// If this is the client initiating the index request, add the agent information to the request.
-		// Store the local agent information in the request
-		l_request.m_message_body.m_agent_information = *m_agent_information;
-
-	}
-
+	l_request.m_message_body.m_path.insert(
+		l_request.m_message_body.m_path.begin(), m_local_identity);
 
 	// Lock the vector of known relay paths
 	locked_resource l_registered_paths = m_registered_paths.lock();
 
 	std::map<std::vector<std::string>, uint64_t>::iterator l_registered_path =
-		l_registered_paths->find(l_request.m_message_body.m_client_identity_path);
+		l_registered_paths->find(l_request.m_message_body.m_path);
 
 	if (l_registered_path != l_registered_paths->end())
 	{
@@ -805,29 +809,7 @@ void client::process_index_request(
 	else
 	{
 		// Push the newly indexed client path to the vector of known client paths
-		l_registered_paths->insert({ l_request.m_message_body.m_client_identity_path, affix_base::timing::utc_time() });
-	}
-
-
-	// Lock the vector of known remote agents
-	locked_resource l_registered_agents = m_registered_agents.lock();
-
-	std::map<std::string, agent_information>::iterator l_registered_agent =
-		l_registered_agents->find(l_request.m_message_body.m_client_identity_path.back());
-
-	if (l_registered_agent != l_registered_agents->end())
-	{
-		// The agent has already been registered
-		agent_information& l_agent_information = std::get<1>(*l_registered_agent);
-
-		// Save the received agent information
-		l_agent_information = l_request.m_message_body.m_agent_information;
-
-	}
-	else
-	{
-		// Insert a new entry into the map of all registered agents
-		l_registered_agents->insert({ l_request.m_message_body.m_client_identity_path.back(), l_request.m_message_body.m_agent_information });
+		l_registered_paths->insert({ l_request.m_message_body.m_path, affix_base::timing::utc_time() });
 	}
 
 
@@ -836,9 +818,9 @@ void client::process_index_request(
 
 	for (int i = 0; i < l_authenticated_connections->size(); i++)
 	{
-		if (std::find(l_request.m_message_body.m_client_identity_path.begin(), l_request.m_message_body.m_client_identity_path.end(), l_authenticated_connections->at(i)->remote_identity()) !=
-			l_request.m_message_body.m_client_identity_path.end())
-			// Don't send an index request to this peer. They are already a part of the path.
+		if (std::find(l_request.m_message_body.m_path.begin(), l_request.m_message_body.m_path.end(), l_authenticated_connections->at(i)->remote_identity()) !=
+			l_request.m_message_body.m_path.end())
+			// Don't send a trace path request to this peer. They are already a part of the path.
 			continue;
 
 		// Send the message to the remote client

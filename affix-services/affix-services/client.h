@@ -76,14 +76,14 @@ namespace affix_services
 
 	protected:
 		/// <summary>
-		/// Vector of asynchronously received relay requests.
+		/// Vector of relay requests that are pending being processed.
 		/// </summary>
 		affix_base::threading::guarded_resource<std::vector<message<message_relay_body>>, affix_base::threading::cross_thread_mutex> m_relay_requests;
 
 		/// <summary>
-		/// Vector of asynchronously received index requests.
+		/// Vector of trace path requests that are pending being processed.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<message<message_index_body>>, affix_base::threading::cross_thread_mutex> m_index_requests;
+		affix_base::threading::guarded_resource<std::vector<message<message_trace_path_body>>, affix_base::threading::cross_thread_mutex> m_trace_path_requests;
 
 	protected:
 		/// <summary>
@@ -138,10 +138,13 @@ namespace affix_services
 		/// <param name="a_payload"></param>
 		void relay(
 			const std::vector<std::string>& a_path,
-			const std::vector<uint8_t>& a_payload
+			const std::vector<uint8_t>& a_payload = {}
 		);
 
-		void index(
+		/// <summary>
+		/// Traces all paths out of this client on the network.
+		/// </summary>
+		void trace_paths(
 
 		);
 
@@ -392,20 +395,20 @@ namespace affix_services
 		);
 
 		/// <summary>
-		/// Processes every received index request.
+		/// Processes every received trace request.
 		/// </summary>
-		void process_index_requests(
+		void process_trace_path_requests(
 
 		);
 
 		/// <summary>
-		/// Processes a single received index request.
+		/// Processes a single received trace request.
 		/// </summary>
 		/// <param name="a_index_requests"></param>
 		/// <param name="a_index_request"></param>
-		void process_index_request(
-			std::vector<message<message_index_body>>& a_index_requests,
-			std::vector<message<message_index_body>>::iterator a_index_request
+		void process_trace_path_request(
+			std::vector<message<message_trace_path_body>>& a_trace_path_requests,
+			std::vector<message<message_trace_path_body>>::iterator a_trace_path_request
 		);
 
 		/// <summary>

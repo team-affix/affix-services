@@ -6,20 +6,22 @@ using namespace affix_base::cryptography;
 message_relay_body::message_relay_body(
 
 ) :
-	affix_base::data::serializable(m_path, m_path_index, m_payload)
+	affix_base::data::serializable(m_path, m_payload, m_client_identity, m_agent_information)
 {
 
 }
 
 message_relay_body::message_relay_body(
 	const std::vector<std::string>& a_path,
-	const size_t& a_path_index,
-	const std::vector<uint8_t>& a_payload
+	const std::vector<uint8_t>& a_payload,
+	const std::string a_client_identity,
+	const agent_information& a_agent_information
 ) :
-	affix_base::data::serializable(m_path, m_path_index, m_payload),
+	affix_base::data::serializable(m_path, m_payload, m_client_identity, m_agent_information),
 	m_path(a_path),
-	m_path_index(a_path_index),
-	m_payload(a_payload)
+	m_payload(a_payload),
+	m_client_identity(a_client_identity),
+	m_agent_information(a_agent_information)
 {
 
 }
@@ -27,7 +29,7 @@ message_relay_body::message_relay_body(
 message_relay_body::message_relay_body(
 	const message_relay_body& a_message_rqt_relay_body
 ) :
-	message_relay_body(a_message_rqt_relay_body.m_path, a_message_rqt_relay_body.m_path_index, a_message_rqt_relay_body.m_payload)
+	message_relay_body(a_message_rqt_relay_body.m_path, a_message_rqt_relay_body.m_payload, a_message_rqt_relay_body.m_client_identity, a_message_rqt_relay_body.m_agent_information)
 {
 
 }

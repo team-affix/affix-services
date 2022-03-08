@@ -4,6 +4,7 @@
 #include "affix-base/byte_buffer.h"
 #include "message_types.h"
 #include "message_header.h"
+#include "agent_information.h"
 
 namespace affix_services
 {
@@ -11,8 +12,10 @@ namespace affix_services
 	{
 	public:
 		std::vector<std::string> m_path;
-		size_t m_path_index = 1;
 		std::vector<uint8_t> m_payload;
+
+		std::string m_client_identity;
+		agent_information m_agent_information;
 
 	public:
 		message_relay_body(
@@ -21,8 +24,9 @@ namespace affix_services
 
 		message_relay_body(
 			const std::vector<std::string>& a_path,
-			const size_t& a_path_index,
-			const std::vector<uint8_t>& a_payload
+			const std::vector<uint8_t>& a_payload,
+			const std::string a_client_identity,
+			const agent_information& a_agent_information
 		);
 
 		message_relay_body(
