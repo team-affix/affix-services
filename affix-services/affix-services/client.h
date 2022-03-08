@@ -74,7 +74,7 @@ namespace affix_services
 		/// </summary>
 		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, affix_base::data::ptr<std::vector<uint8_t>>>>, affix_base::threading::cross_thread_mutex> m_received_messages;
 
-	public:
+	protected:
 		/// <summary>
 		/// Vector of asynchronously received relay requests.
 		/// </summary>
@@ -100,12 +100,18 @@ namespace affix_services
 		/// <summary>
 		/// Vector of relayed messages that have been received and were destined for this module.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<message<message_relay_body>>, affix_base::threading::cross_thread_mutex> m_module_received_relay_requests;
+		affix_base::threading::guarded_resource<std::vector<message<message_relay_body>>, affix_base::threading::cross_thread_mutex> m_agent_received_messages;
 
 		/// <summary>
-		/// Vector of index requests that have been received and were destined for this module.
+		/// The valid paths through which messages can travel to relay information to remote clients.
+		/// There is also (included in the tuple) a uint64_t which holds the utc time when each relay path was discovered.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<message<message_index_body>>, affix_base::threading::cross_thread_mutex> m_module_received_index_requests;
+		affix_base::threading::guarded_resource<std::map<std::vector<std::string>, uint64_t>, affix_base::threading::cross_thread_mutex> m_registered_paths;
+
+		/// <summary>
+		/// The set of all known remote agents. These are the applications which are utilizing affix-services clients, who are in this network.
+		/// </summary>
+		affix_base::threading::guarded_resource<std::map<std::string, agent_information>, affix_base::threading::cross_thread_mutex> m_registered_agents;
 
 	public:
 		/// <summary>

@@ -88,12 +88,12 @@ int main()
 		}
 
 		affix_base::threading::locked_resource l_authenticated_connections = l_client_0.m_authenticated_connections.lock();
-		affix_base::threading::locked_resource l_module_received_relay_requests = l_client_0.m_module_received_relay_requests.lock();
+		affix_base::threading::locked_resource l_agent_received_messages = l_client_0.m_agent_received_messages.lock();
 		
-		if (!l_displayed_requests && l_module_received_relay_requests->size() == l_max_relay_messages)
+		if (!l_displayed_requests && l_agent_received_messages->size() == l_max_relay_messages)
 		{
 			l_displayed_requests = true;
-			std::cout << "ALL REQUESTS RECEIVED" << std::endl;
+			std::cout << "ALL RELAY REQUESTS RECEIVED" << std::endl;
 		}
 
 		if (l_authenticated_connections->size() >= 1 && l_relayed_messages < l_max_relay_messages)
@@ -111,6 +111,8 @@ int main()
 				l_path,
 				{ 1,2,3,4,5 }
 			);
+
+			l_client_0.index();
 
 		}
 

@@ -11,9 +11,8 @@ namespace affix_services
 	class message_index_body : public affix_base::data::serializable
 	{
 	public:
-		affix_base::data::tree<std::string> m_client_identities;
-		std::vector<std::string> m_current_client_identity_path;
-		std::map<std::string, affix_services::agent_information> m_agents;
+		std::vector<std::string> m_client_identity_path;
+		affix_services::agent_information m_agent_information;
 
 	public:
 		message_index_body(
@@ -21,9 +20,8 @@ namespace affix_services
 		);
 
 		message_index_body(
-			const affix_base::data::tree<std::string>& a_client_identities,
-			const std::vector<std::string>& a_current_client_identity_resource_path,
-			const std::map<std::string, affix_services::agent_information> a_agents
+			const std::vector<std::string>& a_client_identity_path,
+			const affix_services::agent_information& a_agent_information
 		);
 
 		message_index_body(

@@ -64,22 +64,8 @@ void client::process(
 	process_authenticated_connections();
 	process_received_messages();
 	process_relay_requests();
+	process_index_requests();
 	process_pending_function_calls();
-}
-
-void client::index(
-
-)
-{
-	locked_resource l_index_requests = m_index_requests.lock();
-
-	message_index_body l_message_index_body;
-
-	message l_message(l_message_index_body.create_message_header(), l_message_index_body);
-
-	l_index_requests->push_back(l_message);
-
-
 }
 
 void client::relay(
@@ -87,14 +73,35 @@ void client::relay(
 	const std::vector<uint8_t>& a_payload
 )
 {
+	// Lock the vector of relay requests, allowing for pushing back
+	locked_resource l_relay_requests = m_relay_requests.lock();
+
 	// Generate message body
-	message_relay_body l_message_body = message_relay_body(a_path, 1, a_payload);
+	message_relay_body l_message_body = message_relay_body(a_path, 0, a_payload);
 
 	// Generate full message
 	message l_message(l_message_body.create_message_header(), l_message_body);
 
-	// Send the message
-	async_send_message(a_path[1], l_message);
+	// Add this message to the queue to process
+	l_relay_requests->push_back(l_message);
+
+}
+
+void client::index(
+
+)
+{
+	// Lock the vector of index requests allowing for pushing back
+	locked_resource l_index_requests = m_index_requests.lock();
+
+	// Generate the index message body
+	message_index_body l_message_index_body;
+
+	// Construct the whole message
+	message l_message(l_message_index_body.create_message_header(), l_message_index_body);
+
+	// Push the index request to the queue to process
+	l_index_requests->push_back(l_message);
 
 }
 
@@ -704,10 +711,10 @@ void client::process_relay_request(
 		// This module is the intended recipient
 
 		// Lock the mutex of received relays
-		locked_resource l_module_received_relay_requests = m_module_received_relay_requests.lock();
+		locked_resource l_agent_received_messages = m_agent_received_messages.lock();
 
 		// Add the payload
-		l_module_received_relay_requests->push_back(l_request);
+		l_agent_received_messages->push_back(l_request);
 
 		return;
 
@@ -766,96 +773,77 @@ void client::process_index_request(
 	// Erase the iterator before doing work with the data retrieved from it
 	a_index_requests.erase(a_index_request);
 
-	tree<std::string>::path l_path_to_sender_client(
-		l_request.m_message_body.m_client_identities.bind_resource_path(
-			l_request.m_message_body.m_current_client_identity_path
-		));
+	// Push the local identity onto the FRONT of the vector, so the path we build is 
+	// the path through which a message can travel to arrive at the original sender's client.
+	l_request.m_message_body.m_client_identity_path.insert(
+		l_request.m_message_body.m_client_identity_path.begin(), m_local_identity);
 
-	// Set the version of the message to be relayed to this client's version
-	l_request.m_message_header.m_affix_services_version = affix_services::i_affix_services_version;
-
-	if (!l_request.m_message_body.m_client_identities.contains(m_local_identity))
+	if (l_request.m_message_body.m_client_identity_path.size() == 1)
 	{
-		if (!l_path_to_sender_client.valid())
-		{
-			// If the path to the sender client is zero in length
-
-			if (l_request.m_message_body.m_client_identities.size() > 0)
-				// Something has gone horribly wrong, where the path to the sender is not known.
-				return;
-			else
-				// There was never a sender to begin with. The local client likely generated this request
-				l_request.m_message_body.m_client_identities.resource() = m_local_identity;
-
-		}
-		else
-		{
-			// If we are not currently a member of the indexed network, add this client to the indexed network
-			l_path_to_sender_client.back()->push_back(m_local_identity);
-
-		}
-
-		// Insert detailed information about this client
-		l_request.m_message_body.m_agents.insert({ m_local_identity, *m_agent_information });
+		// If this is the client initiating the index request, add the agent information to the request.
+		// Store the local agent information in the request
+		l_request.m_message_body.m_agent_information = *m_agent_information;
 
 	}
 
-	// Get path to local identity
-	tree<std::string>::path l_path_to_this_client = l_request.m_message_body.m_client_identities.find(m_local_identity);
 
-	// Set the current identity path to the path to this client's identity
-	l_request.m_message_body.m_current_client_identity_path = l_path_to_this_client.resource_path();
+	// Lock the vector of known relay paths
+	locked_resource l_registered_paths = m_registered_paths.lock();
 
-	// Lock the vector of authenticated connections
+	std::map<std::vector<std::string>, uint64_t>::iterator l_registered_path =
+		l_registered_paths->find(l_request.m_message_body.m_client_identity_path);
+
+	if (l_registered_path != l_registered_paths->end())
+	{
+		// The path is already registered
+		// Update the last registration time to now.
+		uint64_t& l_time_registered(std::get<1>(*l_registered_path));
+		l_time_registered = affix_base::timing::utc_time();
+	}
+	else
+	{
+		// Push the newly indexed client path to the vector of known client paths
+		l_registered_paths->insert({ l_request.m_message_body.m_client_identity_path, affix_base::timing::utc_time() });
+	}
+
+
+	// Lock the vector of known remote agents
+	locked_resource l_registered_agents = m_registered_agents.lock();
+
+	std::map<std::string, agent_information>::iterator l_registered_agent =
+		l_registered_agents->find(l_request.m_message_body.m_client_identity_path.back());
+
+	if (l_registered_agent != l_registered_agents->end())
+	{
+		// The agent has already been registered
+		agent_information& l_agent_information = std::get<1>(*l_registered_agent);
+
+		// Save the received agent information
+		l_agent_information = l_request.m_message_body.m_agent_information;
+
+	}
+	else
+	{
+		// Insert a new entry into the map of all registered agents
+		l_registered_agents->insert({ l_request.m_message_body.m_client_identity_path.back(), l_request.m_message_body.m_agent_information });
+	}
+
+
+	// Get the current authenticated connections
 	locked_resource l_authenticated_connections = m_authenticated_connections.lock();
 
-
-	std::vector<ptr<authenticated_connection>>::iterator l_first_unindexed_authenticated_connection =
-		std::find_if(l_authenticated_connections->begin(), l_authenticated_connections->end(),
-			[&](ptr<authenticated_connection>& a_authenticated_connection)
-			{
-				return !l_request.m_message_body.m_client_identities.contains(a_authenticated_connection->remote_identity());
-			});
-
-
-	if (l_first_unindexed_authenticated_connection != l_authenticated_connections->end())
+	for (int i = 0; i < l_authenticated_connections->size(); i++)
 	{
-		// Relay the index request to the unindexed client
-		async_send_message(*l_first_unindexed_authenticated_connection, l_request);
-		return;
+		if (std::find(l_request.m_message_body.m_client_identity_path.begin(), l_request.m_message_body.m_client_identity_path.end(), l_authenticated_connections->at(i)->remote_identity()) !=
+			l_request.m_message_body.m_client_identity_path.end())
+			// Don't send an index request to this peer. They are already a part of the path.
+			continue;
+
+		// Send the message to the remote client
+		async_send_message(l_authenticated_connections->at(i), l_request);
+
 	}
 
-	if (l_path_to_this_client.size() == 1)
-	{
-		// There was no authenticated connection that met the criteria for indexing.
-		// This client was the initiator of the index request.
-		locked_resource l_module_received_index_requests = m_module_received_index_requests.lock();
-
-		// Push the received request to the vector
-		l_module_received_index_requests->push_back(l_request);
-
-		return;
-	}
-
-	// All clients have been indexed, and we should return this request to the original sender.
-	// Get the original sender identity
-	std::string l_original_sender_identity = l_path_to_this_client[l_path_to_this_client.size() - 2]->resource();
-
-	std::vector<ptr<authenticated_connection>>::iterator l_original_sender_authenticated_connection =
-		std::find_if(l_authenticated_connections->begin(), l_authenticated_connections->end(),
-			[&](ptr<authenticated_connection>& a_authenticated_connection)
-			{
-				return a_authenticated_connection->remote_identity() == l_original_sender_identity;
-			});
-		
-	if (l_original_sender_authenticated_connection == l_authenticated_connections->end())
-	{
-		// The original sender has since disconnected, so just return.
-		return;
-	}
-
-	// Respond to the original sender
-	async_send_message(*l_original_sender_authenticated_connection, l_request);
 
 }
 
