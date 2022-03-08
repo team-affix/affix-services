@@ -33,7 +33,7 @@ int main()
 
 	// Get configuration for the connection processor
 	std::clog << "[ APPLICATION ] Importing client_0 configuration..." << std::endl;
-	ptr<client_configuration> l_client_configuration_0(new client_configuration("config/application_configuration_0.json"));
+	ptr<client_configuration> l_client_configuration_0(new client_configuration("config/client_configuration_0.json"));
 	l_client_configuration_0->import_resource();
 	l_client_configuration_0->export_resource();
 
@@ -44,7 +44,7 @@ int main()
 	);
 
 	std::clog << "[ APPLICATION ] Importing client_1 configuration..." << std::endl;
-	ptr<client_configuration> l_client_configuration_1(new client_configuration("config/application_configuration_1.json"));
+	ptr<client_configuration> l_client_configuration_1(new client_configuration("config/client_configuration_1.json"));
 	l_client_configuration_1->import_resource();
 	l_client_configuration_1->export_resource();
 
@@ -113,6 +113,7 @@ int main()
 			);
 
 			l_client_0.index();
+			l_client_1.index();
 
 		}
 

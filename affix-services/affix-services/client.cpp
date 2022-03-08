@@ -773,6 +773,8 @@ void client::process_index_request(
 	// Erase the iterator before doing work with the data retrieved from it
 	a_index_requests.erase(a_index_request);
 
+	l_request.m_message_header.m_affix_services_version = i_affix_services_version;
+
 	// Push the local identity onto the FRONT of the vector, so the path we build is 
 	// the path through which a message can travel to arrive at the original sender's client.
 	l_request.m_message_body.m_client_identity_path.insert(
