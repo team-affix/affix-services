@@ -142,10 +142,30 @@ namespace affix_services
 		);
 
 		/// <summary>
+		/// A function that implements relaying of messages to a remote module given only 
+		/// the identity associated with that module.
+		/// </summary>
+		/// <param name="a_exclusive_path"></param>
+		/// <param name="a_payload"></param>
+		void relay(
+			const std::string& a_identity,
+			const std::vector<uint8_t>& a_payload = {}
+		);
+
+		/// <summary>
 		/// Traces all paths out of this client on the network.
 		/// </summary>
 		void trace_paths(
 
+		);
+
+		/// <summary>
+		/// Returns the shortest path in terms of connecting nodes to a remote identity.
+		/// </summary>
+		/// <param name="a_identity"></param>
+		/// <returns></returns>
+		std::vector<std::string> shortest_path_to_identity(
+			const std::string& a_identity
 		);
 
 	protected:

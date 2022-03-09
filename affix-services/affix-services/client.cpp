@@ -87,6 +87,14 @@ void client::relay(
 
 }
 
+void client::relay(
+	const std::string& a_identity,
+	const std::vector<uint8_t>& a_payload
+)
+{
+	relay(shortest_path_to_identity(a_identity), a_payload);
+}
+
 void client::trace_paths(
 
 )
@@ -102,6 +110,28 @@ void client::trace_paths(
 
 	// Push the index request to the queue to process
 	l_trace_path_requests->push_back(l_message);
+
+}
+
+std::vector<std::string> client::shortest_path_to_identity(
+	const std::string& a_identity
+)
+{
+	locked_resource l_registered_paths = m_registered_paths.lock();
+
+	std::vector<std::string> l_result;
+
+	for (std::map<std::vector<std::string>, uint64_t>::iterator i = l_registered_paths->begin();
+		i != l_registered_paths->end();
+		i++)
+	{
+		if (i->first.back() != a_identity)
+			continue;
+		if (i->first.size() < l_result.size() || l_result.size() == 0)
+			l_result = i->first;
+	}
+
+	return l_result;
 
 }
 
@@ -793,32 +823,38 @@ void client::process_trace_path_request(
 	l_request.m_message_body.m_path.insert(
 		l_request.m_message_body.m_path.begin(), m_local_identity);
 
-	// Lock the vector of known relay paths
-	locked_resource l_registered_paths = m_registered_paths.lock();
-
-	std::map<std::vector<std::string>, uint64_t>::iterator l_registered_path =
-		l_registered_paths->find(l_request.m_message_body.m_path);
-
-	if (l_registered_path != l_registered_paths->end())
+	if (l_request.m_message_body.m_path.size() > 1)
 	{
-		// The path is already registered
-		// Update the last registration time to now.
-		uint64_t& l_time_registered(std::get<1>(*l_registered_path));
-		l_time_registered = affix_base::timing::utc_time();
-	}
-	else
-	{
-		// Push the newly indexed client path to the vector of known client paths
-		l_registered_paths->insert({ l_request.m_message_body.m_path, affix_base::timing::utc_time() });
-	}
+		// This message was not created by this client. Add the path to the list of paths
+		// Lock the vector of known relay paths
+		locked_resource l_registered_paths = m_registered_paths.lock();
 
+		std::map<std::vector<std::string>, uint64_t>::iterator l_registered_path =
+			l_registered_paths->find(l_request.m_message_body.m_path);
+
+		if (l_registered_path != l_registered_paths->end())
+		{
+			// The path is already registered
+			// Update the last registration time to now.
+			uint64_t& l_time_registered(std::get<1>(*l_registered_path));
+			l_time_registered = affix_base::timing::utc_time();
+		}
+		else
+		{
+			// Push the newly indexed client path to the vector of known client paths
+			l_registered_paths->insert({ l_request.m_message_body.m_path, affix_base::timing::utc_time() });
+		}
+
+	}
 
 	// Get the current authenticated connections
 	locked_resource l_authenticated_connections = m_authenticated_connections.lock();
 
 	for (int i = 0; i < l_authenticated_connections->size(); i++)
 	{
-		if (std::find(l_request.m_message_body.m_path.begin(), l_request.m_message_body.m_path.end(), l_authenticated_connections->at(i)->remote_identity()) !=
+		if (std::find(l_request.m_message_body.m_path.begin(),
+			l_request.m_message_body.m_path.end(),
+			l_authenticated_connections->at(i)->remote_identity()) !=
 			l_request.m_message_body.m_path.end())
 			// Don't send a trace path request to this peer. They are already a part of the path.
 			continue;
@@ -827,7 +863,6 @@ void client::process_trace_path_request(
 		async_send_message(l_authenticated_connections->at(i), l_request);
 
 	}
-
 
 }
 
