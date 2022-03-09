@@ -29,7 +29,7 @@ int main()
 	}
 
 	// Create agent information
-	ptr<agent_information> l_agent_information(new agent_information("default-agent"));
+	ptr<agent_information> l_agent_information(new agent_information("test-agent"));
 
 	// Get configuration for the connection processor
 	std::clog << "[ APPLICATION ] Importing client_0 configuration..." << std::endl;
