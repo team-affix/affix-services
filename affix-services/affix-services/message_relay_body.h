@@ -11,11 +11,11 @@ namespace affix_services
 	class message_relay_body : public affix_base::data::serializable
 	{
 	public:
-		std::vector<std::string> m_path;
+		std::string m_client_identity;
 		std::vector<uint8_t> m_payload;
 
-		std::string m_client_identity;
-		agent_information m_agent_information;
+	public:
+		std::vector<std::string> m_path;
 
 	public:
 		message_relay_body(
@@ -23,10 +23,9 @@ namespace affix_services
 		);
 
 		message_relay_body(
-			const std::vector<std::string>& a_path,
+			const std::string& a_client_identity,
 			const std::vector<uint8_t>& a_payload,
-			const std::string a_client_identity,
-			const agent_information& a_agent_information
+			const std::vector<std::string>& a_path
 		);
 
 		message_relay_body(

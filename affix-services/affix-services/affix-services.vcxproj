@@ -158,7 +158,7 @@
   <ItemGroup>
     <ClInclude Include="agent_information.h" />
     <ClInclude Include="message.h" />
-    <ClInclude Include="message_trace_path_body.h" />
+    <ClInclude Include="message_reveal_body.h" />
     <ClInclude Include="message_relay_body.h" />
     <ClInclude Include="pending_authentication.h" />
     <ClInclude Include="authentication_result.h" />
@@ -183,7 +183,7 @@
   <ItemGroup>
     <ClCompile Include="agent_information.cpp" />
     <ClCompile Include="client_configuration.cpp" />
-    <ClCompile Include="message_trace_path_body.cpp" />
+    <ClCompile Include="message_reveal_body.cpp" />
     <ClCompile Include="message_relay_body.cpp" />
     <ClCompile Include="pending_authentication.cpp" />
     <ClCompile Include="authentication_result.cpp" />

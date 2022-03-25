@@ -81,9 +81,9 @@ namespace affix_services
 		affix_base::threading::guarded_resource<std::vector<message<message_relay_body>>, affix_base::threading::cross_thread_mutex> m_relay_requests;
 
 		/// <summary>
-		/// Vector of trace path requests that are pending being processed.
+		/// Vector of reveal requests that are pending being processed.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<message<message_trace_path_body>>, affix_base::threading::cross_thread_mutex> m_trace_path_requests;
+		affix_base::threading::guarded_resource<std::vector<message<message_reveal_body>>, affix_base::threading::cross_thread_mutex> m_reveal_requests;
 
 	protected:
 		/// <summary>
@@ -155,7 +155,7 @@ namespace affix_services
 		/// <summary>
 		/// Traces all paths out of this client on the network.
 		/// </summary>
-		void trace_paths(
+		void reveal(
 
 		);
 
@@ -415,20 +415,20 @@ namespace affix_services
 		);
 
 		/// <summary>
-		/// Processes every received trace request.
+		/// Processes every received reveal request.
 		/// </summary>
-		void process_trace_path_requests(
+		void process_reveal_requests(
 
 		);
 
 		/// <summary>
-		/// Processes a single received trace request.
+		/// Processes a single received reveal request.
 		/// </summary>
-		/// <param name="a_index_requests"></param>
-		/// <param name="a_index_request"></param>
-		void process_trace_path_request(
-			std::vector<message<message_trace_path_body>>& a_trace_path_requests,
-			std::vector<message<message_trace_path_body>>::iterator a_trace_path_request
+		/// <param name="a_reveal_requests"></param>
+		/// <param name="a_reveal_request"></param>
+		void process_reveal_request(
+			std::vector<message<message_reveal_body>>& a_reveal_requests,
+			std::vector<message<message_reveal_body>>::iterator a_reveal_request
 		);
 
 		/// <summary>

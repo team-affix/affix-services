@@ -103,7 +103,7 @@ int main()
 			std::vector<std::string> l_path_0 =
 			{
 				l_client_0.m_local_identity,
-				l_client_1.m_local_identity,
+				l_client_1.m_local_identity
 			};
 			std::vector<std::string> l_path_1 =
 			{
@@ -112,15 +112,17 @@ int main()
 			};
 
 			l_client_0.relay(
-				l_path_0
+				l_path_0,
+				{1, 2, 3, 4, 5}
 			);
 
 			l_client_1.relay(
-				l_path_1
+				l_path_1,
+				{ 1, 2, 3, 4, 5 }
 			);
 
-			l_client_0.trace_paths();
-			l_client_1.trace_paths();
+			l_client_0.reveal();
+			l_client_1.reveal();
 
 		}
 
