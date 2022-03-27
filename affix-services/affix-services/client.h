@@ -78,12 +78,12 @@ namespace affix_services
 		/// <summary>
 		/// Vector of relay requests that are pending being processed.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<message<message_relay_body>>, affix_base::threading::cross_thread_mutex> m_relay_requests;
+		affix_base::threading::guarded_resource<std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>, affix_base::threading::cross_thread_mutex> m_relay_requests;
 
 		/// <summary>
 		/// Vector of reveal requests that are pending being processed.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<message<message_reveal_body>>, affix_base::threading::cross_thread_mutex> m_reveal_requests;
+		affix_base::threading::guarded_resource<std::vector<message<message_types, affix_base::details::semantic_version_number, message_reveal_body>>, affix_base::threading::cross_thread_mutex> m_reveal_requests;
 
 	protected:
 		/// <summary>
@@ -100,7 +100,7 @@ namespace affix_services
 		/// <summary>
 		/// Vector of relayed messages that have been received and were destined for this module.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<message<message_relay_body>>, affix_base::threading::cross_thread_mutex> m_agent_received_messages;
+		affix_base::threading::guarded_resource<std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>, affix_base::threading::cross_thread_mutex> m_agent_received_messages;
 
 		/// <summary>
 		/// The valid paths through which messages can travel to relay information to remote clients.
@@ -212,7 +212,7 @@ namespace affix_services
 		template<typename MESSAGE_TYPE>
 		void async_send_message(
 			const std::string& a_remote_identity,
-			const message<MESSAGE_TYPE>& a_message
+			const message<message_types, affix_base::details::semantic_version_number, MESSAGE_TYPE>& a_message
 		)
 		{
 			// Lock mutex preventing concurrent reads/writes to the connections vector
@@ -242,7 +242,7 @@ namespace affix_services
 		template<typename MESSAGE_TYPE>
 		void async_send_message(
 			affix_base::data::ptr<affix_services::networking::authenticated_connection> a_authenticated_connection,
-			const message<MESSAGE_TYPE>& a_message
+			const message<message_types, affix_base::details::semantic_version_number, MESSAGE_TYPE>& a_message
 		)
 		{
 			// Lock mutex preventing concurrent reads/writes to the connections vector
@@ -410,8 +410,8 @@ namespace affix_services
 		/// <param name="a_relay_requests"></param>
 		/// <param name="a_relay_request"></param>
 		void process_relay_request(
-			std::vector<message<message_relay_body>>& a_relay_requests,
-			std::vector<message<message_relay_body>>::iterator a_relay_request
+			std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>& a_relay_requests,
+			std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>::iterator a_relay_request
 		);
 
 		/// <summary>
@@ -427,8 +427,8 @@ namespace affix_services
 		/// <param name="a_reveal_requests"></param>
 		/// <param name="a_reveal_request"></param>
 		void process_reveal_request(
-			std::vector<message<message_reveal_body>>& a_reveal_requests,
-			std::vector<message<message_reveal_body>>::iterator a_reveal_request
+			std::vector<message<message_types, affix_base::details::semantic_version_number, message_reveal_body>>& a_reveal_requests,
+			std::vector<message<message_types, affix_base::details::semantic_version_number, message_reveal_body>>::iterator a_reveal_request
 		);
 
 		/// <summary>

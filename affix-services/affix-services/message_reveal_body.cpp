@@ -34,9 +34,9 @@ message_reveal_body::message_reveal_body(
 
 }
 
-message_header message_reveal_body::create_message_header(
+message_header<message_types, affix_base::details::semantic_version_number> message_reveal_body::create_message_header(
 
 ) const
 {
-	return message_header(message_types::reveal, message_header::random_discourse_identifier());
+	return message_header(message_types::reveal, i_affix_services_version);
 }

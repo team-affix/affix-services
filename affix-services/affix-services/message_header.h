@@ -11,29 +11,19 @@
 
 namespace affix_services {
 
+	template<typename MESSAGE_TYPES, typename VERSION_TYPE>
 	class message_header : public affix_base::data::serializable
 	{
 	public:
 		/// <summary>
-		/// The default size of discourse identifiers
-		/// </summary>
-		static size_t s_discourse_identifier_size;
-
-	public:
-		/// <summary>
 		/// The type of message being sent
 		/// </summary>
-		message_types m_message_type = message_types::unknown;
+		MESSAGE_TYPES m_message_type = {};
 
 		/// <summary>
-		/// A random string used to identify all future messages corresponding to this one.
+		/// The version of the sender client/agent
 		/// </summary>
-		std::string m_discourse_identifier;
-		
-		/// <summary>
-		/// The version of affix services in the sender module
-		/// </summary>
-		affix_base::details::semantic_version_number m_affix_services_version = affix_services::i_affix_services_version;
+		VERSION_TYPE m_version = {};
 
 	public:
 		/// <summary>
@@ -41,7 +31,11 @@ namespace affix_services {
 		/// </summary>
 		message_header(
 
-		);
+		) :
+			affix_base::data::serializable(m_message_type, m_version)
+		{
+
+		}
 
 		/// <summary>
 		/// Constructs the message header with the argued field values.
@@ -50,10 +44,15 @@ namespace affix_services {
 		/// <param name="a_message_type"></param>
 		/// <param name="a_transmission_result"></param>
 		message_header(
-			const message_types& a_message_type,
-			const std::string& a_discourse_identifier,
-			const affix_base::details::semantic_version_number& a_affix_services_version = i_affix_services_version
-		);
+			const MESSAGE_TYPES& a_message_type,
+			const VERSION_TYPE& a_version
+		) :
+			affix_base::data::serializable(m_message_type, m_version),
+			m_message_type(a_message_type),
+			m_version(a_version)
+		{
+
+		}
 
 		/// <summary>
 		/// Manually define copy constructor since this class is serializable
@@ -61,14 +60,13 @@ namespace affix_services {
 		/// <param name="a_message_header"></param>
 		message_header(
 			const message_header& a_message_header
-		);
+		) :
+			message_header(
+				a_message_header.m_message_type,
+				a_message_header.m_version)
+		{
 
-		/// <summary>
-		/// Generates a random discourse id, which must be unique for proper functionality.
-		/// </summary>
-		static std::string random_discourse_identifier(
-
-		);
+		}
 
 	};
 

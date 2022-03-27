@@ -35,9 +35,9 @@ message_relay_body::message_relay_body(
 
 }
 
-message_header message_relay_body::create_message_header(
+message_header<message_types, affix_base::details::semantic_version_number> message_relay_body::create_message_header(
 
 ) const
 {
-	return message_header(message_types::relay, message_header::random_discourse_identifier());
+	return message_header(message_types::relay, i_affix_services_version);
 }

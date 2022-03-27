@@ -122,9 +122,6 @@
     <ClCompile Include="agent_connection.cpp">
       <Filter>Source Files\networking</Filter>
     </ClCompile>
-    <ClCompile Include="message_header.cpp">
-      <Filter>Source Files\messaging</Filter>
-    </ClCompile>
     <ClCompile Include="transmission_security_manager.cpp">
       <Filter>Source Files\security</Filter>
     </ClCompile>

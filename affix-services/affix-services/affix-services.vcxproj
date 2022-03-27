@@ -188,7 +188,6 @@
     <ClCompile Include="pending_authentication.cpp" />
     <ClCompile Include="authentication_result.cpp" />
     <ClCompile Include="agent_connection.cpp" />
-    <ClCompile Include="message_header.cpp" />
     <ClCompile Include="connection_information.cpp" />
     <ClCompile Include="pending_connection.cpp" />
     <ClCompile Include="client.cpp" />

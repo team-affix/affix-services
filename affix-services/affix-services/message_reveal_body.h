@@ -32,7 +32,7 @@ namespace affix_services
 			const message_reveal_body& a_message_rqt_index_body
 		);
 
-		message_header create_message_header(
+		message_header<message_types, affix_base::details::semantic_version_number> create_message_header(
 
 		) const;
 

@@ -645,7 +645,7 @@ void client::process_received_message(
 	affix_base::data::byte_buffer l_message_data_byte_buffer(*l_message_data);
 
 	// Get message header out of byte buffer
-	message_header l_message_header;
+	message_header<message_types, affix_base::details::semantic_version_number> l_message_header;
 	if (!l_message_header.deserialize(l_message_data_byte_buffer))
 	{
 		LOG_ERROR("[ APPLICATION ] Error unpacking message header (or) body.");
@@ -719,15 +719,15 @@ void client::process_relay_requests(
 }
 
 void client::process_relay_request(
-	std::vector<message<message_relay_body>>& a_relay_requests,
-	std::vector<message<message_relay_body>>::iterator a_relay_request
+	std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>& a_relay_requests,
+	std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>::iterator a_relay_request
 )
 {
 	// Lock the mutex preventing concurrent reads/writes to the authenticated connections vector
 	locked_resource l_authenticated_connections = m_authenticated_connections.lock();
 
 	// Get the request out from the std::tuple
-	message<message_relay_body> l_request = *a_relay_request;
+	message<message_types, affix_base::details::semantic_version_number, message_relay_body> l_request = *a_relay_request;
 
 	// Erase the request from the vector
 	a_relay_requests.erase(a_relay_request);
@@ -765,7 +765,7 @@ void client::process_relay_request(
 		return;
 
 	// Set the version in the message header
-	l_request.m_message_header.m_affix_services_version = affix_services::i_affix_services_version;
+	l_request.m_message_header.m_version = affix_services::i_affix_services_version;
 
 	async_send_message(*l_recipient_connection, l_request);
 
@@ -784,8 +784,8 @@ void client::process_reveal_requests(
 }
 
 void client::process_reveal_request(
-	std::vector<message<message_reveal_body>>& a_reveal_requests,
-	std::vector<message<message_reveal_body>>::iterator a_reveal_request
+	std::vector<message<message_types, affix_base::details::semantic_version_number, message_reveal_body>>& a_reveal_requests,
+	std::vector<message<message_types, affix_base::details::semantic_version_number, message_reveal_body>>::iterator a_reveal_request
 )
 {
 	// Extract data out from iterator
@@ -794,7 +794,7 @@ void client::process_reveal_request(
 	// Erase the iterator before doing work with the data retrieved from it
 	a_reveal_requests.erase(a_reveal_request);
 
-	l_request.m_message_header.m_affix_services_version = i_affix_services_version;
+	l_request.m_message_header.m_version = i_affix_services_version;
 
 	// Push the local identity onto the FRONT of the vector, so the path we build is 
 	// the path through which a message can travel to arrive at the original sender's client.
