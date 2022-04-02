@@ -114,6 +114,9 @@
     <ClInclude Include="agent_information.h">
       <Filter>Header Files\details</Filter>
     </ClInclude>
+    <ClInclude Include="client_information.h">
+      <Filter>Header Files\details</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rolling_token.cpp">
@@ -156,6 +159,9 @@
       <Filter>Source Files\networking</Filter>
     </ClCompile>
     <ClCompile Include="agent_information.cpp">
+      <Filter>Source Files\details</Filter>
+    </ClCompile>
+    <ClCompile Include="client_information.cpp">
       <Filter>Source Files\details</Filter>
     </ClCompile>
   </ItemGroup>

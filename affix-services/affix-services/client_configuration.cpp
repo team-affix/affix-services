@@ -202,6 +202,7 @@ client_configuration::client_configuration(
 		{
 
 		});
+	
 	// Configure m_enable_server cache
 	m_enable_server.set_pull(
 		[&](bool& a_resource)
@@ -236,6 +237,23 @@ client_configuration::client_configuration(
 			a_resource = 0;
 		});
 
+	// Configure client_path_registration_timeout_in_seconds cache
+	m_client_path_registration_timeout_in_seconds.set_pull(
+		[&](uint64_t& a_resource)
+		{
+			a_resource = m_resource["client_path_registration_timeout_in_seconds"].get<uint64_t>();
+		});
+	m_client_path_registration_timeout_in_seconds.set_push(
+		[&](uint64_t& a_resource)
+		{
+			m_resource["client_path_registration_timeout_in_seconds"] = a_resource;
+		});
+	m_client_path_registration_timeout_in_seconds.set_import_failed_callback(
+		[&](uint64_t& a_resource, std::exception)
+		{
+			a_resource = 60;
+		});
+
 	// Configure this cache
 	set_pull(
 		[&](nlohmann::ordered_json& a_resource)
@@ -263,6 +281,8 @@ client_configuration::client_configuration(
 			m_enable_server.import_resource();
 			m_server_bind_port.import_resource();
 
+			m_client_path_registration_timeout_in_seconds.import_resource();
+
 		});
 	set_push(
 		[&](nlohmann::ordered_json& a_resource)
@@ -287,6 +307,8 @@ client_configuration::client_configuration(
 
 			m_enable_server.export_resource();
 			m_server_bind_port.export_resource();
+
+			m_client_path_registration_timeout_in_seconds.export_resource();
 
 			std::ofstream l_ofstream(m_json_file_path);
 			l_ofstream << a_resource.dump(1, '\t');
@@ -315,6 +337,8 @@ client_configuration::client_configuration(
 
 			m_enable_server.import_resource();
 			m_server_bind_port.import_resource();
+
+			m_client_path_registration_timeout_in_seconds.import_resource();
 
 		});
 

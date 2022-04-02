@@ -69,7 +69,7 @@ namespace affix_services
 		/// <summary>
 		/// Defines the duration in seconds for which a given relay path will be considered valid.
 		/// </summary>
-		uint64_t m_path_timeout_in_seconds;
+		affix_base::data::cache<uint64_t> m_client_path_registration_timeout_in_seconds;
 
 	public:
 		/// <summary>

@@ -168,6 +168,7 @@
     <ClInclude Include="pending_connection.h" />
     <ClInclude Include="client.h" />
     <ClInclude Include="client_configuration.h" />
+    <ClInclude Include="client_information.h" />
     <ClInclude Include="security_information.h" />
     <ClInclude Include="transmission_security_manager.h" />
     <ClInclude Include="connection_result.h" />
@@ -183,6 +184,7 @@
   <ItemGroup>
     <ClCompile Include="agent_information.cpp" />
     <ClCompile Include="client_configuration.cpp" />
+    <ClCompile Include="client_information.cpp" />
     <ClCompile Include="message_reveal_body.cpp" />
     <ClCompile Include="message_relay_body.cpp" />
     <ClCompile Include="pending_authentication.cpp" />

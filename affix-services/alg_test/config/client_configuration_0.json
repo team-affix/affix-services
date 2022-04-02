@@ -11,5 +11,6 @@
 	],
 	"remote_endpoints": [],
 	"enable_server": true,
-	"server_bind_port": 44750
+	"server_bind_port": 44750,
+	"client_path_registration_timeout_in_seconds": 60
 }

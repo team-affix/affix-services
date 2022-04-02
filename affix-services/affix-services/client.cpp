@@ -66,6 +66,7 @@ void client::process(
 	process_relay_requests();
 	process_reveal_requests();
 	process_pending_function_calls();
+	process_registered_clients();
 }
 
 void client::relay(
@@ -117,18 +118,17 @@ std::vector<std::string> client::shortest_path_to_identity(
 	const std::string& a_identity
 )
 {
-	locked_resource l_registered_paths = m_registered_paths.lock();
+	locked_resource l_registered_clients = m_registered_clients.lock();
 
 	std::vector<std::string> l_result;
 
-	for (std::map<std::vector<std::string>, uint64_t>::iterator i = l_registered_paths->begin();
-		i != l_registered_paths->end();
+	for (auto i = l_registered_clients->begin();
+		i != l_registered_clients->end();
 		i++)
 	{
-		if (i->first.back() != a_identity)
+		if (i->m_identity != a_identity)
 			continue;
-		if (i->first.size() < l_result.size() || l_result.size() == 0)
-			l_result = i->first;
+		return i->shortest_path();
 	}
 
 	return l_result;
@@ -801,50 +801,34 @@ void client::process_reveal_request(
 	l_request.m_message_body.m_path.insert(
 		l_request.m_message_body.m_path.begin(), m_local_identity);
 
-	if (l_request.m_message_body.m_path.size() > 1)
+	// This message was not created by this client. Add the path to the list of paths
+	// Lock the vector of known relay paths
+	locked_resource l_registered_clients = m_registered_clients.lock();
+
+	// Try to find an entry for the client
+	std::vector<client_information>::iterator l_registered_client =
+		std::find_if(l_registered_clients->begin(), l_registered_clients->end(),
+			[&](client_information& a_client_information)
+			{
+				return a_client_information.m_identity == l_request.m_message_body.m_client_identity;
+			});
+
+	if (l_registered_client == l_registered_clients->end())
 	{
-		// This message was not created by this client. Add the path to the list of paths
-		// Lock the vector of known relay paths
-		locked_resource l_registered_paths = m_registered_paths.lock();
-
-		std::map<std::vector<std::string>, uint64_t>::iterator l_registered_path =
-			l_registered_paths->find(l_request.m_message_body.m_path);
-
-		if (l_registered_path != l_registered_paths->end())
-		{
-			// The path is already registered
-			// Update the last registration time to now.
-			uint64_t& l_time_registered(std::get<1>(*l_registered_path));
-			l_time_registered = affix_base::timing::utc_time();
-		}
-		else
-		{
-			// Push the newly indexed client path to the vector of known client paths
-			l_registered_paths->insert({ l_request.m_message_body.m_path, affix_base::timing::utc_time() });
-		}
-
-		// Lock the vector of registered agents
-		locked_resource l_registered_agents = m_registered_agents.lock();
-
-		// Try to find an entry of the registered agent
-		std::map<std::string, agent_information>::iterator l_registered_agent =
-			l_registered_agents->find(l_request.m_message_body.m_client_identity);
-
-		if (l_registered_agent != l_registered_agents->end())
-		{
-			// Get the previously stored agent information out from the iterator
-			agent_information& l_agent_information = std::get<1>(*l_registered_agent);
-
-			// Save the agent information
-			l_agent_information = l_request.m_message_body.m_agent_information;
-		}
-		else
-		{
-			// Insert a new entry, registering the agent
-			l_registered_agents->insert({ l_request.m_message_body.m_client_identity, l_request.m_message_body.m_agent_information });
-		}
-
+		// Create the registered client object
+		l_registered_client = l_registered_clients->insert(l_registered_clients->end(), client_information(
+			l_request.m_message_body.m_client_identity,
+			l_request.m_message_body.m_agent_information
+		));
 	}
+	else
+	{
+		// Update the agent information of the registered client
+		l_registered_client->m_agent_information = l_request.m_message_body.m_agent_information;
+	}
+
+	// Register the path associated with this request
+	l_registered_client->register_path(l_request.m_message_body.m_path);
 
 	// Get the current authenticated connections
 	locked_resource l_authenticated_connections = m_authenticated_connections.lock();
@@ -951,4 +935,27 @@ void client::async_accept_next(
 				async_accept_next();
 
 		});
+}
+
+void client::process_registered_clients(
+
+)
+{
+	locked_resource l_registered_clients = m_registered_clients.lock();
+
+	for (int i = l_registered_clients->size() - 1; i >= 0; i--)
+		process_registered_client(l_registered_clients.resource(), l_registered_clients->begin() + i);
+
+}
+
+void client::process_registered_client(
+	std::vector<client_information>& a_registered_clients,
+	std::vector<client_information>::iterator a_registered_client
+)
+{
+	a_registered_client->clean_paths(m_client_configuration->m_client_path_registration_timeout_in_seconds.resource());
+
+	if (a_registered_client->path_count() == 0)
+		// If there are no remaining valid paths, erase the client registration.
+		a_registered_clients.erase(a_registered_client);
 }

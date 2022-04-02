@@ -12,6 +12,7 @@
 #include "client_configuration.h"
 #include "agent_information.h"
 #include "messaging.h"
+#include "client_information.h"
 
 namespace affix_services
 {
@@ -103,15 +104,10 @@ namespace affix_services
 		affix_base::threading::guarded_resource<std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>, affix_base::threading::cross_thread_mutex> m_agent_received_messages;
 
 		/// <summary>
-		/// The valid paths through which messages can travel to relay information to remote clients.
-		/// There is also (included in the tuple) a uint64_t which holds the utc time when each relay path was discovered.
+		/// A vector of registered clients, along with paths to those clients,
+		/// and agent information.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::map<std::vector<std::string>, uint64_t>, affix_base::threading::cross_thread_mutex> m_registered_paths;
-
-		/// <summary>
-		/// The set of all known remote agents. These are the applications which are utilizing affix-services clients, who are in this network.
-		/// </summary>
-		affix_base::threading::guarded_resource<std::map<std::string, agent_information>, affix_base::threading::cross_thread_mutex> m_registered_agents;
+		affix_base::threading::guarded_resource<std::vector<client_information>, affix_base::threading::cross_thread_mutex> m_registered_clients;
 
 	public:
 		/// <summary>
@@ -445,6 +441,21 @@ namespace affix_services
 		void process_pending_function_call(
 			std::vector<std::tuple<uint64_t, std::function<void()>>>& a_pending_function_calls,
 			std::vector<std::tuple<uint64_t, std::function<void()>>>::iterator a_pending_function_call
+		);
+
+		/// <summary>
+		/// Cleans all expired client paths from the registry.
+		/// </summary>
+		void process_registered_clients(
+
+		);
+
+		/// <summary>
+		/// Cleans all expired client paths from the registry.
+		/// </summary>
+		void process_registered_client(
+			std::vector<client_information>& a_registered_clients,
+			std::vector<client_information>::iterator a_registered_client
 		);
 
 	protected:
