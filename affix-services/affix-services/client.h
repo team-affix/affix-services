@@ -79,12 +79,17 @@ namespace affix_services
 		/// <summary>
 		/// Vector of relay requests that are pending being processed.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>, affix_base::threading::cross_thread_mutex> m_relay_requests;
+		affix_base::threading::guarded_resource<std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>, affix_base::threading::cross_thread_mutex> m_relay_messages;
+
+		/// <summary>
+		/// Vector of client_path requests that are pending being processed.
+		/// </summary>
+		affix_base::threading::guarded_resource<std::vector<message<message_types, affix_base::details::semantic_version_number, message_client_path_body>>, affix_base::threading::cross_thread_mutex> m_client_path_messages;
 
 		/// <summary>
 		/// Vector of reveal requests that are pending being processed.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<message<message_types, affix_base::details::semantic_version_number, message_reveal_body>>, affix_base::threading::cross_thread_mutex> m_reveal_requests;
+		affix_base::threading::guarded_resource<std::vector<message<message_types, affix_base::details::semantic_version_number, message_agent_information_body>>, affix_base::threading::cross_thread_mutex> m_agent_information_messages;
 
 	protected:
 		/// <summary>
@@ -149,9 +154,24 @@ namespace affix_services
 		);
 
 		/// <summary>
+		/// Recursively registers all paths to this machine.
+		/// </summary>
+		void register_egodestined_client_paths(
+
+		);
+
+		/// <summary>
+		/// Recursively deregisters all paths through you to your neighbor.
+		/// </summary>
+		/// <param name="a_neighbor_identity"></param>
+		void deregister_client_paths(
+			const std::string& a_neighbor_identity
+		);
+
+		/// <summary>
 		/// Traces all paths out of this client on the network.
 		/// </summary>
-		void reveal(
+		void disclose_agent_information(
 
 		);
 
@@ -160,7 +180,7 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_identity"></param>
 		/// <returns></returns>
-		std::vector<std::string> shortest_path_to_identity(
+		std::vector<std::string> fastest_path_to_identity(
 			const std::string& a_identity
 		);
 
@@ -396,7 +416,7 @@ namespace affix_services
 		/// <summary>
 		/// Processes all relay requests that have been received.
 		/// </summary>
-		void process_relay_requests(
+		void process_relay_messages(
 
 		);
 
@@ -405,15 +425,32 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_relay_requests"></param>
 		/// <param name="a_relay_request"></param>
-		void process_relay_request(
-			std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>& a_relay_requests,
-			std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>::iterator a_relay_request
+		void process_relay_message(
+			std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>& a_relay_messages,
+			std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>::iterator a_relay_message
+		);
+
+		/// <summary>
+		/// Processes all client_path messages.
+		/// </summary>
+		void process_client_path_messages(
+
+		);
+
+		/// <summary>
+		/// Processes a single client_path message.
+		/// </summary>
+		/// <param name="a_client_path_messages"></param>
+		/// <param name="a_client_path_message"></param>
+		void process_client_path_message(
+			std::vector<message<message_types, affix_base::details::semantic_version_number, message_client_path_body>>& a_client_path_messages,
+			std::vector<message<message_types, affix_base::details::semantic_version_number, message_client_path_body>>::iterator a_client_path_message
 		);
 
 		/// <summary>
 		/// Processes every received reveal request.
 		/// </summary>
-		void process_reveal_requests(
+		void process_agent_information_messages(
 
 		);
 
@@ -422,9 +459,9 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_reveal_requests"></param>
 		/// <param name="a_reveal_request"></param>
-		void process_reveal_request(
-			std::vector<message<message_types, affix_base::details::semantic_version_number, message_reveal_body>>& a_reveal_requests,
-			std::vector<message<message_types, affix_base::details::semantic_version_number, message_reveal_body>>::iterator a_reveal_request
+		void process_agent_information_message(
+			std::vector<message<message_types, affix_base::details::semantic_version_number, message_agent_information_body>>& a_agent_information_messages,
+			std::vector<message<message_types, affix_base::details::semantic_version_number, message_agent_information_body>>::iterator a_agent_information_message
 		);
 
 		/// <summary>

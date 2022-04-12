@@ -63,8 +63,8 @@ void client::process(
 	process_authentication_attempt_results();
 	process_authenticated_connections();
 	process_received_messages();
-	process_relay_requests();
-	process_reveal_requests();
+	process_relay_messages();
+	process_agent_information_messages();
 	process_pending_function_calls();
 	process_registered_clients();
 }
@@ -75,7 +75,7 @@ void client::relay(
 )
 {
 	// Lock the vector of relay requests, allowing for pushing back
-	locked_resource l_relay_requests = m_relay_requests.lock();
+	locked_resource l_relay_requests = m_relay_messages.lock();
 
 	// Generate message body
 	message_relay_body l_message_body = message_relay_body(m_local_identity, a_payload, a_path);
@@ -93,18 +93,54 @@ void client::relay(
 	const std::vector<uint8_t>& a_payload
 )
 {
-	relay(shortest_path_to_identity(a_identity), a_payload);
+	relay(fastest_path_to_identity(a_identity), a_payload);
 }
 
-void client::reveal(
+void client::register_egodestined_client_paths(
 
 )
 {
 	// Lock the vector of reveal requests allowing for pushing back
-	locked_resource l_reveal_requests = m_reveal_requests.lock();
+	locked_resource l_client_path_messages = m_client_path_messages.lock();
 
 	// Generate the index message body
-	message_reveal_body l_message_index_body(m_local_identity, *m_agent_information);
+	message_client_path_body l_message_index_body({}, true);
+
+	// Construct the whole message
+	message l_message(l_message_index_body.create_message_header(), l_message_index_body);
+
+	// Push the index request to the queue to process
+	l_client_path_messages->push_back(l_message);
+
+}
+
+void client::deregister_client_paths(
+	const std::string& a_neighbor_identity
+)
+{
+	// Lock the vector of reveal requests allowing for pushing back
+	locked_resource l_client_path_messages = m_client_path_messages.lock();
+
+	// Generate the index message body
+	message_client_path_body l_message_index_body({a_neighbor_identity}, false);
+
+	// Construct the whole message
+	message l_message(l_message_index_body.create_message_header(), l_message_index_body);
+
+	// Push the index request to the queue to process
+	l_client_path_messages->push_back(l_message);
+
+}
+
+void client::disclose_agent_information(
+
+)
+{
+	// Lock the vector of reveal requests allowing for pushing back
+	locked_resource l_reveal_requests = m_agent_information_messages.lock();
+
+	// Generate the index message body
+	message_agent_information_body l_message_index_body({}, *m_agent_information);
 
 	// Construct the whole message
 	message l_message(l_message_index_body.create_message_header(), l_message_index_body);
@@ -114,7 +150,7 @@ void client::reveal(
 
 }
 
-std::vector<std::string> client::shortest_path_to_identity(
+std::vector<std::string> client::fastest_path_to_identity(
 	const std::string& a_identity
 )
 {
@@ -128,7 +164,7 @@ std::vector<std::string> client::shortest_path_to_identity(
 	{
 		if (i->m_identity != a_identity)
 			continue;
-		return i->shortest_path();
+		return i->fastest_path();
 	}
 
 	return l_result;
@@ -658,13 +694,13 @@ void client::process_received_message(
 		case message_types::relay:
 		{
 			// Lock the mutex preventing concurrent reads/writes to the vector
-			locked_resource l_relay_requests = m_relay_requests.lock();
+			locked_resource l_relay_requests = m_relay_messages.lock();
 
 			message_relay_body l_message_body;
 
 			if (!l_message_body.deserialize(l_message_data_byte_buffer))
 			{
-				LOG_ERROR("[ APPLICATION ] Error deserializing the body of message_rqt_relay.");
+				LOG_ERROR("[ APPLICATION ] Error deserializing a message_relay_body.");
 				l_authenticated_connection->close();
 				return;
 			}
@@ -675,16 +711,36 @@ void client::process_received_message(
 
 			break;
 		}
-		case message_types::reveal:
+		case message_types::client_path:
 		{
 			// Lock the mutex preventing concurrent reads/writes to the vector
-			locked_resource l_reveal_requests = m_reveal_requests.lock();
+			locked_resource l_client_path_messages = m_client_path_messages.lock();
 
-			message_reveal_body l_message_body;
+			message_client_path_body l_message_body;
 
 			if (!l_message_body.deserialize(l_message_data_byte_buffer))
 			{
-				LOG_ERROR("[ APPLICATION ] Error deserializing the body of a message_reveal_body.");
+				LOG_ERROR("[ APPLICATION ] Error deserializing a message_client_path_body.");
+				l_authenticated_connection->close();
+				return;
+			}
+
+			// Push the received relay request onto the vector
+			l_client_path_messages->push_back(
+				message{ l_message_header, l_message_body });
+
+			break;
+		}
+		case message_types::agent_information:
+		{
+			// Lock the mutex preventing concurrent reads/writes to the vector
+			locked_resource l_reveal_requests = m_agent_information_messages.lock();
+
+			message_agent_information_body l_message_body;
+
+			if (!l_message_body.deserialize(l_message_data_byte_buffer))
+			{
+				LOG_ERROR("[ APPLICATION ] Error deserializing the a message_agent_information_body.");
 				l_authenticated_connection->close();
 				return;
 			}
@@ -705,32 +761,32 @@ void client::process_received_message(
 
 }
 
-void client::process_relay_requests(
+void client::process_relay_messages(
 
 )
 {
 	// Lock the mutex preventing new relay requests from being received
-	locked_resource l_relay_requests = m_relay_requests.lock();
+	locked_resource l_relay_requests = m_relay_messages.lock();
 
 	// Decrement through vector since elements of the vector might be removed
 	for (int i = l_relay_requests->size() - 1; i >= 0; i--)
-		process_relay_request(l_relay_requests.resource(), l_relay_requests->begin() + i);
+		process_relay_message(l_relay_requests.resource(), l_relay_requests->begin() + i);
 
 }
 
-void client::process_relay_request(
-	std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>& a_relay_requests,
-	std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>::iterator a_relay_request
+void client::process_relay_message(
+	std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>& a_relay_messages,
+	std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>::iterator a_relay_message
 )
 {
 	// Lock the mutex preventing concurrent reads/writes to the authenticated connections vector
 	locked_resource l_authenticated_connections = m_authenticated_connections.lock();
 
 	// Get the request out from the std::tuple
-	message<message_types, affix_base::details::semantic_version_number, message_relay_body> l_request = *a_relay_request;
+	message<message_types, affix_base::details::semantic_version_number, message_relay_body> l_request = *a_relay_message;
 
 	// Erase the request from the vector
-	a_relay_requests.erase(a_relay_request);
+	a_relay_messages.erase(a_relay_message);
 
 	if (l_request.m_message_body.m_path.front() != m_local_identity)
 		// Something went wrong; the local identity does not match the identity that should have received this request
@@ -771,35 +827,111 @@ void client::process_relay_request(
 
 }
 
-void client::process_reveal_requests(
+void client::process_client_path_messages(
+
+)
+{
+	locked_resource l_client_path_messages = m_client_path_messages.lock();
+
+	for (int i = l_client_path_messages->size() - 1; i >= 0; i--)
+		process_client_path_message(l_client_path_messages.resource(), l_client_path_messages->begin() + i);
+
+}
+
+void client::process_client_path_message(
+	std::vector<message<message_types, affix_base::details::semantic_version_number, message_client_path_body>>& a_client_path_messages,
+	std::vector<message<message_types, affix_base::details::semantic_version_number, message_client_path_body>>::iterator a_client_path_message
+)
+{
+	// Extract useful data from iterator
+	message l_message = *a_client_path_message;
+
+	// Erase iterator from vector
+	a_client_path_messages.erase(a_client_path_message);
+
+	// Detail the version of the message header as our local version.
+	l_message.m_message_header.m_version = i_affix_services_version;
+
+	// Prefix the client path with our local identity.
+	l_message.m_message_body.m_client_path.insert(l_message.m_message_body.m_client_path.begin(), m_local_identity);
+
+	// Lock the vector of registered clients.
+	locked_resource l_registered_clients = m_registered_clients.lock();
+
+	std::vector<client_information>::iterator l_client_information = std::find_if(l_registered_clients->begin(), l_registered_clients->end(),
+		[&](const client_information& a_client_information)
+		{
+			return a_client_information.m_identity == l_message.m_message_body.m_client_path.back();
+		});
+
+	if (l_client_information == l_registered_clients->end())
+	{
+		// If the client information is not currently registered, create a mostly empty client information to populate.
+		l_client_information = l_registered_clients->insert(l_registered_clients->end(),
+			client_information(l_message.m_message_body.m_client_path.back(), agent_information()));
+	}
+
+	if (l_message.m_message_body.m_register)
+	{
+		// We are registering a path
+		l_client_information->register_path(l_message.m_message_body.m_client_path);
+
+	}
+	else
+	{
+		// We are deregistering a path
+		l_client_information->deregister_path(l_message.m_message_body.m_client_path);
+
+	}
+
+	// Lock vector of authenticated connections
+	locked_resource l_authenticated_connections = m_authenticated_connections.lock();
+
+	for (int i = 0; i < l_authenticated_connections->size(); i++)
+	{
+		if (std::find(l_message.m_message_body.m_client_path.begin(),
+			l_message.m_message_body.m_client_path.end(),
+			l_authenticated_connections->at(i)->remote_identity()) !=
+			l_message.m_message_body.m_client_path.end())
+			// Don't send a reveal request to this peer. They are already a part of the path.
+			continue;
+
+		// Send the message to the remote client
+		async_send_message(l_authenticated_connections->at(i), l_message);
+
+	}
+
+
+}
+
+void client::process_agent_information_messages(
 
 )
 {
 	// Lock the mutex preventing concurrent reads/writes to the index_requests vector
-	locked_resource l_reveal_requests = m_reveal_requests.lock();
+	locked_resource l_reveal_requests = m_agent_information_messages.lock();
 
 	for (int i = l_reveal_requests->size() - 1; i >= 0; i--)
-		process_reveal_request(l_reveal_requests.resource(), l_reveal_requests->begin() + i);
+		process_agent_information_message(l_reveal_requests.resource(), l_reveal_requests->begin() + i);
 
 }
 
-void client::process_reveal_request(
-	std::vector<message<message_types, affix_base::details::semantic_version_number, message_reveal_body>>& a_reveal_requests,
-	std::vector<message<message_types, affix_base::details::semantic_version_number, message_reveal_body>>::iterator a_reveal_request
+void client::process_agent_information_message(
+	std::vector<message<message_types, affix_base::details::semantic_version_number, message_agent_information_body>>& a_agent_information_messages,
+	std::vector<message<message_types, affix_base::details::semantic_version_number, message_agent_information_body>>::iterator a_agent_information_message
 )
 {
 	// Extract data out from iterator
-	message l_request = *a_reveal_request;
+	message l_request = *a_agent_information_message;
 
 	// Erase the iterator before doing work with the data retrieved from it
-	a_reveal_requests.erase(a_reveal_request);
+	a_agent_information_messages.erase(a_agent_information_message);
 
+	// Set the message's version to this client's version (since we will be redistributing the message to our neighbors)
 	l_request.m_message_header.m_version = i_affix_services_version;
 
-	// Push the local identity onto the FRONT of the vector, so the path we build is 
-	// the path through which a message can travel to arrive at the original sender's client.
-	l_request.m_message_body.m_path.insert(
-		l_request.m_message_body.m_path.begin(), m_local_identity);
+	// Prefix the client path with our local identity.
+	l_request.m_message_body.m_client_path.insert(l_request.m_message_body.m_client_path.begin(), m_local_identity);
 
 	// This message was not created by this client. Add the path to the list of paths
 	// Lock the vector of known relay paths
@@ -810,35 +942,25 @@ void client::process_reveal_request(
 		std::find_if(l_registered_clients->begin(), l_registered_clients->end(),
 			[&](client_information& a_client_information)
 			{
-				return a_client_information.m_identity == l_request.m_message_body.m_client_identity;
+				return a_client_information.m_identity == l_request.m_message_body.m_client_path.back();
 			});
 
-	if (l_registered_client == l_registered_clients->end())
-	{
-		// Create the registered client object
-		l_registered_client = l_registered_clients->insert(l_registered_clients->end(), client_information(
-			l_request.m_message_body.m_client_identity,
-			l_request.m_message_body.m_agent_information
-		));
-	}
-	else
+	if (l_registered_client != l_registered_clients->end())
 	{
 		// Update the agent information of the registered client
 		l_registered_client->m_agent_information = l_request.m_message_body.m_agent_information;
 	}
-
-	// Register the path associated with this request
-	l_registered_client->register_path(l_request.m_message_body.m_path);
+	// else (DO NOTHING)
 
 	// Get the current authenticated connections
 	locked_resource l_authenticated_connections = m_authenticated_connections.lock();
 
 	for (int i = 0; i < l_authenticated_connections->size(); i++)
 	{
-		if (std::find(l_request.m_message_body.m_path.begin(),
-			l_request.m_message_body.m_path.end(),
+		if (std::find(l_request.m_message_body.m_client_path.begin(),
+			l_request.m_message_body.m_client_path.end(),
 			l_authenticated_connections->at(i)->remote_identity()) !=
-			l_request.m_message_body.m_path.end())
+			l_request.m_message_body.m_client_path.end())
 			// Don't send a reveal request to this peer. They are already a part of the path.
 			continue;
 
@@ -953,9 +1075,8 @@ void client::process_registered_client(
 	std::vector<client_information>::iterator a_registered_client
 )
 {
-	a_registered_client->clean_paths(m_client_configuration->m_client_path_registration_timeout_in_seconds.resource());
-
 	if (a_registered_client->path_count() == 0)
 		// If there are no remaining valid paths, erase the client registration.
 		a_registered_clients.erase(a_registered_client);
+
 }

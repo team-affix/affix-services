@@ -21,7 +21,7 @@ namespace affix_services
 		/// <summary>
 		/// The paths which are registered to the remote client
 		/// </summary>
-		std::map<std::vector<std::string>, uint64_t> m_paths;
+		std::vector<std::vector<std::string>> m_paths;
 
 	public:
 		/// <summary>
@@ -36,20 +36,12 @@ namespace affix_services
 
 	public:
 		/// <summary>
-		/// Returns the number of registered paths to this client.
+		/// Returns the number of paths currently registered to this remote client.
 		/// </summary>
 		/// <returns></returns>
 		size_t path_count(
 
-		);
-
-		/// <summary>
-		/// Erases any expired paths.
-		/// </summary>
-		/// <param name="a_path_timeout_in_seconds"></param>
-		void clean_paths(
-			const uint64_t& a_path_timeout_in_seconds
-		);
+		) const;
 
 		/// <summary>
 		/// Registers a path. If the path is already in the registry,
@@ -59,12 +51,21 @@ namespace affix_services
 		void register_path(
 			const std::vector<std::string>& a_path
 		);
+
+		/// <summary>
+		/// Deregisters a path. If the path is already in the registry,
+		/// it removes the path.
+		/// </summary>
+		/// <param name="a_path"></param>
+		void deregister_path(
+			const std::vector<std::string>& a_path
+		);
 		
 		/// <summary>
 		/// Returns the shortest registered path.
 		/// </summary>
 		/// <returns></returns>
-		std::vector<std::string> shortest_path(
+		std::vector<std::string> fastest_path(
 			
 		);
 

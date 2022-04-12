@@ -105,7 +105,7 @@
     <ClInclude Include="message_relay_body.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
-    <ClInclude Include="message_reveal_body.h">
+    <ClInclude Include="message_agent_information_body.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
     <ClInclude Include="message.h">
@@ -116,6 +116,9 @@
     </ClInclude>
     <ClInclude Include="client_information.h">
       <Filter>Header Files\details</Filter>
+    </ClInclude>
+    <ClInclude Include="message_client_path_body.h">
+      <Filter>Header Files\messaging</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -152,7 +155,7 @@
     <ClCompile Include="message_relay_body.cpp">
       <Filter>Source Files\messaging</Filter>
     </ClCompile>
-    <ClCompile Include="message_reveal_body.cpp">
+    <ClCompile Include="message_agent_information_body.cpp">
       <Filter>Source Files\messaging</Filter>
     </ClCompile>
     <ClCompile Include="pending_connection.cpp">
@@ -163,6 +166,9 @@
     </ClCompile>
     <ClCompile Include="client_information.cpp">
       <Filter>Source Files\details</Filter>
+    </ClCompile>
+    <ClCompile Include="message_client_path_body.cpp">
+      <Filter>Source Files\messaging</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
