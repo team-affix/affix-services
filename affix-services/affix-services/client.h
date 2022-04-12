@@ -169,9 +169,9 @@ namespace affix_services
 		);
 
 		/// <summary>
-		/// Traces all paths out of this client on the network.
+		/// Discloses agent information with all neighbors and the message recurs outward.
 		/// </summary>
-		void disclose_agent_information(
+		void register_agent_information(
 
 		);
 

@@ -152,7 +152,7 @@ void client::deregister_neighbor_index(
 
 }
 
-void client::disclose_agent_information(
+void client::register_agent_information(
 
 )
 {
