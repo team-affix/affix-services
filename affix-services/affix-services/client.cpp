@@ -73,6 +73,7 @@ void client::process(
 	process_authenticated_connections();
 	process_received_messages();
 	process_relay_messages();
+	process_client_path_messages();
 	process_agent_information_messages();
 	process_pending_function_calls();
 	process_registered_clients();
@@ -105,7 +106,7 @@ void client::relay(
 	relay(fastest_path_to_identity(a_identity), a_payload);
 }
 
-void client::register_egosourced_client_paths(
+void client::register_local_index(
 	const affix_base::data::ptr<affix_services::networking::authenticated_connection>& a_authenticated_connection
 )
 {
@@ -133,7 +134,7 @@ void client::register_egosourced_client_paths(
 
 }
 
-void client::deregister_client_paths_to(
+void client::deregister_neighbor_index(
 	const std::string& a_neighbor_identity
 )
 {
@@ -557,6 +558,9 @@ void client::process_authentication_attempt_result(
 		// Push authenticated connection object onto vector
 		l_authenticated_connections->push_back(l_authenticated_connection);
 
+		// Sends our entire index to the neighbor
+		register_local_index(l_authenticated_connection);
+
 		// Begin receiving data from socket
 		async_receive_message(l_authenticated_connection);
 		
@@ -662,6 +666,9 @@ void client::process_authenticated_connection(
 				(*a_authenticated_connection)->m_connection_information->m_remote_localhost
 			);
 		}
+
+		// Deregisters all paths that require the neighbor to be connected, and informs all other neighbors of the change.
+		deregister_neighbor_index((*a_authenticated_connection)->remote_identity());
 
 		// Since the connection is no longer be active, just erase the object.
 		a_authenticated_connections.erase(a_authenticated_connection);
@@ -893,7 +900,9 @@ void client::process_client_path_message(
 	if (l_message.m_message_body.m_register)
 	{
 		// We are registering a path
-		l_client_information->register_path(l_message.m_message_body.m_client_path);
+		if (!l_client_information->register_path(l_message.m_message_body.m_client_path))
+			// If the path is already registered, stop the recursion here. (Don't relay to neighbors)
+			return;
 
 	}
 	else
@@ -1081,6 +1090,7 @@ void client::async_accept_next(
 
 		});
 }
+
 
 void client::process_registered_clients(
 

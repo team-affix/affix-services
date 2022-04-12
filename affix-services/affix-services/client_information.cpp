@@ -14,14 +14,19 @@ client_information::client_information(
 
 }
 
-void client_information::register_path(
+bool client_information::register_path(
 	const std::vector<std::string>& a_path
 )
 {
 	auto l_path = std::find(m_paths.begin(), m_paths.end(), a_path);
 
 	if (l_path == m_paths.end())
+	{
 		m_paths.push_back(a_path);
+		return true;
+	}
+
+	return false;
 
 }
 

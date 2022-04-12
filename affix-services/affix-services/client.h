@@ -156,7 +156,7 @@ namespace affix_services
 		/// <summary>
 		/// Recursively causes all neighboring machines to register all paths to all locally registered clients.
 		/// </summary>
-		void register_egosourced_client_paths(
+		void register_local_index(
 			const affix_base::data::ptr<affix_services::networking::authenticated_connection>& a_authenticated_connection
 		);
 
@@ -164,7 +164,7 @@ namespace affix_services
 		/// Recursively deregisters all paths through you to your neighbor.
 		/// </summary>
 		/// <param name="a_neighbor_identity"></param>
-		void deregister_client_paths_to(
+		void deregister_neighbor_index(
 			const std::string& a_neighbor_identity
 		);
 

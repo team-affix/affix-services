@@ -121,9 +121,6 @@ int main()
 				{ 1, 2, 3, 4, 5 }
 			);
 
-			l_client_0.reveal();
-			l_client_1.reveal();
-
 		}
 
 	}

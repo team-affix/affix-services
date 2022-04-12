@@ -39,7 +39,7 @@ namespace affix_services
 		/// it simply updates the path registration timestamp.
 		/// </summary>
 		/// <param name="a_path"></param>
-		void register_path(
+		bool register_path(
 			const std::vector<std::string>& a_path
 		);
 
