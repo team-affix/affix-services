@@ -44,6 +44,15 @@ client::client(
 	if (!rsa_to_base64_string(a_client_configuration->m_local_key_pair.resource().public_key, m_local_identity))
 		throw std::exception("The inputted base64 RSA public key string is not in correct format.");
 
+	// Lock vector of registered clients
+	locked_resource l_registered_clients = m_registered_clients.lock();
+	// Create and register the only path from the local client to the local client
+	client_information l_local_client_information(m_local_identity, *m_agent_information);
+	l_local_client_information.register_path({ m_local_identity });
+	// Register the local client in the index
+	l_registered_clients->push_back(l_local_client_information);
+
+
 	if (m_client_configuration->m_enable_server.resource())
 		// If the server is enabled, start it
 		start_server();
@@ -96,25 +105,35 @@ void client::relay(
 	relay(fastest_path_to_identity(a_identity), a_payload);
 }
 
-void client::register_egodestined_client_paths(
-
+void client::register_egosourced_client_paths(
+	const affix_base::data::ptr<affix_services::networking::authenticated_connection>& a_authenticated_connection
 )
 {
 	// Lock the vector of reveal requests allowing for pushing back
 	locked_resource l_client_path_messages = m_client_path_messages.lock();
 
-	// Generate the index message body
-	message_client_path_body l_message_index_body({}, true);
+	// Lock the vector of registered clients.
+	locked_resource l_registered_clients = m_registered_clients.lock();
 
-	// Construct the whole message
-	message l_message(l_message_index_body.create_message_header(), l_message_index_body);
+	for (int i = 0; i < l_registered_clients->size(); i++)
+	{
+		for (int j = 0; j < l_registered_clients->at(i).m_paths.size(); j++)
+		{
+			// Generate the index message body
+			message_client_path_body l_message_index_body(l_registered_clients->at(i).m_paths.at(j), true);
 
-	// Push the index request to the queue to process
-	l_client_path_messages->push_back(l_message);
+			// Construct the whole message
+			message l_message(l_message_index_body.create_message_header(), l_message_index_body);
+
+			// Send this single path to the neighbor
+			async_send_message(a_authenticated_connection, l_message);
+
+		}
+	}
 
 }
 
-void client::deregister_client_paths(
+void client::deregister_client_paths_to(
 	const std::string& a_neighbor_identity
 )
 {
@@ -879,8 +898,12 @@ void client::process_client_path_message(
 	}
 	else
 	{
-		// We are deregistering a path
-		l_client_information->deregister_path(l_message.m_message_body.m_client_path);
+		// We are deregistering a path. This path must be deregistered from ALL client_information objects, 
+		// since some paths to any client may be dependent on the path we are deregistering.
+		for (int i = l_registered_clients->size() - 1; i >= 0; i--)
+		{
+			l_registered_clients->at(i).deregister_paths_starting_with(l_message.m_message_body.m_client_path);
+		}
 
 	}
 
@@ -1075,7 +1098,7 @@ void client::process_registered_client(
 	std::vector<client_information>::iterator a_registered_client
 )
 {
-	if (a_registered_client->path_count() == 0)
+	if (a_registered_client->m_paths.size() == 0)
 		// If there are no remaining valid paths, erase the client registration.
 		a_registered_clients.erase(a_registered_client);
 

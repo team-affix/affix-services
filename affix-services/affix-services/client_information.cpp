@@ -14,13 +14,6 @@ client_information::client_information(
 
 }
 
-size_t client_information::path_count(
-
-) const
-{
-	return m_paths.size();
-}
-
 void client_information::register_path(
 	const std::vector<std::string>& a_path
 )
@@ -32,14 +25,16 @@ void client_information::register_path(
 
 }
 
-void client_information::deregister_path(
-	const std::vector<std::string>& a_path
+void client_information::deregister_paths_starting_with(
+	const std::vector<std::string>& a_subpath
 )
 {
-	auto l_path = std::find(m_paths.begin(), m_paths.end(), a_path);
-
-	if (l_path != m_paths.end())
-		m_paths.erase(l_path);
+	for (int i = m_paths.size() - 1; i >= 0; i--)
+	{
+		if (std::equal(a_subpath.begin(), a_subpath.end(), m_paths[i].begin()))
+			// This path begins with the subpath, therefore deregister it.
+			m_paths.erase(m_paths.begin() + i);
+	}
 
 }
 

@@ -17,7 +17,6 @@ namespace affix_services
 		/// </summary>
 		agent_information m_agent_information;
 
-	protected:
 		/// <summary>
 		/// The paths which are registered to the remote client
 		/// </summary>
@@ -36,14 +35,6 @@ namespace affix_services
 
 	public:
 		/// <summary>
-		/// Returns the number of paths currently registered to this remote client.
-		/// </summary>
-		/// <returns></returns>
-		size_t path_count(
-
-		) const;
-
-		/// <summary>
 		/// Registers a path. If the path is already in the registry,
 		/// it simply updates the path registration timestamp.
 		/// </summary>
@@ -57,8 +48,8 @@ namespace affix_services
 		/// it removes the path.
 		/// </summary>
 		/// <param name="a_path"></param>
-		void deregister_path(
-			const std::vector<std::string>& a_path
+		void deregister_paths_starting_with(
+			const std::vector<std::string>& a_subpath
 		);
 		
 		/// <summary>
