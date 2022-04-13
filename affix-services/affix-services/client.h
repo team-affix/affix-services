@@ -171,7 +171,7 @@ namespace affix_services
 		/// <summary>
 		/// Discloses agent information with all neighbors and the message recurs outward.
 		/// </summary>
-		void register_agent_information(
+		void disclose_agent_information(
 
 		);
 
