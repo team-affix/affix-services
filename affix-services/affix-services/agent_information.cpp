@@ -39,7 +39,7 @@ agent_information::agent_information(
 
 bool agent_information::newer_than(
 	const agent_information& a_agent_information
-)
+) const
 {
 	if (m_timestamp > a_agent_information.m_timestamp)
 		return true;

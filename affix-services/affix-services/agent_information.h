@@ -65,7 +65,7 @@ namespace affix_services
 		/// <returns></returns>
 		bool newer_than(
 			const agent_information& a_agent_information
-		);
+		) const;
 
 	};
 }
