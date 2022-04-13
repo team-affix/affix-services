@@ -168,6 +168,9 @@ void client::register_agent_information(
 	// Push the index request to the queue to process
 	l_reveal_requests->push_back(l_message);
 
+	// Increment the version number of the agent_information
+	m_agent_information->m_version_number++;
+
 }
 
 std::vector<std::string> client::fastest_path_to_identity(
@@ -965,7 +968,6 @@ void client::process_agent_information_message(
 	// Prefix the client path with our local identity.
 	l_request.m_message_body.m_client_path.insert(l_request.m_message_body.m_client_path.begin(), m_local_identity);
 
-	// This message was not created by this client. Add the path to the list of paths
 	// Lock the vector of known relay paths
 	locked_resource l_registered_clients = m_registered_clients.lock();
 
@@ -979,8 +981,16 @@ void client::process_agent_information_message(
 
 	if (l_registered_client != l_registered_clients->end())
 	{
-		// Update the agent information of the registered client
-		l_registered_client->m_agent_information = l_request.m_message_body.m_agent_information;
+		if (l_request.m_message_body.m_agent_information.newer_than(l_registered_client->m_agent_information))
+		{
+			// Update the agent information of the registered client
+			l_registered_client->m_agent_information = l_request.m_message_body.m_agent_information;
+		}
+		else
+		{
+			// Do nothing, and DO NOT redistribute this agent_information to the remote peers.
+			return;
+		}
 	}
 	// else (DO NOTHING)
 
