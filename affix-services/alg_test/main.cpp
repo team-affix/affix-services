@@ -155,10 +155,6 @@ int main()
 				{ 1, 2, 3, 4, 5 }
 			);
 
-			l_client_0.register_agent_information();
-			l_client_1.register_agent_information();
-			l_client_2.register_agent_information();
-
 		}
 
 	}

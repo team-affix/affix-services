@@ -130,6 +130,16 @@ void client::register_local_index(
 			async_send_message(a_authenticated_connection, l_message);
 
 		}
+
+		// Construct the message body for agent_information
+		message_agent_information_body l_message_agent_information_body({ m_local_identity }, l_registered_clients->at(i).m_agent_information);
+
+		// Construct the whole message
+		message l_agent_information_message(l_message_agent_information_body.create_message_header(), l_message_agent_information_body);
+
+		// Send the agent_information to the neighbor
+		async_send_message(a_authenticated_connection, l_agent_information_message);
+
 	}
 
 }
