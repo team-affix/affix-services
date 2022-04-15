@@ -132,7 +132,7 @@ void client::register_local_index(
 		}
 
 		// Construct the message body for agent_information
-		message_agent_information_body l_message_agent_information_body({ m_local_identity }, l_registered_clients->at(i).m_agent_information);
+		message_agent_information_body l_message_agent_information_body(l_registered_clients->at(i).m_identity, l_registered_clients->at(i).m_agent_information);
 
 		// Construct the whole message
 		message l_agent_information_message(l_message_agent_information_body.create_message_header(), l_message_agent_information_body);
@@ -975,9 +975,6 @@ void client::process_agent_information_message(
 	// Set the message's version to this client's version (since we will be redistributing the message to our neighbors)
 	l_request.m_message_header.m_version = i_affix_services_version;
 
-	// Prefix the client path with our local identity.
-	l_request.m_message_body.m_client_path.insert(l_request.m_message_body.m_client_path.begin(), m_local_identity);
-
 	// Lock the vector of known relay paths
 	locked_resource l_registered_clients = m_registered_clients.lock();
 
@@ -986,7 +983,7 @@ void client::process_agent_information_message(
 		std::find_if(l_registered_clients->begin(), l_registered_clients->end(),
 			[&](client_information& a_client_information)
 			{
-				return a_client_information.m_identity == l_request.m_message_body.m_client_path.back();
+				return a_client_information.m_identity == l_request.m_message_body.m_client_identity;
 			});
 
 	if (l_registered_client != l_registered_clients->end())
@@ -1009,13 +1006,6 @@ void client::process_agent_information_message(
 
 	for (int i = 0; i < l_authenticated_connections->size(); i++)
 	{
-		if (std::find(l_request.m_message_body.m_client_path.begin(),
-			l_request.m_message_body.m_client_path.end(),
-			l_authenticated_connections->at(i)->remote_identity()) !=
-			l_request.m_message_body.m_client_path.end())
-			// Don't send a reveal request to this peer. They are already a part of the path.
-			continue;
-
 		// Send the message to the remote client
 		async_send_message(l_authenticated_connections->at(i), l_request);
 

@@ -14,7 +14,7 @@ namespace affix_services
 		/// <summary>
 		/// The path of all identities through whom this message has been mediated.
 		/// </summary>
-		std::vector<std::string> m_client_path;
+		std::string m_client_identity;
 		
 		/// <summary>
 		/// The information about the agent who owns the source client.
@@ -35,7 +35,7 @@ namespace affix_services
 		/// <param name="a_client_identity"></param>
 		/// <param name="a_agent_information"></param>
 		message_agent_information_body(
-			const std::vector<std::string>& a_client_path,
+			const std::string& a_client_identity,
 			const agent_information& a_agent_information
 		);
 
