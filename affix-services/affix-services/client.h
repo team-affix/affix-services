@@ -79,17 +79,17 @@ namespace affix_services
 		/// <summary>
 		/// Vector of relay requests that are pending being processed.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>, affix_base::threading::cross_thread_mutex> m_relay_messages;
+		affix_base::threading::guarded_resource<std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>>, affix_base::threading::cross_thread_mutex> m_relay_messages;
 
 		/// <summary>
 		/// Vector of client_path requests that are pending being processed.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<message<message_types, affix_base::details::semantic_version_number, message_client_path_body>>, affix_base::threading::cross_thread_mutex> m_client_path_messages;
+		affix_base::threading::guarded_resource<std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_client_path_body>>, affix_base::threading::cross_thread_mutex> m_client_path_messages;
 
 		/// <summary>
 		/// Vector of reveal requests that are pending being processed.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<message<message_types, affix_base::details::semantic_version_number, message_agent_information_body>>, affix_base::threading::cross_thread_mutex> m_agent_information_messages;
+		affix_base::threading::guarded_resource<std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_agent_information_body>>, affix_base::threading::cross_thread_mutex> m_agent_information_messages;
 
 	protected:
 		/// <summary>
@@ -106,7 +106,7 @@ namespace affix_services
 		/// <summary>
 		/// Vector of relayed messages that have been received and were destined for this module.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>, affix_base::threading::cross_thread_mutex> m_agent_received_messages;
+		affix_base::threading::guarded_resource<std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>>, affix_base::threading::cross_thread_mutex> m_agent_received_messages;
 
 		/// <summary>
 		/// A vector of registered clients, along with paths to those clients,
@@ -152,6 +152,39 @@ namespace affix_services
 			const std::string& a_identity,
 			const std::vector<uint8_t>& a_payload = {}
 		);
+
+		/// <summary>
+		/// Relays a message of any type message body, with any type acting as the 
+		/// "message_types" enum.
+		/// </summary>
+		/// <typeparam name="MESSAGE_TYPES"></typeparam>
+		/// <typeparam name="VERSION_TYPE"></typeparam>
+		/// <typeparam name="MESSAGE_TYPE"></typeparam>
+		/// <param name="a_identity"></param>
+		/// <param name="a_message"></param>
+		template<typename MESSAGE_HEADER_TYPE, typename MESSAGE_BODY_TYPE>
+		void relay(
+			const std::string& a_identity,
+			const message<MESSAGE_HEADER_TYPE, MESSAGE_BODY_TYPE>& a_message
+		)
+		{
+			// Temporary byte buffer which will be populated with message header & message body data
+			affix_base::data::byte_buffer l_byte_buffer;
+
+			if (!l_byte_buffer.push_back(a_message.m_message_header) ||
+				!l_byte_buffer.push_back(a_message.m_message_body))
+			{
+				// Failed to serialize either the message header or body
+				std::cerr << "[ APPLICATION ] Error: failed to serialize relayed message." << std::endl;
+
+				return;
+
+			}
+
+			// Finally, relay the serialized message
+			relay(a_identity, l_byte_buffer.data());
+
+		}
 
 		/// <summary>
 		/// Recursively causes all neighboring machines to register all paths to all locally registered clients.
@@ -225,10 +258,10 @@ namespace affix_services
 		/// <param name="a_remote_identity"></param>
 		/// <param name="a_message_body"></param>
 		/// <param name="a_callback"></param>
-		template<typename MESSAGE_TYPE>
+		template<typename MESSAGE_BODY_TYPE>
 		void async_send_message(
 			const std::string& a_remote_identity,
-			const message<message_types, affix_base::details::semantic_version_number, MESSAGE_TYPE>& a_message
+			const message<message_header<message_types, affix_base::details::semantic_version_number>, MESSAGE_BODY_TYPE>& a_message
 		)
 		{
 			// Lock mutex preventing concurrent reads/writes to the connections vector
@@ -255,10 +288,10 @@ namespace affix_services
 		/// <param name="a_authenticated_connection"></param>
 		/// <param name="a_message_body"></param>
 		/// <param name="a_callback"></param>
-		template<typename MESSAGE_TYPE>
+		template<typename MESSAGE_BODY_TYPE>
 		void async_send_message(
 			affix_base::data::ptr<affix_services::networking::authenticated_connection> a_authenticated_connection,
-			const message<message_types, affix_base::details::semantic_version_number, MESSAGE_TYPE>& a_message
+			const message<message_header<message_types, affix_base::details::semantic_version_number>, MESSAGE_BODY_TYPE>& a_message
 		)
 		{
 			// Lock mutex preventing concurrent reads/writes to the connections vector
@@ -267,10 +300,10 @@ namespace affix_services
 			// The byte buffer into which the message header data is to be stored
 			affix_base::data::byte_buffer l_message_byte_buffer;
 
-			if (!a_message.m_message_header.serialize(l_message_byte_buffer) ||
-				!a_message.m_message_body.serialize(l_message_byte_buffer))
+			if (!l_message_byte_buffer.push_back(a_message.m_message_header) ||
+				!l_message_byte_buffer.push_back(a_message.m_message_body))
 			{
-				// Failed to serialize message header.
+				// Failed to serialize message.
 				std::cerr << "[ APPLICATION ] Error: failed to serialize message." << std::endl;
 
 				// Close the conection.
@@ -426,8 +459,8 @@ namespace affix_services
 		/// <param name="a_relay_requests"></param>
 		/// <param name="a_relay_request"></param>
 		void process_relay_message(
-			std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>& a_relay_messages,
-			std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>::iterator a_relay_message
+			std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>>& a_relay_messages,
+			std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>>::iterator a_relay_message
 		);
 
 		/// <summary>
@@ -443,8 +476,8 @@ namespace affix_services
 		/// <param name="a_client_path_messages"></param>
 		/// <param name="a_client_path_message"></param>
 		void process_client_path_message(
-			std::vector<message<message_types, affix_base::details::semantic_version_number, message_client_path_body>>& a_client_path_messages,
-			std::vector<message<message_types, affix_base::details::semantic_version_number, message_client_path_body>>::iterator a_client_path_message
+			std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_client_path_body>>& a_client_path_messages,
+			std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_client_path_body>>::iterator a_client_path_message
 		);
 
 		/// <summary>
@@ -460,8 +493,8 @@ namespace affix_services
 		/// <param name="a_reveal_requests"></param>
 		/// <param name="a_reveal_request"></param>
 		void process_agent_information_message(
-			std::vector<message<message_types, affix_base::details::semantic_version_number, message_agent_information_body>>& a_agent_information_messages,
-			std::vector<message<message_types, affix_base::details::semantic_version_number, message_agent_information_body>>::iterator a_agent_information_message
+			std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_agent_information_body>>& a_agent_information_messages,
+			std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_agent_information_body>>::iterator a_agent_information_message
 		);
 
 		/// <summary>

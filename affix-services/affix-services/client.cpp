@@ -721,7 +721,7 @@ void client::process_received_message(
 
 	// Get message header out of byte buffer
 	message_header<message_types, affix_base::details::semantic_version_number> l_message_header;
-	if (!l_message_header.deserialize(l_message_data_byte_buffer))
+	if (!l_message_data_byte_buffer.pop_front(l_message_header))
 	{
 		LOG_ERROR("[ APPLICATION ] Error unpacking message header (or) body.");
 		l_authenticated_connection->close();
@@ -737,7 +737,7 @@ void client::process_received_message(
 
 			message_relay_body l_message_body;
 
-			if (!l_message_body.deserialize(l_message_data_byte_buffer))
+			if (!l_message_data_byte_buffer.pop_front(l_message_body))
 			{
 				LOG_ERROR("[ APPLICATION ] Error deserializing a message_relay_body.");
 				l_authenticated_connection->close();
@@ -757,7 +757,7 @@ void client::process_received_message(
 
 			message_client_path_body l_message_body;
 
-			if (!l_message_body.deserialize(l_message_data_byte_buffer))
+			if (!l_message_data_byte_buffer.pop_front(l_message_body))
 			{
 				LOG_ERROR("[ APPLICATION ] Error deserializing a message_client_path_body.");
 				l_authenticated_connection->close();
@@ -777,7 +777,7 @@ void client::process_received_message(
 
 			message_agent_information_body l_message_body;
 
-			if (!l_message_body.deserialize(l_message_data_byte_buffer))
+			if (!l_message_data_byte_buffer.pop_front(l_message_body))
 			{
 				LOG_ERROR("[ APPLICATION ] Error deserializing the a message_agent_information_body.");
 				l_authenticated_connection->close();
@@ -814,15 +814,15 @@ void client::process_relay_messages(
 }
 
 void client::process_relay_message(
-	std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>& a_relay_messages,
-	std::vector<message<message_types, affix_base::details::semantic_version_number, message_relay_body>>::iterator a_relay_message
+	std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>>& a_relay_messages,
+	std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>>::iterator a_relay_message
 )
 {
 	// Lock the mutex preventing concurrent reads/writes to the authenticated connections vector
 	locked_resource l_authenticated_connections = m_authenticated_connections.lock();
 
 	// Get the request out from the std::tuple
-	message<message_types, affix_base::details::semantic_version_number, message_relay_body> l_request = *a_relay_message;
+	message<message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body> l_request = *a_relay_message;
 
 	// Erase the request from the vector
 	a_relay_messages.erase(a_relay_message);
@@ -878,8 +878,8 @@ void client::process_client_path_messages(
 }
 
 void client::process_client_path_message(
-	std::vector<message<message_types, affix_base::details::semantic_version_number, message_client_path_body>>& a_client_path_messages,
-	std::vector<message<message_types, affix_base::details::semantic_version_number, message_client_path_body>>::iterator a_client_path_message
+	std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_client_path_body>>& a_client_path_messages,
+	std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_client_path_body>>::iterator a_client_path_message
 )
 {
 	// Extract useful data from iterator
@@ -962,8 +962,8 @@ void client::process_agent_information_messages(
 }
 
 void client::process_agent_information_message(
-	std::vector<message<message_types, affix_base::details::semantic_version_number, message_agent_information_body>>& a_agent_information_messages,
-	std::vector<message<message_types, affix_base::details::semantic_version_number, message_agent_information_body>>::iterator a_agent_information_message
+	std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_agent_information_body>>& a_agent_information_messages,
+	std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_agent_information_body>>::iterator a_agent_information_message
 )
 {
 	// Extract data out from iterator

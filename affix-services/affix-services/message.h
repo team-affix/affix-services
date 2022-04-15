@@ -7,19 +7,19 @@ namespace affix_services
 	/// A message structure, holding a message header and message body.
 	/// </summary>
 	/// <typeparam name="MESSAGE_TYPE"></typeparam>
-	template<typename MESSAGE_TYPES, typename VERSION_TYPE, typename MESSAGE_TYPE>
+	template<typename MESSAGE_HEADER_TYPE, typename MESSAGE_BODY_TYPE>
 	struct message
 	{
 	public:
 		/// <summary>
 		/// The message header associated with the message.
 		/// </summary>
-		message_header<MESSAGE_TYPES, VERSION_TYPE> m_message_header;
+		MESSAGE_HEADER_TYPE m_message_header;
 		
 		/// <summary>
 		/// The message body associated with the message.
 		/// </summary>
-		MESSAGE_TYPE m_message_body;
+		MESSAGE_BODY_TYPE m_message_body;
 
 	public:
 		/// <summary>
@@ -38,8 +38,8 @@ namespace affix_services
 		/// <param name="a_message_header"></param>
 		/// <param name="a_message_body"></param>
 		message(
-			const message_header<MESSAGE_TYPES, VERSION_TYPE>& a_message_header,
-			const MESSAGE_TYPE& a_message_body
+			const MESSAGE_HEADER_TYPE& a_message_header,
+			const MESSAGE_BODY_TYPE& a_message_body
 		) :
 			m_message_header(a_message_header),
 			m_message_body(a_message_body)
