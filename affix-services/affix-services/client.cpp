@@ -34,23 +34,27 @@ using namespace affix_base::data;
 client::client(
 	asio::io_context& a_io_context,
 	affix_base::data::ptr<client_configuration> a_client_configuration,
-	affix_base::data::ptr<agent_information> a_agent_information
+	const std::vector<agent_information>& a_local_agents
 ) :
 	m_io_context(a_io_context),
-	m_client_configuration(a_client_configuration),
-	m_agent_information(a_agent_information)
+	m_client_configuration(a_client_configuration)
 {
+	std::string l_local_identity;
+
 	// Get the local identity string from the local public key.
-	if (!rsa_to_base64_string(a_client_configuration->m_local_key_pair.resource().public_key, m_local_identity))
+	if (!rsa_to_base64_string(a_client_configuration->m_local_key_pair.resource().public_key, l_local_identity))
 		throw std::exception("The inputted base64 RSA public key string is not in correct format.");
 
+	// Create the local client information object
+	l_local_client_information = client_information(l_local_identity, a_local_agents);
+
 	// Lock vector of registered clients
-	locked_resource l_registered_clients = m_registered_clients.lock();
+	locked_resource l_registered_clients = m_remote_clients.lock();
 	// Create and register the only path from the local client to the local client
-	client_information l_local_client_information(m_local_identity, *m_agent_information);
-	l_local_client_information.register_path({ m_local_identity });
+	remote_client l_local_client(l_local_client_information);
+	l_local_client.register_path({ l_local_client_information.m_identity });
 	// Register the local client in the index
-	l_registered_clients->push_back(l_local_client_information);
+	l_registered_clients->push_back(l_local_client);
 
 
 	if (m_client_configuration->m_enable_server.resource())
@@ -74,13 +78,14 @@ void client::process(
 	process_received_messages();
 	process_relay_messages();
 	process_client_path_messages();
-	process_agent_information_messages();
+	process_client_information_messages();
 	process_pending_function_calls();
 	process_registered_clients();
 }
 
 void client::relay(
 	const std::vector<std::string>& a_path,
+	const std::string& a_target_agent_identifier,
 	const std::vector<uint8_t>& a_payload
 )
 {
@@ -88,7 +93,7 @@ void client::relay(
 	locked_resource l_relay_requests = m_relay_messages.lock();
 
 	// Generate message body
-	message_relay_body l_message_body = message_relay_body(m_local_identity, a_payload, a_path);
+	message_relay_body l_message_body = message_relay_body(l_local_client_information.m_identity, a_target_agent_identifier, a_payload, a_path);
 
 	// Generate full message
 	message l_message(l_message_body.create_message_header(), l_message_body);
@@ -100,21 +105,22 @@ void client::relay(
 
 void client::relay(
 	const std::string& a_identity,
+	const std::string& a_target_agent_identifier,
 	const std::vector<uint8_t>& a_payload
 )
 {
-	relay(fastest_path_to_identity(a_identity), a_payload);
+	relay(fastest_path_to_identity(a_identity), a_target_agent_identifier, a_payload);
 }
 
-void client::register_local_index(
-	const affix_base::data::ptr<affix_services::networking::authenticated_connection>& a_authenticated_connection
+void client::disclose_local_index(
+	affix_base::data::ptr<affix_services::networking::authenticated_connection> a_authenticated_connection
 )
 {
 	// Lock the vector of reveal requests allowing for pushing back
 	locked_resource l_client_path_messages = m_client_path_messages.lock();
 
 	// Lock the vector of registered clients.
-	locked_resource l_registered_clients = m_registered_clients.lock();
+	locked_resource l_registered_clients = m_remote_clients.lock();
 
 	for (int i = 0; i < l_registered_clients->size(); i++)
 	{
@@ -131,14 +137,14 @@ void client::register_local_index(
 
 		}
 
-		// Construct the message body for agent_information
-		message_agent_information_body l_message_agent_information_body(l_registered_clients->at(i).m_identity, l_registered_clients->at(i).m_agent_information);
+		// Construct the message body for client_information
+		message_client_information_body l_message_client_information_body(l_registered_clients->at(i).m_client_information);
 
 		// Construct the whole message
-		message l_agent_information_message(l_message_agent_information_body.create_message_header(), l_message_agent_information_body);
+		message l_client_information_message(l_message_client_information_body.create_message_header(), l_message_client_information_body);
 
-		// Send the agent_information to the neighbor
-		async_send_message(a_authenticated_connection, l_agent_information_message);
+		// Send the client_information to the neighbor
+		async_send_message(a_authenticated_connection, l_client_information_message);
 
 	}
 
@@ -162,15 +168,15 @@ void client::deregister_neighbor_index(
 
 }
 
-void client::disclose_agent_information(
+void client::disclose_client_information(
 
 )
 {
 	// Lock the vector of reveal requests allowing for pushing back
-	locked_resource l_reveal_requests = m_agent_information_messages.lock();
+	locked_resource l_reveal_requests = m_client_information_messages.lock();
 
 	// Generate the index message body
-	message_agent_information_body l_message_index_body({}, *m_agent_information);
+	message_client_information_body l_message_index_body(l_local_client_information);
 
 	// Construct the whole message
 	message l_message(l_message_index_body.create_message_header(), l_message_index_body);
@@ -178,8 +184,8 @@ void client::disclose_agent_information(
 	// Push the index request to the queue to process
 	l_reveal_requests->push_back(l_message);
 
-	// Increment the version number of the agent_information
-	m_agent_information->m_version_number++;
+	// Increment the disclosure iteration of the local client_information
+	l_local_client_information.m_disclosure_iteration++;
 
 }
 
@@ -187,7 +193,7 @@ std::vector<std::string> client::fastest_path_to_identity(
 	const std::string& a_identity
 )
 {
-	locked_resource l_registered_clients = m_registered_clients.lock();
+	locked_resource l_registered_clients = m_remote_clients.lock();
 
 	std::vector<std::string> l_result;
 
@@ -195,7 +201,7 @@ std::vector<std::string> client::fastest_path_to_identity(
 		i != l_registered_clients->end();
 		i++)
 	{
-		if (i->m_identity != a_identity)
+		if (i->m_client_information.m_identity != a_identity)
 			continue;
 		return i->fastest_path();
 	}
@@ -572,7 +578,7 @@ void client::process_authentication_attempt_result(
 		l_authenticated_connections->push_back(l_authenticated_connection);
 
 		// Sends our entire index to the neighbor
-		register_local_index(l_authenticated_connection);
+		disclose_local_index(l_authenticated_connection);
 
 		// Begin receiving data from socket
 		async_receive_message(l_authenticated_connection);
@@ -770,12 +776,12 @@ void client::process_received_message(
 
 			break;
 		}
-		case message_types::agent_information:
+		case message_types::client_information:
 		{
 			// Lock the mutex preventing concurrent reads/writes to the vector
-			locked_resource l_reveal_requests = m_agent_information_messages.lock();
+			locked_resource l_reveal_requests = m_client_information_messages.lock();
 
-			message_agent_information_body l_message_body;
+			message_client_information_body l_message_body;
 
 			if (!l_message_data_byte_buffer.pop_front(l_message_body))
 			{
@@ -827,7 +833,7 @@ void client::process_relay_message(
 	// Erase the request from the vector
 	a_relay_messages.erase(a_relay_message);
 
-	if (l_request.m_message_body.m_path.front() != m_local_identity)
+	if (l_request.m_message_body.m_path.front() != l_local_client_information.m_identity)
 		// Something went wrong; the local identity does not match the identity that should have received this request
 		return;
 
@@ -888,26 +894,37 @@ void client::process_client_path_message(
 	// Erase iterator from vector
 	a_client_path_messages.erase(a_client_path_message);
 
+	// See if the local client is already a member of the path.
+	std::vector<std::string>::iterator l_local_client_iterator =
+		std::find(
+			a_client_path_message->m_message_body.m_client_path.begin(),
+			a_client_path_message->m_message_body.m_client_path.end(),
+			l_local_client_information.m_identity);
+
+	if (l_local_client_iterator != a_client_path_message->m_message_body.m_client_path.end())
+		// Don't do anything, this machine is already a part of the path.
+		return;
+
 	// Detail the version of the message header as our local version.
 	l_message.m_message_header.m_version = i_affix_services_version;
 
 	// Prefix the client path with our local identity.
-	l_message.m_message_body.m_client_path.insert(l_message.m_message_body.m_client_path.begin(), m_local_identity);
+	l_message.m_message_body.m_client_path.insert(l_message.m_message_body.m_client_path.begin(), l_local_client_information.m_identity);
 
 	// Lock the vector of registered clients.
-	locked_resource l_registered_clients = m_registered_clients.lock();
+	locked_resource l_registered_clients = m_remote_clients.lock();
 
-	std::vector<client_information>::iterator l_client_information = std::find_if(l_registered_clients->begin(), l_registered_clients->end(),
-		[&](const client_information& a_client_information)
+	std::vector<remote_client>::iterator l_client_information = std::find_if(l_registered_clients->begin(), l_registered_clients->end(),
+		[&](const remote_client& a_client_information)
 		{
-			return a_client_information.m_identity == l_message.m_message_body.m_client_path.back();
+			return a_client_information.m_client_information.m_identity == l_message.m_message_body.m_client_path.back();
 		});
 
 	if (l_client_information == l_registered_clients->end())
 	{
 		// If the client information is not currently registered, create a mostly empty client information to populate.
 		l_client_information = l_registered_clients->insert(l_registered_clients->end(),
-			client_information(l_message.m_message_body.m_client_path.back(), agent_information()));
+			client_information(l_message.m_message_body.m_client_path.back(), { agent_information() }));
 	}
 
 	if (l_message.m_message_body.m_register)
@@ -946,24 +963,23 @@ void client::process_client_path_message(
 
 	}
 
-
 }
 
-void client::process_agent_information_messages(
+void client::process_client_information_messages(
 
 )
 {
 	// Lock the mutex preventing concurrent reads/writes to the index_requests vector
-	locked_resource l_reveal_requests = m_agent_information_messages.lock();
+	locked_resource l_reveal_requests = m_client_information_messages.lock();
 
 	for (int i = l_reveal_requests->size() - 1; i >= 0; i--)
-		process_agent_information_message(l_reveal_requests.resource(), l_reveal_requests->begin() + i);
+		process_client_information_message(l_reveal_requests.resource(), l_reveal_requests->begin() + i);
 
 }
 
-void client::process_agent_information_message(
-	std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_agent_information_body>>& a_agent_information_messages,
-	std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_agent_information_body>>::iterator a_agent_information_message
+void client::process_client_information_message(
+	std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_client_information_body>>& a_agent_information_messages,
+	std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_client_information_body>>::iterator a_agent_information_message
 )
 {
 	// Extract data out from iterator
@@ -976,22 +992,22 @@ void client::process_agent_information_message(
 	l_request.m_message_header.m_version = i_affix_services_version;
 
 	// Lock the vector of known relay paths
-	locked_resource l_registered_clients = m_registered_clients.lock();
+	locked_resource l_registered_clients = m_remote_clients.lock();
 
 	// Try to find an entry for the client
-	std::vector<client_information>::iterator l_registered_client =
+	std::vector<remote_client>::iterator l_registered_client =
 		std::find_if(l_registered_clients->begin(), l_registered_clients->end(),
-			[&](client_information& a_client_information)
+			[&](remote_client& a_client_information)
 			{
-				return a_client_information.m_identity == l_request.m_message_body.m_client_identity;
+				return a_client_information.m_client_information.m_identity == l_request.m_message_body.m_client_information.m_identity;
 			});
 
 	if (l_registered_client != l_registered_clients->end())
 	{
-		if (l_request.m_message_body.m_agent_information.newer_than(l_registered_client->m_agent_information))
+		if (l_request.m_message_body.m_client_information.newer_than(l_registered_client->m_client_information))
 		{
 			// Update the agent information of the registered client
-			l_registered_client->m_agent_information = l_request.m_message_body.m_agent_information;
+			l_registered_client->m_client_information = l_request.m_message_body.m_client_information;
 		}
 		else
 		{
@@ -1106,7 +1122,7 @@ void client::process_registered_clients(
 
 )
 {
-	locked_resource l_registered_clients = m_registered_clients.lock();
+	locked_resource l_registered_clients = m_remote_clients.lock();
 
 	for (int i = l_registered_clients->size() - 1; i >= 0; i--)
 		process_registered_client(l_registered_clients.resource(), l_registered_clients->begin() + i);
@@ -1114,8 +1130,8 @@ void client::process_registered_clients(
 }
 
 void client::process_registered_client(
-	std::vector<client_information>& a_registered_clients,
-	std::vector<client_information>::iterator a_registered_client
+	std::vector<remote_client>& a_registered_clients,
+	std::vector<remote_client>::iterator a_registered_client
 )
 {
 	if (a_registered_client->m_paths.size() == 0)

@@ -29,7 +29,7 @@ int main()
 	}
 
 	// Create agent information
-	ptr<agent_information> l_agent_information(new agent_information("test-agent"));
+	agent_information l_agent_information("test-agent");
 
 	// Get configuration for the connection processor
 	std::clog << "[ APPLICATION ] Importing client_0 configuration..." << std::endl;
@@ -40,7 +40,7 @@ int main()
 	client l_client_0(
 		l_io_context,
 		l_client_configuration_0,
-		l_agent_information
+		{ l_agent_information }
 	);
 
 	std::clog << "[ APPLICATION ] Importing client_1 configuration..." << std::endl;
@@ -51,7 +51,7 @@ int main()
 	client l_client_1(
 		l_io_context,
 		l_client_configuration_1,
-		l_agent_information
+		{ l_agent_information }
 	);
 
 	std::clog << "[ APPLICATION ] Importing client_2 configuration..." << std::endl;
@@ -62,7 +62,7 @@ int main()
 	client l_client_2(
 		l_io_context,
 		l_client_configuration_2,
-		l_agent_information
+		{ l_agent_information }
 	);
 
 	// Boolean describing whether the context thread should continue
@@ -119,7 +119,7 @@ int main()
 				std::find_if(l_client_1_auth_connections->begin(), l_client_1_auth_connections->end(),
 					[&](ptr<affix_services::networking::authenticated_connection> a_auth_conn)
 					{
-						return a_auth_conn->remote_identity() == l_client_0.m_local_identity;
+						return a_auth_conn->remote_identity() == l_client_0.l_local_client_information.m_identity;
 					});
 
 			if (l_connection_with_client_0 != l_client_1_auth_connections->end())
@@ -136,23 +136,27 @@ int main()
 
 			std::vector<std::string> l_path_0 =
 			{
-				l_client_0.m_local_identity,
-				l_client_1.m_local_identity
+				l_client_0.l_local_client_information.m_identity,
+				l_client_1.l_local_client_information.m_identity
 			};
 			std::vector<std::string> l_path_1 =
 			{
-				l_client_1.m_local_identity,
-				l_client_0.m_local_identity,
+				l_client_1.l_local_client_information.m_identity,
+				l_client_0.l_local_client_information.m_identity,
 			};
+
+			std::vector<uint8_t> l_bytes = { 1, 2, 3, 4, 5 };
 
 			l_client_0.relay(
 				l_path_0,
-				{1, 2, 3, 4, 5}
+				l_agent_information.m_agent_type_identifier,
+				l_bytes
 			);
 
 			l_client_1.relay(
 				l_path_1,
-				{ 1, 2, 3, 4, 5 }
+				l_agent_information.m_agent_type_identifier,
+				l_bytes
 			);
 
 		}

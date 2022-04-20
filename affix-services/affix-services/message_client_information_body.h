@@ -5,27 +5,23 @@
 #include "message_types.h"
 #include "message_header.h"
 #include "agent_information.h"
+#include "client_information.h"
 
 namespace affix_services
 {
-	class message_agent_information_body : public affix_base::data::serializable
+	class message_client_information_body : public affix_base::data::serializable
 	{
 	public:
 		/// <summary>
-		/// The path of all identities through whom this message has been mediated.
+		/// Client information of the source client.
 		/// </summary>
-		std::string m_client_identity;
-		
-		/// <summary>
-		/// The information about the agent who owns the source client.
-		/// </summary>
-		agent_information m_agent_information;
+		client_information m_client_information;
 
 	public:
 		/// <summary>
 		/// Defualt constructor for the message body.
 		/// </summary>
-		message_agent_information_body(
+		message_client_information_body(
 
 		);
 
@@ -34,17 +30,16 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_client_identity"></param>
 		/// <param name="a_agent_information"></param>
-		message_agent_information_body(
-			const std::string& a_client_identity,
-			const agent_information& a_agent_information
+		message_client_information_body(
+			const client_information& a_client_information
 		);
 
 		/// <summary>
 		/// Copy constructor for the message body.
 		/// </summary>
 		/// <param name="a_message_rqt_index_body"></param>
-		message_agent_information_body(
-			const message_agent_information_body& a_message_rqt_index_body
+		message_client_information_body(
+			const message_client_information_body& a_message_rqt_index_body
 		);
 
 		/// <summary>

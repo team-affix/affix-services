@@ -1,10 +1,12 @@
 #pragma once
 #include "affix-base/pch.h"
 #include "agent_information.h"
+#include "affix-base/serializable.h"
+#include "affix-base/utc_time.h"
 
 namespace affix_services
 {
-	class client_information
+	class client_information : public affix_base::data::serializable
 	{
 	public:
 		/// <summary>
@@ -15,50 +17,57 @@ namespace affix_services
 		/// <summary>
 		/// Information about the agent who owns the remote client.
 		/// </summary>
-		agent_information m_agent_information;
+		std::vector<agent_information> m_agents;
 
 		/// <summary>
-		/// The paths which are registered to the remote client
+		/// Timestamp for the client information object, which is measured in seconds since January 1, 1970.
 		/// </summary>
-		std::vector<std::vector<std::string>> m_paths;
+		uint64_t m_timestamp = 0;
+
+		/// <summary>
+		/// Version number which can be incremented each time a new version of this client's information is sent out.
+		/// </summary>
+		uint64_t m_disclosure_iteration = 0;
 
 	public:
 		/// <summary>
-		/// Constructs the client_paths object with the argued values for the fields.
+		/// Default constructor for client_information object.
+		/// </summary>
+		client_information(
+
+		);
+
+		/// <summary>
+		/// Constructs the client_information object with the argued values for the fields.
 		/// </summary>
 		/// <param name="a_identity"></param>
-		/// <param name="a_agent_information"></param>
+		/// <param name="a_agents"></param>
+		/// <param name="a_timestamp"></param>
+		/// <param name="a_version_number"></param>
 		client_information(
 			const std::string& a_identity,
-			const agent_information& a_agent_information
-		);
-
-	public:
-		/// <summary>
-		/// Registers a path. If the path is already in the registry,
-		/// it simply updates the path registration timestamp.
-		/// </summary>
-		/// <param name="a_path"></param>
-		bool register_path(
-			const std::vector<std::string>& a_path
+			const std::vector<agent_information>& a_agents,
+			const uint64_t& a_timestamp = affix_base::timing::utc_time(),
+			const uint64_t& a_disclosure_iteration = 0
 		);
 
 		/// <summary>
-		/// Deregisters a path. If the path is already in the registry,
-		/// it removes the path.
+		/// Copy constructor for the client_information type.
 		/// </summary>
-		/// <param name="a_path"></param>
-		void deregister_paths_starting_with(
-			const std::vector<std::string>& a_subpath
+		/// <param name="a_client_information"></param>
+		client_information(
+			const client_information& a_client_information
 		);
-		
+
 		/// <summary>
-		/// Returns the shortest registered path.
+		/// Returns whether or not this client information is newer than an argued client_information object.
 		/// </summary>
+		/// <param name="a_client_information"></param>
 		/// <returns></returns>
-		std::vector<std::string> fastest_path(
-			
-		);
+		bool newer_than(
+			const client_information& a_client_information
+		) const;
+
 
 	};
 }

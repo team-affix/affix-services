@@ -13,6 +13,7 @@
 #include "agent_information.h"
 #include "messaging.h"
 #include "client_information.h"
+#include "remote_client.h"
 
 namespace affix_services
 {
@@ -25,14 +26,9 @@ namespace affix_services
 		affix_base::data::ptr<client_configuration> m_client_configuration;
 
 		/// <summary>
-		/// Contains information about the agent which is running this client.
+		/// Holds necessary information about the client, such as the client identity and the agents.
 		/// </summary>
-		affix_base::data::ptr<affix_services::agent_information> m_agent_information;
-
-		/// <summary>
-		/// The local public key exported into base64 format.
-		/// </summary>
-		std::string m_local_identity;
+		client_information l_local_client_information;
 
 		/// <summary>
 		/// IO context which runs all the asynchronous networking functions.
@@ -89,7 +85,7 @@ namespace affix_services
 		/// <summary>
 		/// Vector of reveal requests that are pending being processed.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_agent_information_body>>, affix_base::threading::cross_thread_mutex> m_agent_information_messages;
+		affix_base::threading::guarded_resource<std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_client_information_body>>, affix_base::threading::cross_thread_mutex> m_client_information_messages;
 
 	protected:
 		/// <summary>
@@ -112,7 +108,7 @@ namespace affix_services
 		/// A vector of registered clients, along with paths to those clients,
 		/// and agent information.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<client_information>, affix_base::threading::cross_thread_mutex> m_registered_clients;
+		affix_base::threading::guarded_resource<std::vector<remote_client>, affix_base::threading::cross_thread_mutex> m_remote_clients;
 
 	public:
 		/// <summary>
@@ -122,7 +118,7 @@ namespace affix_services
 		client(
 			asio::io_context& a_io_context,
 			affix_base::data::ptr<client_configuration> a_client_configuration,
-			affix_base::data::ptr<agent_information> a_agent_information
+			const std::vector<agent_information>& a_local_agents
 		);
 
 		/// <summary>
@@ -139,6 +135,7 @@ namespace affix_services
 		/// <param name="a_payload"></param>
 		void relay(
 			const std::vector<std::string>& a_path,
+			const std::string& a_target_agent_identifier,
 			const std::vector<uint8_t>& a_payload = {}
 		);
 
@@ -150,6 +147,7 @@ namespace affix_services
 		/// <param name="a_payload"></param>
 		void relay(
 			const std::string& a_identity,
+			const std::string& a_target_agent_identifier,
 			const std::vector<uint8_t>& a_payload = {}
 		);
 
@@ -165,6 +163,7 @@ namespace affix_services
 		template<typename MESSAGE_HEADER_TYPE, typename MESSAGE_BODY_TYPE>
 		void relay(
 			const std::string& a_identity,
+			const std::string& a_target_agent_identifier,
 			const message<MESSAGE_HEADER_TYPE, MESSAGE_BODY_TYPE>& a_message
 		)
 		{
@@ -182,15 +181,15 @@ namespace affix_services
 			}
 
 			// Finally, relay the serialized message
-			relay(a_identity, l_byte_buffer.data());
+			relay(a_identity, a_target_agent_identifier, l_byte_buffer.data());
 
 		}
 
 		/// <summary>
 		/// Recursively causes all neighboring machines to register all paths to all locally registered clients.
 		/// </summary>
-		void register_local_index(
-			const affix_base::data::ptr<affix_services::networking::authenticated_connection>& a_authenticated_connection
+		void disclose_local_index(
+			affix_base::data::ptr<affix_services::networking::authenticated_connection> a_authenticated_connection
 		);
 
 		/// <summary>
@@ -202,9 +201,9 @@ namespace affix_services
 		);
 
 		/// <summary>
-		/// Discloses agent information with all neighbors and the message recurs outward.
+		/// Discloses client information with all neighbors and the message recurs outward.
 		/// </summary>
-		void disclose_agent_information(
+		void disclose_client_information(
 
 		);
 
@@ -483,7 +482,7 @@ namespace affix_services
 		/// <summary>
 		/// Processes every received reveal request.
 		/// </summary>
-		void process_agent_information_messages(
+		void process_client_information_messages(
 
 		);
 
@@ -492,9 +491,9 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_reveal_requests"></param>
 		/// <param name="a_reveal_request"></param>
-		void process_agent_information_message(
-			std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_agent_information_body>>& a_agent_information_messages,
-			std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_agent_information_body>>::iterator a_agent_information_message
+		void process_client_information_message(
+			std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_client_information_body>>& a_client_information_messages,
+			std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_client_information_body>>::iterator a_client_information_message
 		);
 
 		/// <summary>
@@ -524,8 +523,8 @@ namespace affix_services
 		/// Cleans all expired client paths from the registry.
 		/// </summary>
 		void process_registered_client(
-			std::vector<client_information>& a_registered_clients,
-			std::vector<client_information>::iterator a_registered_client
+			std::vector<remote_client>& a_registered_clients,
+			std::vector<remote_client>::iterator a_registered_client
 		);
 
 	protected:
