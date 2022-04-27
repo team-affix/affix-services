@@ -46,7 +46,7 @@ namespace affix_services
 		/// <param name="a_version_number"></param>
 		client_information(
 			const std::string& a_identity,
-			const std::vector<agent_information>& a_agents,
+			const std::vector<agent_information>& a_agents = {},
 			const uint64_t& a_timestamp = affix_base::timing::utc_time(),
 			const uint64_t& a_disclosure_iteration = 0
 		);

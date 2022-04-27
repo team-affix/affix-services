@@ -8,7 +8,7 @@ namespace affix_services {
 		unknown = 0,
 
 		relay,				// relay data to connected party
-		client_information,
+		agent_information,
 		client_path
 
 	};

@@ -105,22 +105,25 @@
     <ClInclude Include="message_relay_body.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
-    <ClInclude Include="message_client_information_body.h">
+    <ClInclude Include="message_agent_information_body.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
     <ClInclude Include="message.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
-    <ClInclude Include="agent_information.h">
-      <Filter>Header Files\details</Filter>
-    </ClInclude>
-    <ClInclude Include="client_information.h">
-      <Filter>Header Files\details</Filter>
-    </ClInclude>
     <ClInclude Include="message_client_path_body.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
     <ClInclude Include="remote_client.h">
+      <Filter>Header Files\details</Filter>
+    </ClInclude>
+    <ClInclude Include="agent.h">
+      <Filter>Header Files\processing</Filter>
+    </ClInclude>
+    <ClInclude Include="client_information.h">
+      <Filter>Header Files\details</Filter>
+    </ClInclude>
+    <ClInclude Include="agent_information.h">
       <Filter>Header Files\details</Filter>
     </ClInclude>
   </ItemGroup>
@@ -158,22 +161,25 @@
     <ClCompile Include="message_relay_body.cpp">
       <Filter>Source Files\messaging</Filter>
     </ClCompile>
-    <ClCompile Include="message_client_information_body.cpp">
+    <ClCompile Include="message_agent_information_body.cpp">
       <Filter>Source Files\messaging</Filter>
     </ClCompile>
     <ClCompile Include="pending_connection.cpp">
       <Filter>Source Files\networking</Filter>
     </ClCompile>
-    <ClCompile Include="agent_information.cpp">
-      <Filter>Source Files\details</Filter>
-    </ClCompile>
-    <ClCompile Include="client_information.cpp">
-      <Filter>Source Files\details</Filter>
-    </ClCompile>
     <ClCompile Include="message_client_path_body.cpp">
       <Filter>Source Files\messaging</Filter>
     </ClCompile>
     <ClCompile Include="remote_client.cpp">
+      <Filter>Source Files\details</Filter>
+    </ClCompile>
+    <ClCompile Include="agent.cpp">
+      <Filter>Source Files\processing</Filter>
+    </ClCompile>
+    <ClCompile Include="agent_information.cpp">
+      <Filter>Source Files\details</Filter>
+    </ClCompile>
+    <ClCompile Include="client_information.cpp">
       <Filter>Source Files\details</Filter>
     </ClCompile>
   </ItemGroup>
