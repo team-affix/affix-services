@@ -193,28 +193,6 @@ std::vector<std::string> client::fastest_path_to_identity(
 
 }
 
-void client::register_agent(
-	agent* a_agent
-)
-{
-	// Add this agent's information to the client on construction of this object
-	locked_resource l_local_agents = m_local_agents.lock();
-
-	std::vector<agent*>::iterator l_agent_iterator =
-		std::find_if(l_local_agents->begin(), l_local_agents->end(),
-			[&](const agent* a_agent_entry)
-			{
-				return a_agent->m_type_identifier == a_agent_entry->m_type_identifier;
-			});
-
-	if (l_agent_iterator != l_local_agents->end())
-		throw std::exception("Cannot register two or more agents with the same type identifier.");
-
-	// Push the agent to the vector
-	l_local_agents->push_back(a_agent);
-
-}
-
 void client::start_server(
 
 )

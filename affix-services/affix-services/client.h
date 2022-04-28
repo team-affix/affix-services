@@ -208,14 +208,6 @@ namespace affix_services
 
 	protected:
 		/// <summary>
-		/// Registers an agent with a unique type identifier with the local client.
-		/// </summary>
-		/// <param name="a_agent"></param>
-		void register_agent(
-			agent* a_agent
-		);
-
-		/// <summary>
 		/// Starts the server associated with this affix-services module.
 		/// </summary>
 		void start_server(
