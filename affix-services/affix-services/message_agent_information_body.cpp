@@ -5,15 +5,17 @@ using namespace affix_services;
 message_agent_information_body::message_agent_information_body(
 
 ) :
-	affix_base::data::serializable(m_agent_information)
+	affix_base::data::serializable(m_client_identity, m_agent_information)
 {
 
 }
 
 message_agent_information_body::message_agent_information_body(
+	const std::string& a_client_identity,
 	const agent_information& a_agent_information
 ) :
-	affix_base::data::serializable(m_agent_information),
+	affix_base::data::serializable(m_client_identity, m_agent_information),
+	m_client_identity(a_client_identity),
 	m_agent_information(a_agent_information)
 {
 
@@ -23,6 +25,7 @@ message_agent_information_body::message_agent_information_body(
 	const message_agent_information_body& a_message_rqt_index_body
 ) :
 	message_agent_information_body(
+		a_message_rqt_index_body.m_client_identity,
 		a_message_rqt_index_body.m_agent_information)
 {
 

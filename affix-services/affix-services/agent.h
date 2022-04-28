@@ -39,10 +39,23 @@ namespace affix_services
 		affix_base::threading::guarded_resource<std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>>, affix_base::threading::cross_thread_mutex> m_received_messages;
 
 	public:
+		/// <summary>
+		/// Value-initializing constructor for the agent object.
+		/// </summary>
+		/// <param name="a_client"></param>
+		/// <param name="a_type_identifier"></param>
+		/// <param name="a_agent_specific_information"></param>
 		agent(
-			affix_services::client& a_client,
+			affix_services::client& a_local_client,
 			const std::string& a_type_identifier,
 			const std::vector<uint8_t>& a_agent_specific_information = {}
+		);
+
+		/// <summary>
+		/// Discloses the agent information using the client.
+		/// </summary>
+		void disclose_agent_information(
+
 		);
 
 	};

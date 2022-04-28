@@ -4,4 +4,4 @@
 #include "message.h"
 #include "message_relay_body.h"
 #include "message_client_path_body.h"
-#include "message_client_information_body.h"
+#include "message_agent_information_body.h"

@@ -114,9 +114,6 @@
     <ClInclude Include="message_client_path_body.h">
       <Filter>Header Files\messaging</Filter>
     </ClInclude>
-    <ClInclude Include="remote_client.h">
-      <Filter>Header Files\details</Filter>
-    </ClInclude>
     <ClInclude Include="agent.h">
       <Filter>Header Files\processing</Filter>
     </ClInclude>
@@ -169,9 +166,6 @@
     </ClCompile>
     <ClCompile Include="message_client_path_body.cpp">
       <Filter>Source Files\messaging</Filter>
-    </ClCompile>
-    <ClCompile Include="remote_client.cpp">
-      <Filter>Source Files\details</Filter>
     </ClCompile>
     <ClCompile Include="agent.cpp">
       <Filter>Source Files\processing</Filter>

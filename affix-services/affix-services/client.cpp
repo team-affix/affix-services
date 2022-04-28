@@ -48,8 +48,7 @@ client::client(
 
 
 	// Create and register the only path from the local client to the local client
-	client_information l_local_client_information(m_local_identity);
-	remote_client l_local_client(l_local_client_information);
+	client_information l_local_client(m_local_identity);
 	l_local_client.register_path({ m_local_identity });
 	// Register the local client in the index
 	l_registered_clients->push_back(l_local_client);
@@ -64,28 +63,6 @@ client::client(
 	
 }
 
-void client::register_agent(
-	affix_base::data::ptr<agent> a_agent
-)
-{
-	// Add this agent's information to the client on construction of this object
-	locked_resource l_local_agents = m_local_agents.lock();
-
-	std::vector<affix_base::data::ptr<agent>>::iterator l_agent_iterator =
-		std::find_if(l_local_agents->begin(), l_local_agents->end(),
-			[&](const agent& a_agent)
-			{
-				return a_agent.m_type_identifier == a_agent.m_type_identifier;
-			});
-
-	if (l_agent_iterator != l_local_agents->end())
-		throw std::exception("Cannot register two or more agents with the same type identifier.");
-
-	// Push the agent to the vector
-	l_local_agents->push_back(a_agent);
-
-}
-
 void client::process(
 
 )
@@ -98,7 +75,7 @@ void client::process(
 	process_received_messages();
 	process_relay_messages();
 	process_client_path_messages();
-	process_client_information_messages();
+	process_agent_information_messages();
 	process_pending_function_calls();
 	process_registered_clients();
 }
@@ -158,12 +135,12 @@ void client::disclose_local_index(
 		}
 
 		// Get vector of agents registered with the client
-		const std::vector<agent_information>& l_remote_client_agents = l_registered_clients->at(i).m_client_information.m_agents;
+		const std::vector<agent_information>& l_remote_client_agents = l_registered_clients->at(i).m_agents;
 
 		for (int j = 0; j < l_remote_client_agents.size(); j++)
 		{
 			// Construct the message body for agent_information
-			message_agent_information_body l_message_client_information_body(l_remote_client_agents[j]);
+			message_agent_information_body l_message_client_information_body(l_registered_clients->at(i).m_identity, l_remote_client_agents[j]);
 
 			// Construct the whole message
 			message l_client_information_message(l_message_client_information_body.create_message_header(), l_message_client_information_body);
@@ -207,12 +184,34 @@ std::vector<std::string> client::fastest_path_to_identity(
 		i != l_registered_clients->end();
 		i++)
 	{
-		if (i->m_client_information.m_identity != a_identity)
+		if (i->m_identity != a_identity)
 			continue;
 		return i->fastest_path();
 	}
 
 	return l_result;
+
+}
+
+void client::register_agent(
+	agent* a_agent
+)
+{
+	// Add this agent's information to the client on construction of this object
+	locked_resource l_local_agents = m_local_agents.lock();
+
+	std::vector<agent*>::iterator l_agent_iterator =
+		std::find_if(l_local_agents->begin(), l_local_agents->end(),
+			[&](const agent* a_agent_entry)
+			{
+				return a_agent->m_type_identifier == a_agent_entry->m_type_identifier;
+			});
+
+	if (l_agent_iterator != l_local_agents->end())
+		throw std::exception("Cannot register two or more agents with the same type identifier.");
+
+	// Push the agent to the vector
+	l_local_agents->push_back(a_agent);
 
 }
 
@@ -854,11 +853,11 @@ void client::process_relay_message(
 		locked_resource l_local_agents = m_local_agents.lock();
 
 		// An iterator to the agent whose type identifier matches the targeted agent type identifier
-		std::vector<affix_base::data::ptr<agent>>::iterator l_agent_iterator =
+		std::vector<agent*>::iterator l_agent_iterator =
 			std::find_if(l_local_agents->begin(), l_local_agents->end(),
-				[&](const agent& a_agent)
+				[&](const agent* a_agent)
 				{
-					return a_agent.m_type_identifier == l_request.m_message_body.m_targeted_agent_type_identifier;
+					return a_agent->m_type_identifier == l_request.m_message_body.m_targeted_agent_type_identifier;
 				});
 
 		if (l_agent_iterator == l_local_agents->end())
@@ -933,17 +932,17 @@ void client::process_client_path_message(
 	// Lock the vector of registered clients.
 	locked_resource l_registered_clients = m_remote_clients.lock();
 
-	std::vector<remote_client>::iterator l_client_information = std::find_if(l_registered_clients->begin(), l_registered_clients->end(),
-		[&](const remote_client& a_client_information)
+	std::vector<client_information>::iterator l_client_information = std::find_if(l_registered_clients->begin(), l_registered_clients->end(),
+		[&](const client_information& a_client_information)
 		{
-			return a_client_information.m_client_information.m_identity == l_message.m_message_body.m_client_path.back();
+			return a_client_information.m_identity == l_message.m_message_body.m_client_path.back();
 		});
 
 	if (l_client_information == l_registered_clients->end())
 	{
 		// If the client information is not currently registered, create a mostly empty client information to populate.
 		l_client_information = l_registered_clients->insert(l_registered_clients->end(),
-			client_information(l_message.m_message_body.m_client_path.back(), { agent_information() }));
+			client_information(l_message.m_message_body.m_client_path.back()));
 	}
 
 	if (l_message.m_message_body.m_register)
@@ -984,7 +983,7 @@ void client::process_client_path_message(
 
 }
 
-void client::process_client_information_messages(
+void client::process_agent_information_messages(
 
 )
 {
@@ -992,11 +991,11 @@ void client::process_client_information_messages(
 	locked_resource l_reveal_requests = m_agent_information_messages.lock();
 
 	for (int i = l_reveal_requests->size() - 1; i >= 0; i--)
-		process_client_information_message(l_reveal_requests.resource(), l_reveal_requests->begin() + i);
+		process_agent_information_message(l_reveal_requests.resource(), l_reveal_requests->begin() + i);
 
 }
 
-void client::process_client_information_message(
+void client::process_agent_information_message(
 	std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_agent_information_body>>& a_agent_information_messages,
 	std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_agent_information_body>>::iterator a_agent_information_message
 )
@@ -1014,24 +1013,40 @@ void client::process_client_information_message(
 	locked_resource l_registered_clients = m_remote_clients.lock();
 
 	// Try to find an entry for the client
-	std::vector<remote_client>::iterator l_registered_client =
+	std::vector<client_information>::iterator l_registered_client =
 		std::find_if(l_registered_clients->begin(), l_registered_clients->end(),
-			[&](remote_client& a_client_information)
+			[&](client_information& a_client_information)
 			{
-				return a_client_information.m_client_information.m_identity == l_request.m_message_body.m_client_information.m_identity;
+				return a_client_information.m_identity == l_request.m_message_body.m_client_identity;
 			});
 
 	if (l_registered_client != l_registered_clients->end())
 	{
-		if (l_request.m_message_body.m_client_information.newer_than(l_registered_client->m_client_information))
+		// Try to find an entry for the agent
+		std::vector<agent_information>::iterator l_agent_information_iterator =
+			std::find_if(l_registered_client->m_agents.begin(), l_registered_client->m_agents.end(),
+				[&](const agent_information& a_agent_information)
+				{
+					return a_agent_information.m_agent_type_identifier == l_request.m_message_body.m_agent_information.m_agent_type_identifier;
+				});
+
+		if (l_agent_information_iterator == l_registered_client->m_agents.end())
 		{
-			// Update the agent information of the registered client
-			l_registered_client->m_client_information = l_request.m_message_body.m_client_information;
+			// Insert the agent information since it is currently unregistered
+			l_agent_information_iterator = l_registered_client->m_agents.insert(l_registered_client->m_agents.end(), l_request.m_message_body.m_agent_information);
 		}
 		else
 		{
-			// Do nothing, and DO NOT redistribute this agent_information to the remote peers.
-			return;
+			if (l_request.m_message_body.m_agent_information.newer_than(*l_agent_information_iterator))
+			{
+				// Update the agent information of the registered client
+				*l_agent_information_iterator = l_request.m_message_body.m_agent_information;
+			}
+			else
+			{
+				// Do nothing, and DO NOT redistribute this agent_information to the remote peers.
+				return;
+			}
 		}
 	}
 	// else (DO NOTHING)
@@ -1128,7 +1143,7 @@ void client::async_accept_next(
 				return;
 			}
 
-			// If there was an error, return and do not make another async 
+			// If there was an error, return and do not make another async
 			// accept request. Otherwise, try to accept another connection.
 			if (!a_ec)
 				async_accept_next();
@@ -1149,8 +1164,8 @@ void client::process_registered_clients(
 }
 
 void client::process_registered_client(
-	std::vector<remote_client>& a_registered_clients,
-	std::vector<remote_client>::iterator a_registered_client
+	std::vector<client_information>& a_registered_clients,
+	std::vector<client_information>::iterator a_registered_client
 )
 {
 	if (a_registered_client->m_paths.size() == 0)

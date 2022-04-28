@@ -20,14 +20,9 @@ namespace affix_services
 		std::vector<agent_information> m_agents;
 
 		/// <summary>
-		/// Timestamp for the client information object, which is measured in seconds since January 1, 1970.
+		/// The paths which are registered to the remote client
 		/// </summary>
-		uint64_t m_timestamp = 0;
-
-		/// <summary>
-		/// Version number which can be incremented each time a new version of this client's information is sent out.
-		/// </summary>
-		uint64_t m_disclosure_iteration = 0;
+		std::vector<std::vector<std::string>> m_paths;
 
 	public:
 		/// <summary>
@@ -47,8 +42,7 @@ namespace affix_services
 		client_information(
 			const std::string& a_identity,
 			const std::vector<agent_information>& a_agents = {},
-			const uint64_t& a_timestamp = affix_base::timing::utc_time(),
-			const uint64_t& a_disclosure_iteration = 0
+			const std::vector<std::vector<std::string>>& a_paths = {}
 		);
 
 		/// <summary>
@@ -60,14 +54,30 @@ namespace affix_services
 		);
 
 		/// <summary>
-		/// Returns whether or not this client information is newer than an argued client_information object.
+		/// Registers a path. If the path is already in the registry,
+		/// it simply updates the path registration timestamp.
 		/// </summary>
-		/// <param name="a_client_information"></param>
-		/// <returns></returns>
-		bool newer_than(
-			const client_information& a_client_information
-		) const;
+		/// <param name="a_path"></param>
+		bool register_path(
+			const std::vector<std::string>& a_path
+		);
 
+		/// <summary>
+		/// Deregisters a path. If the path is already in the registry,
+		/// it removes the path.
+		/// </summary>
+		/// <param name="a_path"></param>
+		void deregister_paths_starting_with(
+			const std::vector<std::string>& a_subpath
+		);
+
+		/// <summary>
+		/// Returns the shortest registered path.
+		/// </summary>
+		/// <returns></returns>
+		std::vector<std::string> fastest_path(
+
+		);
 
 	};
 }
