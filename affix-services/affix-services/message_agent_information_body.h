@@ -20,7 +20,7 @@ namespace affix_services
 		/// <summary>
 		/// Agent information of the source agent.
 		/// </summary>
-		agent_information m_agent_information;
+		agent_information_base m_agent_information;
 
 	public:
 		/// <summary>
@@ -37,7 +37,7 @@ namespace affix_services
 		/// <param name="a_agent_information"></param>
 		message_agent_information_body(
 			const std::string& a_client_identity,
-			const agent_information& a_agent_information
+			const agent_information_base& a_agent_information
 		);
 
 		/// <summary>

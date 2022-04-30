@@ -3,7 +3,7 @@
 using namespace affix_services;
 using namespace affix_base::threading;
 
-agent::agent(
+agent_base::agent_base(
 	affix_services::client& a_local_client,
 	const std::string& a_type_identifier
 ) :
@@ -16,9 +16,9 @@ agent::agent(
 	locked_resource l_client_local_agents = m_local_client.m_local_agents.lock();
 
 	// Try to find entry for an agent with the same type identifier
-	std::vector<agent*>::iterator l_agent_iterator =
+	std::vector<agent_base*>::iterator l_agent_iterator =
 		std::find_if(l_client_local_agents->begin(), l_client_local_agents->end(),
-			[&](const agent* a_agent_entry)
+			[&](const agent_base* a_agent_entry)
 			{
 				return m_type_identifier == a_agent_entry->m_type_identifier;
 			});

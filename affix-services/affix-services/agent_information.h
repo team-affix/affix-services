@@ -5,7 +5,7 @@
 
 namespace affix_services
 {
-	struct agent_information : public affix_base::data::serializable
+	struct agent_information_base : public affix_base::data::serializable
 	{
 	public:
 		/// <summary>
@@ -16,7 +16,7 @@ namespace affix_services
 		/// <summary>
 		/// Additional information for any remote client or agent curious.
 		/// </summary>
-		std::vector<uint8_t> m_agent_specific_information;
+		std::vector<uint8_t> m_serialized_agent_specific_information;
 
 		/// <summary>
 		/// Timestamp for the client information object, which is measured in seconds since January 1, 1970.
@@ -32,7 +32,7 @@ namespace affix_services
 		/// <summary>
 		/// Default constructor for the agent_information object.
 		/// </summary>
-		agent_information(
+		agent_information_base(
 
 		);
 
@@ -43,9 +43,9 @@ namespace affix_services
 		/// <param name="a_agent_specific_information"></param>
 		/// <param name="a_timestamp"></param>
 		/// <param name="a_version_number"></param>
-		agent_information(
+		agent_information_base(
 			const std::string& a_agent_type_identifier,
-			const std::vector<uint8_t>& a_agent_specific_information,
+			const std::vector<uint8_t>& a_serialized_agent_specific_information,
 			const uint64_t& a_timestamp,
 			const uint64_t& a_disclosure_iteration
 		);
@@ -54,8 +54,8 @@ namespace affix_services
 		/// Copy constructor for the agent_information type.
 		/// </summary>
 		/// <param name="a_agent_information"></param>
-		agent_information(
-			const agent_information& a_agent_information
+		agent_information_base(
+			const agent_information_base& a_agent_information
 		);
 
 		/// <summary>
@@ -64,8 +64,15 @@ namespace affix_services
 		/// <param name="a_client_information"></param>
 		/// <returns></returns>
 		bool newer_than(
-			const agent_information& a_agent_information
+			const agent_information_base& a_agent_information
 		) const;
 
 	};
+
+	template<typename AGENT_SPECIFIC_INFORMATION_TYPE>
+	class agent_information : public agent_information_base
+	{
+
+	};
+
 }

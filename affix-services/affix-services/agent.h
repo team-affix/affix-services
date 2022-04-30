@@ -5,7 +5,7 @@
 
 namespace affix_services
 {
-	class agent
+	class agent_base
 	{
 	public:
 		/// <summary>
@@ -40,7 +40,7 @@ namespace affix_services
 		/// <param name="a_client"></param>
 		/// <param name="a_type_identifier"></param>
 		/// <param name="a_agent_specific_information"></param>
-		agent(
+		agent_base(
 			affix_services::client& a_local_client,
 			const std::string& a_type_identifier
 		);
@@ -54,7 +54,7 @@ namespace affix_services
 		)
 		{
 			// Lock the vector of agent information messages
-			locked_resource l_agent_information_messages = m_local_client.m_agent_information_messages.lock();
+			affix_base::threading::locked_resource l_agent_information_messages = m_local_client.m_agent_information_messages.lock();
 
 			// Serialize the agent_specific_information
 			affix_base::data::byte_buffer l_agent_specific_information_byte_buffer;
@@ -63,7 +63,7 @@ namespace affix_services
 			// Create the message body
 			message_agent_information_body l_message_body(
 				m_local_client.m_local_identity,
-				agent_information(
+				agent_information_base(
 					m_type_identifier,
 					l_agent_specific_information_byte_buffer.data(),
 					m_timestamp,
@@ -81,4 +81,37 @@ namespace affix_services
 		}
 
 	};
+
+	template<typename AGENT_SPECIFIC_INFORMATION_TYPE>
+	class agent : public agent_base
+	{
+	public:
+		/// <summary>
+		/// The information specific to this type of agent.
+		/// </summary>
+		AGENT_SPECIFIC_INFORMATION_TYPE m_agent_specific_information;
+
+	public:
+		agent(
+			affix_services::client& a_local_client,
+			const std::string& a_type_identifier,
+			const AGENT_SPECIFIC_INFORMATION_TYPE& a_agent_specific_information
+		) :
+			agent_base(a_local_client, a_type_identifier),
+			m_agent_specific_information(a_agent_specific_information)
+		{
+
+		}
+
+		/// <summary>
+		/// Discloses the agent information using the client.
+		/// </summary>
+		void disclose_agent_information(
+		)
+		{
+			agent_base::disclose_agent_information(m_agent_specific_information);
+		}
+
+	};
+
 }

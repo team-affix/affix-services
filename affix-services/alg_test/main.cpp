@@ -39,7 +39,7 @@ int main()
 		l_io_context,
 		l_client_configuration_0
 	);
-	agent l_agent_0(l_client_0, "test_agent_0");
+	agent<int> l_agent_0(l_client_0, "test_agent_0", 0);
 
 	std::clog << "[ APPLICATION ] Importing client_1 configuration..." << std::endl;
 	ptr<client_configuration> l_client_configuration_1(new client_configuration("config/client_configuration_1.json"));
@@ -50,7 +50,7 @@ int main()
 		l_io_context,
 		l_client_configuration_1
 	);
-	agent l_agent_1(l_client_1, "test_agent_1");
+	agent<int> l_agent_1(l_client_1, "test_agent_1", 0);
 
 	std::clog << "[ APPLICATION ] Importing client_2 configuration..." << std::endl;
 	ptr<client_configuration> l_client_configuration_2(new client_configuration("config/client_configuration_2.json"));
@@ -61,7 +61,7 @@ int main()
 		l_io_context,
 		l_client_configuration_2
 	);
-	agent l_agent_2(l_client_2, "test_agent_2");
+	agent<int> l_agent_2(l_client_2, "test_agent_2", 0);
 
 	// Disclose all agent information
 	l_agent_0.disclose_agent_information();

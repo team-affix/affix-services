@@ -12,7 +12,7 @@ message_agent_information_body::message_agent_information_body(
 
 message_agent_information_body::message_agent_information_body(
 	const std::string& a_client_identity,
-	const agent_information& a_agent_information
+	const agent_information_base& a_agent_information
 ) :
 	affix_base::data::serializable(m_client_identity, m_agent_information),
 	m_client_identity(a_client_identity),
