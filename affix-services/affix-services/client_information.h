@@ -17,7 +17,7 @@ namespace affix_services
 		/// <summary>
 		/// Information about the agent who owns the remote client.
 		/// </summary>
-		std::vector<agent_information_base> m_agents;
+		std::vector<agent_information> m_agents;
 
 		/// <summary>
 		/// The paths which are registered to the remote client
@@ -41,7 +41,7 @@ namespace affix_services
 		/// <param name="a_version_number"></param>
 		client_information(
 			const std::string& a_identity,
-			const std::vector<agent_information_base>& a_agents = {},
+			const std::vector<agent_information>& a_agents = {},
 			const std::vector<std::vector<std::string>>& a_paths = {}
 		);
 

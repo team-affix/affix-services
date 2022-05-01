@@ -135,7 +135,7 @@ void client::disclose_local_index(
 		}
 
 		// Get vector of agents registered with the client
-		const std::vector<agent_information_base>& l_remote_client_agents = l_registered_clients->at(i).m_agents;
+		const std::vector<agent_information>& l_remote_client_agents = l_registered_clients->at(i).m_agents;
 
 		for (int j = 0; j < l_remote_client_agents.size(); j++)
 		{
@@ -831,9 +831,9 @@ void client::process_relay_message(
 		locked_resource l_local_agents = m_local_agents.lock();
 
 		// An iterator to the agent whose type identifier matches the targeted agent type identifier
-		std::vector<agent_base*>::iterator l_agent_iterator =
+		std::vector<agent*>::iterator l_agent_iterator =
 			std::find_if(l_local_agents->begin(), l_local_agents->end(),
-				[&](const agent_base* a_agent)
+				[&](const agent* a_agent)
 				{
 					return a_agent->m_type_identifier == l_request.m_message_body.m_targeted_agent_type_identifier;
 				});
@@ -1001,9 +1001,9 @@ void client::process_agent_information_message(
 	if (l_registered_client != l_registered_clients->end())
 	{
 		// Try to find an entry for the agent
-		std::vector<agent_information_base>::iterator l_agent_information_iterator =
+		std::vector<agent_information>::iterator l_agent_information_iterator =
 			std::find_if(l_registered_client->m_agents.begin(), l_registered_client->m_agents.end(),
-				[&](const agent_information_base& a_agent_information)
+				[&](const agent_information& a_agent_information)
 				{
 					return a_agent_information.m_agent_type_identifier == l_request.m_message_body.m_agent_information.m_agent_type_identifier;
 				});

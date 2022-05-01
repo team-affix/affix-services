@@ -5,13 +5,18 @@
 
 namespace affix_services
 {
-	class agent_base
+	class agent
 	{
 	public:
 		/// <summary>
 		/// Specifies the type of agent running the client.
 		/// </summary>
 		std::string m_type_identifier;
+
+		/// <summary>
+		/// Holds the serialized version of the agent specific information.
+		/// </summary>
+		std::vector<uint8_t> m_agent_specific_information;
 
 		/// <summary>
 		/// Timestamp for the agent object, which is measured in seconds since January 1, 1970.
@@ -40,32 +45,28 @@ namespace affix_services
 		/// <param name="a_client"></param>
 		/// <param name="a_type_identifier"></param>
 		/// <param name="a_agent_specific_information"></param>
-		agent_base(
+		agent(
 			affix_services::client& a_local_client,
-			const std::string& a_type_identifier
+			const std::string& a_type_identifier,
+			const std::vector<uint8_t>& a_agent_specific_information = {}
 		);
 
 		/// <summary>
 		/// Discloses the agent information using the client.
 		/// </summary>
-		template<typename AGENT_SPECIFIC_INFORMATION_TYPE>
 		void disclose_agent_information(
-			const AGENT_SPECIFIC_INFORMATION_TYPE& a_agent_specific_information
+
 		)
 		{
 			// Lock the vector of agent information messages
 			affix_base::threading::locked_resource l_agent_information_messages = m_local_client.m_agent_information_messages.lock();
 
-			// Serialize the agent_specific_information
-			affix_base::data::byte_buffer l_agent_specific_information_byte_buffer;
-			l_agent_specific_information_byte_buffer.push_back(a_agent_specific_information);
-
 			// Create the message body
 			message_agent_information_body l_message_body(
 				m_local_client.m_local_identity,
-				agent_information_base(
+				agent_information(
 					m_type_identifier,
-					l_agent_specific_information_byte_buffer.data(),
+					m_agent_specific_information,
 					m_timestamp,
 					m_disclosure_iteration));
 
@@ -78,38 +79,6 @@ namespace affix_services
 			// Increment the disclosure iteration.
 			m_disclosure_iteration++;
 
-		}
-
-	};
-
-	template<typename AGENT_SPECIFIC_INFORMATION_TYPE>
-	class agent : public agent_base
-	{
-	public:
-		/// <summary>
-		/// The information specific to this type of agent.
-		/// </summary>
-		AGENT_SPECIFIC_INFORMATION_TYPE m_agent_specific_information;
-
-	public:
-		agent(
-			affix_services::client& a_local_client,
-			const std::string& a_type_identifier,
-			const AGENT_SPECIFIC_INFORMATION_TYPE& a_agent_specific_information
-		) :
-			agent_base(a_local_client, a_type_identifier),
-			m_agent_specific_information(a_agent_specific_information)
-		{
-
-		}
-
-		/// <summary>
-		/// Discloses the agent information using the client.
-		/// </summary>
-		void disclose_agent_information(
-		)
-		{
-			agent_base::disclose_agent_information(m_agent_specific_information);
 		}
 
 	};

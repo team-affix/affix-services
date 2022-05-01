@@ -14,7 +14,7 @@ client_information::client_information(
 
 client_information::client_information(
 	const std::string& a_identity,
-	const std::vector<agent_information_base>& a_agents,
+	const std::vector<agent_information>& a_agents,
 	const std::vector<std::vector<std::string>>& a_paths
 ) :
 	affix_base::data::serializable(m_identity, m_agents, m_paths),
