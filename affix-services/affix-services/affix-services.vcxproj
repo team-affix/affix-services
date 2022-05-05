@@ -184,7 +184,6 @@
     <ClInclude Include="transmission_result.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="agent.cpp" />
     <ClCompile Include="agent_information.cpp" />
     <ClCompile Include="client_configuration.cpp" />
     <ClCompile Include="client_information.cpp" />

@@ -39,7 +39,7 @@ int main()
 		l_io_context,
 		l_client_configuration_0
 	);
-	parsed_agent<std::string> l_agent_0(l_client_0, "test_agent_0", "agent-specific-information");
+	agent l_agent_0(l_client_0, "test_agent_0");
 
 	std::clog << "[ APPLICATION ] Importing client_1 configuration..." << std::endl;
 	ptr<client_configuration> l_client_configuration_1(new client_configuration("config/client_configuration_1.json"));
@@ -105,7 +105,7 @@ int main()
 		}
 
 		affix_base::threading::locked_resource l_authenticated_connections = l_client_0.m_authenticated_connections.lock();
-		affix_base::threading::locked_resource l_agent_0_received_messages = l_agent_0.m_received_messages.lock();
+		affix_base::threading::locked_resource l_agent_0_received_messages = l_agent_0.m_inbox.lock();
 
 		if (!l_displayed_requests && l_agent_0_received_messages->size() == l_max_relay_messages)
 		{

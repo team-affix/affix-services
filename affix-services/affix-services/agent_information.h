@@ -70,4 +70,61 @@ namespace affix_services
 
 	};
 
+	template<typename AGENT_SPECIFIC_INFORMATION_TYPE>
+	class parsed_agent_information
+	{
+	public:
+		affix_base::threading::guarded_resource<agent_information> m_agent_information;
+		affix_base::threading::synchronized_resource<AGENT_SPECIFIC_INFORMATION_TYPE, agent_information> m_parsed_agent_specific_information;
+
+	public:
+		parsed_agent_information(
+			const agent_information& a_agent_information
+		) :
+			m_agent_information(a_agent_information),
+			m_parsed_agent_specific_information(
+				m_agent_information,
+				[](const agent_information& a_remote, AGENT_SPECIFIC_INFORMATION_TYPE& a_local)
+				{
+					affix_base::data::byte_buffer l_byte_buffer(a_remote.m_agent_specific_information);
+					if (!l_byte_buffer.pop_front(a_local))
+						throw std::exception("Failed to deserialize agent specific information.");
+				},
+				[](const AGENT_SPECIFIC_INFORMATION_TYPE& a_local, agent_information& a_remote)
+				{
+					affix_base::data::byte_buffer l_byte_buffer;
+					if (!l_byte_buffer.push_back(a_local))
+						throw std::exception("Failed to serialize agent specific information.");
+					a_remote.m_agent_specific_information = l_byte_buffer.data();
+				})
+		{
+
+		}
+
+		parsed_agent_information(
+			const std::string& a_agent_type_identifier,
+			const AGENT_SPECIFIC_INFORMATION_TYPE& a_agent_specific_information
+		) :
+			m_parsed_agent_specific_information(
+				m_agent_information,
+				[](const agent_information& a_remote, AGENT_SPECIFIC_INFORMATION_TYPE& a_local)
+				{
+					affix_base::data::byte_buffer l_byte_buffer(a_remote.m_agent_specific_information);
+					if (!l_byte_buffer.pop_front(a_local))
+						throw std::exception("Failed to deserialize agent specific information.");
+				},
+				[](const AGENT_SPECIFIC_INFORMATION_TYPE& a_local, agent_information& a_remote)
+				{
+					affix_base::data::byte_buffer l_byte_buffer;
+					if (!l_byte_buffer.push_back(a_local))
+						throw std::exception("Failed to serialize agent specific information.");
+					a_remote.m_agent_specific_information = l_byte_buffer.data();
+				},
+				a_agent_specific_information)
+		{
+
+		}
+
+	};
+
 }

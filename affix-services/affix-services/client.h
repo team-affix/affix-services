@@ -36,7 +36,7 @@ namespace affix_services
 		/// <summary>
 		/// A vector of all agents using this client.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<agent*>, affix_base::threading::cross_thread_mutex> m_local_agents;
+		affix_base::threading::guarded_resource<std::map<std::string, affix_base::threading::guarded_resource<std::vector<message<affix_services::message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>>>*>, affix_base::threading::cross_thread_mutex> m_local_agent_inboxes;
 
 		/// <summary>
 		/// IO context which runs all the asynchronous networking functions.

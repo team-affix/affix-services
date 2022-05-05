@@ -167,9 +167,6 @@
     <ClCompile Include="message_client_path_body.cpp">
       <Filter>Source Files\messaging</Filter>
     </ClCompile>
-    <ClCompile Include="agent.cpp">
-      <Filter>Source Files\processing</Filter>
-    </ClCompile>
     <ClCompile Include="agent_information.cpp">
       <Filter>Source Files\details</Filter>
     </ClCompile>

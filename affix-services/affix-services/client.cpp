@@ -828,24 +828,18 @@ void client::process_relay_message(
 		// This module is the intended recipient
 
 		// Lock the mutex of received relays
-		locked_resource l_local_agents = m_local_agents.lock();
+		locked_resource l_local_agent_inboxes = m_local_agent_inboxes.lock();
 
 		// An iterator to the agent whose type identifier matches the targeted agent type identifier
-		std::vector<agent*>::iterator l_agent_iterator =
-			std::find_if(l_local_agents->begin(), l_local_agents->end(),
-				[&](agent* a_agent)
-				{
-					const_locked_resource l_agent_information = a_agent->m_local_agent_information.const_lock();
-					return l_agent_information->m_agent_type_identifier == l_request.m_message_body.m_targeted_agent_type_identifier;
-				});
+		auto l_agent_inbox_iterator = l_local_agent_inboxes->find(l_request.m_message_body.m_targeted_agent_type_identifier);
 
-		if (l_agent_iterator == l_local_agents->end())
+		if (l_agent_inbox_iterator == l_local_agent_inboxes->end())
 			// Do nothing, an agent was targeted that is not registered with this client.
 			return;
 
 		// Add the payload
-		locked_resource l_agent_received_messages = (*l_agent_iterator)->m_received_messages.lock();
-		l_agent_received_messages->push_back(l_request);
+		locked_resource l_agent_inbox = l_agent_inbox_iterator->second->lock();
+		l_agent_inbox->push_back(l_request);
 
 	}
 
