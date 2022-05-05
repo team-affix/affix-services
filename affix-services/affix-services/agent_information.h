@@ -3,6 +3,7 @@
 #include "affix-base/serializable.h"
 #include "affix-base/utc_time.h"
 #include "affix-base/guarded_resource.h"
+#include "affix-base/synchronized_resource.h"
 
 namespace affix_services
 {
@@ -46,9 +47,9 @@ namespace affix_services
 		/// <param name="a_version_number"></param>
 		agent_information(
 			const std::string& a_agent_type_identifier,
-			const std::vector<uint8_t>& a_agent_specific_information = {},
-			const uint64_t& a_timestamp = affix_base::timing::utc_time(),
-			const uint64_t& a_disclosure_iteration = 0
+			const std::vector<uint8_t>& a_agent_specific_information,
+			const uint64_t& a_timestamp,
+			const uint64_t& a_disclosure_iteration
 		);
 
 		/// <summary>
@@ -73,6 +74,23 @@ namespace affix_services
 	template<typename AGENT_SPECIFIC_INFORMATION_TYPE>
 	class parsed_agent_information
 	{
+	protected:
+		const std::function<void(const agent_information&, AGENT_SPECIFIC_INFORMATION_TYPE&)> s_pull =
+			[](const agent_information& a_remote, AGENT_SPECIFIC_INFORMATION_TYPE& a_local)
+			{
+				affix_base::data::byte_buffer l_byte_buffer(a_remote.m_agent_specific_information);
+				if (!l_byte_buffer.pop_front(a_local))
+					throw std::exception("Failed to deserialize agent specific information.");
+			};
+		const std::function<void(const AGENT_SPECIFIC_INFORMATION_TYPE&, agent_information&)> s_push =
+			[](const AGENT_SPECIFIC_INFORMATION_TYPE& a_local, agent_information& a_remote)
+			{
+				affix_base::data::byte_buffer l_byte_buffer;
+				if (!l_byte_buffer.push_back(a_local))
+					throw std::exception("Failed to serialize agent specific information.");
+				a_remote.m_agent_specific_information = l_byte_buffer.data();
+			};
+
 	public:
 		affix_base::threading::guarded_resource<agent_information> m_agent_information;
 		affix_base::threading::synchronized_resource<AGENT_SPECIFIC_INFORMATION_TYPE, agent_information> m_parsed_agent_specific_information;
@@ -82,45 +100,26 @@ namespace affix_services
 			const agent_information& a_agent_information
 		) :
 			m_agent_information(a_agent_information),
-			m_parsed_agent_specific_information(
-				m_agent_information,
-				[](const agent_information& a_remote, AGENT_SPECIFIC_INFORMATION_TYPE& a_local)
-				{
-					affix_base::data::byte_buffer l_byte_buffer(a_remote.m_agent_specific_information);
-					if (!l_byte_buffer.pop_front(a_local))
-						throw std::exception("Failed to deserialize agent specific information.");
-				},
-				[](const AGENT_SPECIFIC_INFORMATION_TYPE& a_local, agent_information& a_remote)
-				{
-					affix_base::data::byte_buffer l_byte_buffer;
-					if (!l_byte_buffer.push_back(a_local))
-						throw std::exception("Failed to serialize agent specific information.");
-					a_remote.m_agent_specific_information = l_byte_buffer.data();
-				})
+			m_parsed_agent_specific_information(m_agent_information, s_pull, s_push)
 		{
 
 		}
 
 		parsed_agent_information(
 			const std::string& a_agent_type_identifier,
-			const AGENT_SPECIFIC_INFORMATION_TYPE& a_agent_specific_information
+			const AGENT_SPECIFIC_INFORMATION_TYPE& a_agent_specific_information,
+			const uint64_t& a_timestamp,
+			const uint64_t& a_disclosure_iteration
 		) :
-			m_parsed_agent_specific_information(
-				m_agent_information,
-				[](const agent_information& a_remote, AGENT_SPECIFIC_INFORMATION_TYPE& a_local)
-				{
-					affix_base::data::byte_buffer l_byte_buffer(a_remote.m_agent_specific_information);
-					if (!l_byte_buffer.pop_front(a_local))
-						throw std::exception("Failed to deserialize agent specific information.");
-				},
-				[](const AGENT_SPECIFIC_INFORMATION_TYPE& a_local, agent_information& a_remote)
-				{
-					affix_base::data::byte_buffer l_byte_buffer;
-					if (!l_byte_buffer.push_back(a_local))
-						throw std::exception("Failed to serialize agent specific information.");
-					a_remote.m_agent_specific_information = l_byte_buffer.data();
-				},
-				a_agent_specific_information)
+			m_agent_information(
+				agent_information(
+					a_agent_type_identifier,
+					{},
+					a_timestamp,
+					a_disclosure_iteration
+				)
+			),
+			m_parsed_agent_specific_information(m_agent_information, s_pull, s_push, a_agent_specific_information)
 		{
 
 		}

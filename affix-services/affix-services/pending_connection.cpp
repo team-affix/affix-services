@@ -9,7 +9,7 @@ using namespace asio::ip;
 
 pending_connection::pending_connection(
 	affix_base::data::ptr<connection_information> a_connection_information,
-	affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>, affix_base::threading::cross_thread_mutex>& a_connection_results
+	affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>>& a_connection_results
 ) :
 	m_connection_information(a_connection_information)
 {

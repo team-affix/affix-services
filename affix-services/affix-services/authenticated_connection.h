@@ -35,12 +35,12 @@ namespace affix_services {
 			/// <summary>
 			/// Security manager, in charge of all security when sending / receiving data.
 			/// </summary>
-			affix_base::threading::guarded_resource<affix_services::security::transmission_security_manager, affix_base::threading::cross_thread_mutex> m_transmission_security_manager;
+			affix_base::threading::guarded_resource<affix_services::security::transmission_security_manager> m_transmission_security_manager;
 
 			/// <summary>
 			/// Boolean describing if the connection is still valid.
 			/// </summary>
-			affix_base::threading::guarded_resource<bool, affix_base::threading::cross_thread_mutex> m_connected = true;
+			affix_base::threading::guarded_resource<bool> m_connected = true;
 
 			/// <summary>
 			/// Dispatcher which tracks the progress of the send and receive callback functions.
@@ -66,7 +66,7 @@ namespace affix_services {
 			/// <summary>
 			/// Time of last interaction between either of the parties.
 			/// </summary>
-			affix_base::threading::guarded_resource<uint64_t, affix_base::threading::cross_thread_mutex> m_last_interaction_time = 0;
+			affix_base::threading::guarded_resource<uint64_t> m_last_interaction_time = 0;
 
 		public:
 			/// <summary>

@@ -18,7 +18,7 @@ namespace affix_services
 		/// <summary>
 		/// Information pertaining to the local agent.
 		/// </summary>
-		parsed_agent_information m_local_agent_information;
+		parsed_agent_information<AGENT_SPECIFIC_INFORMATION_TYPE> m_local_agent_information;
 
 		/// <summary>
 		/// A vector of all data that has been received which was destined for this agent.
@@ -38,13 +38,18 @@ namespace affix_services
 			const AGENT_SPECIFIC_INFORMATION_TYPE& a_agent_specific_information
 		) :
 			m_local_client(a_local_client),
-			m_local_agent_information(agent_information(a_type_identifier))
+			m_local_agent_information(
+				a_type_identifier,
+				a_agent_specific_information,
+				affix_base::timing::utc_time(),
+				0
+			)
 		{
 			// Add this agent's information to the client on construction of this object
-			locked_resource l_client_local_agent_inboxes = m_local_client.m_local_agent_inboxes.lock();
+			affix_base::threading::locked_resource l_client_local_agent_inboxes = m_local_client.m_local_agent_inboxes.lock();
 
 			// Lock the local agent information
-			const_locked_resource l_local_agent_information = m_local_agent_information.const_lock();
+			affix_base::threading::const_locked_resource l_local_agent_information = m_local_agent_information.m_agent_information.const_lock();
 
 			// Try to find entry for an agent with the same type identifier
 			auto l_agent_iterator = l_client_local_agent_inboxes->find(l_local_agent_information->m_agent_type_identifier);
@@ -66,22 +71,10 @@ namespace affix_services
 
 		)
 		{
-			// Lock the vector of agent information messages
-			affix_base::threading::locked_resource l_agent_information_messages = m_local_client.m_agent_information_messages.lock();
-
 			// Lock the local agent information
-			affix_base::threading::locked_resource l_local_agent_information = m_local_agent_information.lock();
-
-			// Create the message body
-			message_agent_information_body l_message_body(
-				m_local_client.m_local_identity,
-				*l_local_agent_information);
-
-			// Create the message
-			message l_message(l_message_body.create_message_header(), l_message_body);
-
-			// Add the message to the vector
-			l_agent_information_messages->push_back(l_message);
+			affix_base::threading::locked_resource l_local_agent_information = m_local_agent_information.m_agent_information.lock();
+			
+			m_local_client.disclose_agent_information(*l_local_agent_information);
 
 			// Increment the disclosure iteration.
 			l_local_agent_information->m_disclosure_iteration++;

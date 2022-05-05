@@ -18,7 +18,7 @@ namespace affix_services
 		/// <summary>
 		/// Boolean describing whether or not the outbound connection attempt has finished.
 		/// </summary>
-		affix_base::threading::guarded_resource<bool, affix_base::threading::cross_thread_mutex> m_finished = false;
+		affix_base::threading::guarded_resource<bool> m_finished = false;
 
 	public:
 		/// <summary>
@@ -27,7 +27,7 @@ namespace affix_services
 		/// <param name="a_outbound_connection_configuration"></param>
 		pending_connection(
 			affix_base::data::ptr<connection_information> a_connection_information,
-			affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>, affix_base::threading::cross_thread_mutex>& a_connection_results
+			affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>>& a_connection_results
 		);
 
 	};

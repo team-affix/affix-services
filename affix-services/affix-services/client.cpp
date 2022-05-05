@@ -841,6 +841,8 @@ void client::process_relay_message(
 		locked_resource l_agent_inbox = l_agent_inbox_iterator->second->lock();
 		l_agent_inbox->push_back(l_request);
 
+		return;
+
 	}
 
 	// Get the recipient's identity from the request
@@ -888,11 +890,11 @@ void client::process_client_path_message(
 	// See if the local client is already a member of the path.
 	std::vector<std::string>::iterator l_local_client_iterator =
 		std::find(
-			a_client_path_message->m_message_body.m_client_path.begin(),
-			a_client_path_message->m_message_body.m_client_path.end(),
+			l_message.m_message_body.m_client_path.begin(),
+			l_message.m_message_body.m_client_path.end(),
 			m_local_identity);
 
-	if (l_local_client_iterator != a_client_path_message->m_message_body.m_client_path.end())
+	if (l_local_client_iterator != l_message.m_message_body.m_client_path.end())
 		// Don't do anything, this machine is already a part of the path.
 		return;
 

@@ -35,7 +35,7 @@ namespace affix_services
 		/// <summary>
 		/// Boolean describing whether the connection is still valid.
 		/// </summary>
-		affix_base::threading::guarded_resource<bool, affix_base::threading::cross_thread_mutex> m_connected = false;
+		affix_base::threading::guarded_resource<bool> m_connected = false;
 
 	public:
 		/// <summary>

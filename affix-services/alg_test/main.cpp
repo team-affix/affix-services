@@ -39,7 +39,7 @@ int main()
 		l_io_context,
 		l_client_configuration_0
 	);
-	agent l_agent_0(l_client_0, "test_agent_0");
+	agent<std::string> l_agent_0(l_client_0, "test_agent_0", "agent-specific-information-0");
 
 	std::clog << "[ APPLICATION ] Importing client_1 configuration..." << std::endl;
 	ptr<client_configuration> l_client_configuration_1(new client_configuration("config/client_configuration_1.json"));
@@ -50,7 +50,7 @@ int main()
 		l_io_context,
 		l_client_configuration_1
 	);
-	agent l_agent_1(l_client_1, "test_agent_1");
+	agent<std::string> l_agent_1(l_client_1, "test_agent_1", "agent-specific-information-1");
 
 	std::clog << "[ APPLICATION ] Importing client_2 configuration..." << std::endl;
 	ptr<client_configuration> l_client_configuration_2(new client_configuration("config/client_configuration_2.json"));
@@ -61,7 +61,7 @@ int main()
 		l_io_context,
 		l_client_configuration_2
 	);
-	agent l_agent_2(l_client_2, "test_agent_2");
+	agent<std::string> l_agent_2(l_client_2, "test_agent_2", "agent-specific-information-2");
 
 	// Disclose all agent information
 	l_agent_0.disclose_agent_information();
@@ -150,7 +150,7 @@ int main()
 
 			std::vector<uint8_t> l_bytes = { 1, 2, 3, 4, 5 };
 
-			affix_base::threading::const_locked_resource l_agent_1_agent_information = l_agent_1.m_local_agent_information.const_lock();
+			affix_base::threading::const_locked_resource l_agent_1_agent_information = l_agent_1.m_local_agent_information.m_agent_information.const_lock();
 
 			l_client_0.relay(
 				l_path_0,
@@ -158,7 +158,7 @@ int main()
 				l_bytes
 			);
 
-			affix_base::threading::const_locked_resource l_agent_0_agent_information = l_agent_0.m_local_agent_information.const_lock();
+			affix_base::threading::const_locked_resource l_agent_0_agent_information = l_agent_0.m_local_agent_information.m_agent_information.const_lock();
 
 			l_client_1.relay(
 				l_path_1,

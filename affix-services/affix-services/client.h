@@ -13,15 +13,12 @@
 #include "agent_information.h"
 #include "messaging.h"
 #include "client_information.h"
+#include "agent_information.h"
 
 namespace affix_services
 {
-	class agent;
-
 	class client
 	{
-		friend class agent;
-
 	public:
 		/// <summary>
 		/// Contains the configuration for this client instance; this object governs how to behave as a connection processor.
@@ -36,7 +33,7 @@ namespace affix_services
 		/// <summary>
 		/// A vector of all agents using this client.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::map<std::string, affix_base::threading::guarded_resource<std::vector<message<affix_services::message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>>>*>, affix_base::threading::cross_thread_mutex> m_local_agent_inboxes;
+		affix_base::threading::guarded_resource<std::map<std::string, affix_base::threading::guarded_resource<std::vector<message<affix_services::message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>>>*>> m_local_agent_inboxes;
 
 		/// <summary>
 		/// IO context which runs all the asynchronous networking functions.
@@ -52,61 +49,61 @@ namespace affix_services
 		/// <summary>
 		/// A vector of all pending outbound connections.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<pending_connection>>, affix_base::threading::cross_thread_mutex> m_pending_outbound_connections;
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<pending_connection>>> m_pending_outbound_connections;
 
 		/// <summary>
 		/// A vector of all newly established connections.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>, affix_base::threading::cross_thread_mutex> m_connection_results;
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>> m_connection_results;
 
 		/// <summary>
 		/// A vector of all current authentication attempts, which holds those for both inbound and outbound connections.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<pending_authentication>>, affix_base::threading::cross_thread_mutex> m_authentication_attempts;
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<pending_authentication>>> m_authentication_attempts;
 
 		/// <summary>
 		/// Vector holding results from authentication attempts.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_result>>, affix_base::threading::cross_thread_mutex> m_authentication_attempt_results;
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_result>>> m_authentication_attempt_results;
 
 		/// <summary>
 		/// A vector of fully authenticated connections.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>>, affix_base::threading::cross_thread_mutex> m_authenticated_connections;
+		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>>> m_authenticated_connections;
 
 		/// <summary>
 		/// A vector of all the message data received from authenticated connections.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, affix_base::data::ptr<std::vector<uint8_t>>>>, affix_base::threading::cross_thread_mutex> m_received_messages;
+		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, affix_base::data::ptr<std::vector<uint8_t>>>>> m_received_messages;
 
 	protected:
 		/// <summary>
 		/// Vector of relay requests that are pending being processed.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>>, affix_base::threading::cross_thread_mutex> m_relay_messages;
+		affix_base::threading::guarded_resource<std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>>> m_relay_messages;
 
 		/// <summary>
 		/// Vector of client_path requests that are pending being processed.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_client_path_body>>, affix_base::threading::cross_thread_mutex> m_client_path_messages;
+		affix_base::threading::guarded_resource<std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_client_path_body>>> m_client_path_messages;
 
 		/// <summary>
 		/// Vector of reveal requests that are pending being processed.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_agent_information_body>>, affix_base::threading::cross_thread_mutex> m_agent_information_messages;
+		affix_base::threading::guarded_resource<std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_agent_information_body>>> m_agent_information_messages;
 
 	protected:
 		/// <summary>
 		/// A vector of all pending miscellaneous functions that need to be called after a certain delay, hence the uint64_t in the tuple.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<std::tuple<uint64_t, std::function<void()>>>, affix_base::threading::cross_thread_mutex> m_pending_function_calls;
+		affix_base::threading::guarded_resource<std::vector<std::tuple<uint64_t, std::function<void()>>>> m_pending_function_calls;
 		
 	public:
 		/// <summary>
 		/// A vector of registered clients, along with paths to those clients,
 		/// and agent information.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<client_information>, affix_base::threading::cross_thread_mutex> m_remote_clients;
+		affix_base::threading::guarded_resource<std::vector<client_information>> m_remote_clients;
 
 	public:
 		/// <summary>
@@ -205,6 +202,26 @@ namespace affix_services
 		std::vector<std::string> fastest_path_to_identity(
 			const std::string& a_identity
 		);
+
+		void disclose_agent_information(
+			const affix_services::agent_information& a_agent_information
+		)
+		{
+			// Lock the vector of agent information messages
+			affix_base::threading::locked_resource l_agent_information_messages = m_agent_information_messages.lock();
+
+			// Create the message body
+			message_agent_information_body l_message_body(
+				m_local_identity,
+				a_agent_information);
+
+			// Create the message
+			message l_message(l_message_body.create_message_header(), l_message_body);
+
+			// Add the message to the vector
+			l_agent_information_messages->push_back(l_message);
+
+		}
 
 	protected:
 		/// <summary>

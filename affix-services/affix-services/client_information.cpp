@@ -58,9 +58,13 @@ void client_information::deregister_paths_starting_with(
 {
 	for (int i = m_paths.size() - 1; i >= 0; i--)
 	{
-		if (std::equal(a_subpath.begin(), a_subpath.end(), m_paths[i].begin()))
+		if (m_paths[i].size() < a_subpath.size())
+			continue;
+
+		if (std::equal(a_subpath.begin(), a_subpath.end(), m_paths[i].begin(), m_paths[i].begin() + a_subpath.size()))
 			// This path begins with the subpath, therefore deregister it.
 			m_paths.erase(m_paths.begin() + i);
+
 	}
 
 }
