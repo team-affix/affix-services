@@ -2,6 +2,7 @@
 #include "affix-base/guarded_resource.h"
 #include "affix-base/ptr.h"
 #include "client.h"
+#include "agent_information.h"
 
 namespace affix_services
 {
@@ -9,24 +10,9 @@ namespace affix_services
 	{
 	public:
 		/// <summary>
-		/// Specifies the type of agent running the client.
+		/// Information pertaining to the local agent.
 		/// </summary>
-		std::string m_type_identifier;
-
-		/// <summary>
-		/// Holds the serialized version of the agent specific information.
-		/// </summary>
-		std::vector<uint8_t> m_agent_specific_information;
-
-		/// <summary>
-		/// Timestamp for the agent object, which is measured in seconds since January 1, 1970.
-		/// </summary>
-		uint64_t m_timestamp = 0;
-
-		/// <summary>
-		/// Version number which can be incremented each time a new version of this agent's information is sent out.
-		/// </summary>
-		uint64_t m_disclosure_iteration = 0;
+		affix_base::threading::guarded_resource<agent_information> m_local_agent_information;
 
 		/// <summary>
 		/// The client which is being utilized by the agent for affix-services functionality.
@@ -47,8 +33,7 @@ namespace affix_services
 		/// <param name="a_agent_specific_information"></param>
 		agent(
 			affix_services::client& a_local_client,
-			const std::string& a_type_identifier,
-			const std::vector<uint8_t>& a_agent_specific_information = {}
+			const std::string& a_type_identifier
 		);
 
 		/// <summary>
@@ -61,14 +46,13 @@ namespace affix_services
 			// Lock the vector of agent information messages
 			affix_base::threading::locked_resource l_agent_information_messages = m_local_client.m_agent_information_messages.lock();
 
+			// Lock the local agent information
+			affix_base::threading::locked_resource l_local_agent_information = m_local_agent_information.lock();
+
 			// Create the message body
 			message_agent_information_body l_message_body(
 				m_local_client.m_local_identity,
-				agent_information(
-					m_type_identifier,
-					m_agent_specific_information,
-					m_timestamp,
-					m_disclosure_iteration));
+				*l_local_agent_information);
 
 			// Create the message
 			message l_message(l_message_body.create_message_header(), l_message_body);
@@ -77,7 +61,42 @@ namespace affix_services
 			l_agent_information_messages->push_back(l_message);
 
 			// Increment the disclosure iteration.
-			m_disclosure_iteration++;
+			l_local_agent_information->m_disclosure_iteration++;
+
+		}
+
+	};
+
+	template<typename AGENT_SPECIFIC_INFORMATION_TYPE>
+	class parsed_agent : public affix_services::agent
+	{
+	public:
+		affix_base::threading::synchronized_resource<AGENT_SPECIFIC_INFORMATION_TYPE, agent_information> m_parsed_agent_specific_information;
+
+	public:
+		parsed_agent(
+			affix_services::client& a_local_client,
+			const std::string& a_type_identifier,
+			const AGENT_SPECIFIC_INFORMATION_TYPE& a_agent_specific_information
+		) :
+			affix_services::agent(a_local_client, a_type_identifier),
+			m_parsed_agent_specific_information(
+				agent::m_local_agent_information,
+				[](const agent_information& a_remote, AGENT_SPECIFIC_INFORMATION_TYPE& a_local)
+				{
+					affix_base::data::byte_buffer l_byte_buffer(a_remote.m_agent_specific_information);
+					if (!l_byte_buffer.pop_front(a_local))
+						throw std::exception("Error deserializing agent specific information");
+				},
+				[](const AGENT_SPECIFIC_INFORMATION_TYPE& a_local, agent_information& a_remote)
+				{
+					affix_base::data::byte_buffer l_byte_buffer;
+					if (!l_byte_buffer.push_back(a_local))
+						throw std::exception("Error serializing agent specific information");
+					a_remote.m_agent_specific_information = l_byte_buffer.data();
+				},
+				a_agent_specific_information)
+		{
 
 		}
 

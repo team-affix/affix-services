@@ -833,9 +833,10 @@ void client::process_relay_message(
 		// An iterator to the agent whose type identifier matches the targeted agent type identifier
 		std::vector<agent*>::iterator l_agent_iterator =
 			std::find_if(l_local_agents->begin(), l_local_agents->end(),
-				[&](const agent* a_agent)
+				[&](agent* a_agent)
 				{
-					return a_agent->m_type_identifier == l_request.m_message_body.m_targeted_agent_type_identifier;
+					const_locked_resource l_agent_information = a_agent->m_local_agent_information.const_lock();
+					return l_agent_information->m_agent_type_identifier == l_request.m_message_body.m_targeted_agent_type_identifier;
 				});
 
 		if (l_agent_iterator == l_local_agents->end())
