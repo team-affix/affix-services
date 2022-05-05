@@ -2,6 +2,8 @@
 #include "affix-base/pch.h"
 #include "affix-base/serializable.h"
 #include "affix-base/utc_time.h"
+#include "affix-base/guarded_resource.h"
+#include "affix-base/synchronized_resource.h"
 
 namespace affix_services
 {
@@ -66,6 +68,39 @@ namespace affix_services
 		bool newer_than(
 			const agent_information& a_agent_information
 		) const;
+
+	};
+
+	template<typename AGENT_SPECIFIC_INFORMATION_TYPE>
+	class parsed_agent_information
+	{
+	protected:
+		affix_base::threading::guarded_resource<agent_information> m_agent_information;
+
+	public:
+		affix_base::threading::synchronized_resource<AGENT_SPECIFIC_INFORMATION_TYPE, agent_information> m_parsed_agent_specific_information;
+
+		parsed_agent_information(
+			const agent_information& a_agent_information
+		) :
+			m_agent_information(a_agent_information),
+			m_parsed_agent_specific_information(
+				m_agent_information,
+				[](const agent_information& a_remote)
+				{
+					AGENT_SPECIFIC_INFORMATION_TYPE l_agent_specific_information;
+					affix_base::data::byte_buffer l_byte_buffer(a_remote.m_agent_specific_information);
+					if (!l_byte_buffer.pop_front(l_agent_specific_information))
+						throw std::exception("Error deserializing agent specific informaiton");
+					return l_agent_specific_information;
+				},
+				[](const AGENT_SPECIFIC_INFORMATION_TYPE& a_local)
+				{
+
+				})
+		{
+
+		}
 
 	};
 

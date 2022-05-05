@@ -1,5 +1,6 @@
 #pragma once
 #include "affix-base/pch.h"
+#include "affix-base/ptr.h"
 #include "rolling_token.h"
 #include "affix-base/rsa.h"
 #include "affix-base/byte_buffer.h"
