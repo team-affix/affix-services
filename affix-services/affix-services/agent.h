@@ -7,7 +7,7 @@
 
 namespace affix_services
 {
-	template<typename AGENT_SPECIFIC_INFORMATION_TYPE, typename FUNCTION_IDENTIFIER_TYPE, typename CALL_IDENTIFIER_TYPE>
+	template<typename AGENT_SPECIFIC_INFORMATION_TYPE>
 	class agent
 	{
 	public:
@@ -26,16 +26,6 @@ namespace affix_services
 		/// </summary>
 		affix_base::threading::guarded_resource<std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>>> m_inbox;
 
-		/// <summary>
-		/// A remote function invoker which is in charge of making remote function calls and handling their returned values.
-		/// </summary>
-		affix_base::distributed_computing::remote_function_invoker<FUNCTION_IDENTIFIER_TYPE, CALL_IDENTIFIER_TYPE> m_remote_function_invoker;
-		
-		/// <summary>
-		/// A remote invocation processor which is in charge of handling remote calls and returning values.
-		/// </summary>
-		affix_base::distributed_computing::remote_invocation_processor<FUNCTION_IDENTIFIER_TYPE, CALL_IDENTIFIER_TYPE> m_remote_invocation_processor;
-
 	public:
 		/// <summary>
 		/// Value-initializing constructor for the agent object.
@@ -46,8 +36,7 @@ namespace affix_services
 		agent(
 			affix_services::client& a_local_client,
 			const std::string& a_type_identifier,
-			const AGENT_SPECIFIC_INFORMATION_TYPE& a_agent_specific_information,
-			const affix_base::distributed_computing::remote_function_invoker<FUNCTION_IDENTIFIER_TYPE, CALL_IDENTIFIER_TYPE>& a_remote_function_invoker
+			const AGENT_SPECIFIC_INFORMATION_TYPE& a_agent_specific_information
 		) :
 			m_local_client(a_local_client),
 			m_local_agent_information(
@@ -55,9 +44,7 @@ namespace affix_services
 				a_agent_specific_information,
 				affix_base::timing::utc_time(),
 				0
-			),
-			m_remote_function_invoker(a_remote_function_invoker)
-			// m_remote_invocation_processor will be default initialized
+			)
 		{
 
 			// Add this agent's information to the client on construction of this object
