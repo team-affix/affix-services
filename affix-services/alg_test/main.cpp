@@ -39,7 +39,18 @@ int main()
 		l_io_context,
 		l_client_configuration_0
 	);
-	agent<std::string, std::string> l_agent_0(l_client_0, "test_agent_0", "agent-specific-information-0");
+	agent<std::string, std::string> l_agent_0(l_client_0, "test_agent", "agent-specific-information-0");
+
+	int message_iteration = 0;
+
+	l_agent_0.m_remote_invocation_processor.add_function(
+		"test-function",
+		std::function([&](std::string a_client_identity)
+			{
+				if (message_iteration % 100 == 0)
+					std::cout << "RECEIVED MESSAGE:" << message_iteration << std::endl;
+				message_iteration++;
+			}));
 
 	std::clog << "[ APPLICATION ] Importing client_1 configuration..." << std::endl;
 	ptr<client_configuration> l_client_configuration_1(new client_configuration("config/client_configuration_1.json"));
@@ -50,7 +61,7 @@ int main()
 		l_io_context,
 		l_client_configuration_1
 	);
-	agent<std::string, std::string> l_agent_1(l_client_1, "test_agent_1", "agent-specific-information-1");
+	agent<std::string, std::string> l_agent_1(l_client_1, "test_agent", "agent-specific-information-1");
 
 	std::clog << "[ APPLICATION ] Importing client_2 configuration..." << std::endl;
 	ptr<client_configuration> l_client_configuration_2(new client_configuration("config/client_configuration_2.json"));
@@ -61,7 +72,7 @@ int main()
 		l_io_context,
 		l_client_configuration_2
 	);
-	agent<std::string, std::string> l_agent_2(l_client_2, "test_agent_2", "agent-specific-information-2");
+	agent<std::string, std::string> l_agent_2(l_client_2, "test_agent", "agent-specific-information-2");
 
 	// Disclose all agent information
 	l_agent_0.disclose_agent_information();
@@ -98,6 +109,10 @@ int main()
 			l_client_0.process();
 			l_client_1.process();
 			l_client_2.process();
+
+			l_agent_0.process();
+			l_agent_1.process();
+			l_agent_2.process();
 		}
 		catch (std::exception a_ex)
 		{
@@ -135,36 +150,14 @@ int main()
 
 		if (l_authenticated_connections->size() >= 1 && l_relayed_messages < l_max_relay_messages)
 		{
-			l_relayed_messages++;
-
-			std::vector<std::string> l_path_0 =
+			if (l_client_1.fastest_path_to_identity(l_client_0.m_local_identity).size() > 0)
 			{
-				l_client_0.m_local_identity,
-				l_client_1.m_local_identity
-			};
-			std::vector<std::string> l_path_1 =
-			{
-				l_client_1.m_local_identity,
-				l_client_0.m_local_identity,
-			};
-
-			std::vector<uint8_t> l_bytes = { 1, 2, 3, 4, 5 };
-
-			affix_base::threading::const_locked_resource l_agent_1_agent_information = l_agent_1.m_local_agent_information.m_agent_information.const_lock();
-
-			l_client_0.relay(
-				l_path_0,
-				l_agent_1_agent_information->m_agent_type_identifier,
-				l_bytes
-			);
-
-			affix_base::threading::const_locked_resource l_agent_0_agent_information = l_agent_0.m_local_agent_information.m_agent_information.const_lock();
-
-			l_client_1.relay(
-				l_path_1,
-				l_agent_0_agent_information->m_agent_type_identifier,
-				l_bytes
-			);
+				l_agent_1.invoke(
+					l_client_0.m_local_identity,
+					"test-function"
+				);
+				l_relayed_messages++;
+			}
 
 		}
 
