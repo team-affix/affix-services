@@ -26,6 +26,8 @@ namespace affix_services
 		/// </summary>
 		affix_base::threading::guarded_resource<std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>>> m_inbox;
 
+
+
 	public:
 		/// <summary>
 		/// Value-initializing constructor for the agent object.
