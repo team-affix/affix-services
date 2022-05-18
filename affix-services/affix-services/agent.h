@@ -139,54 +139,6 @@ namespace affix_services
 		}
 
 	protected:
-		/// Gets the current largest identity. This is often used for choosing a distribution lead.
-		/// </summary>
-		/// <returns></returns>
-		std::string largest_identity(
-
-		)
-		{
-			affix_base::threading::const_locked_resource l_registered_agents = m_remote_agents.const_lock();
-
-			std::string l_max_identity_value;
-
-			for (auto i = l_registered_agents->begin(); i != l_registered_agents->end(); i++)
-				l_max_identity_value = larger_identity(l_max_identity_value, i->first);
-
-			return l_max_identity_value;
-		}
-
-		/// <summary>
-		/// Returns the identity which is larger in numerical value.
-		/// </summary>
-		/// <param name="a_identity_0"></param>
-		/// <param name="a_identity_1"></param>
-		/// <returns></returns>
-		std::string larger_identity(
-			const std::string& a_identity_0,
-			const std::string& a_identity_1
-		) const
-		{
-			if (a_identity_0.empty())
-				return a_identity_1;
-			if (a_identity_1.empty())
-				return a_identity_0;
-
-			for (int i = 0; i < a_identity_0.size(); i++)
-			{
-				if (a_identity_0[i] != a_identity_1[i])
-				{
-					if ((uint8_t)a_identity_0[i] > (uint8_t)a_identity_1[i])
-						return a_identity_0;
-					else
-						return a_identity_1;
-				}
-			}
-
-			return "";
-
-		}
-
 		/// <summary>
 		/// The entry point for customizable processing in the agent.
 		/// </summary>
