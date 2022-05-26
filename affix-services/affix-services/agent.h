@@ -108,7 +108,7 @@ namespace affix_services
 		)
 		{
 			// Get the local agent information in a thread-safe manner
-			affix_base::threading::const_locked_resource l_agent_information = m_local_agent_information.m_agent_information.const_lock();
+			std::string l_agent_type_identifier = m_local_agent_information.m_agent_information.const_lock()->m_agent_type_identifier;
 
 			// Serialize the function invocation
 			affix_base::data::byte_buffer l_serialized_invocation = m_remote_function_invoker.serialize_invocation(
@@ -119,7 +119,7 @@ namespace affix_services
 			// Relay the serialized invocation to the remote agent.
 			m_local_client.relay(
 				a_remote_client_identity,
-				l_agent_information->m_agent_type_identifier,
+				l_agent_type_identifier,
 				l_serialized_invocation.data()
 			);
 
