@@ -49,6 +49,15 @@ namespace affix_services
 		);
 
 		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="a_message_agent_information_body"></param>
+		/// <returns></returns>
+		message_agent_information_body& operator=(
+			const message_agent_information_body& a_message_agent_information_body
+		);
+
+		/// <summary>
 		/// Returns a message header with information about this message body and type.
 		/// </summary>
 		/// <returns></returns>

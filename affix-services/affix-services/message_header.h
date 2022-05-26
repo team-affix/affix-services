@@ -68,6 +68,15 @@ namespace affix_services {
 
 		}
 
+		message_header& operator=(
+			const message_header& a_message_header
+		)
+		{
+			m_message_type = a_message_header.m_message_type;
+			m_version = a_message_header.m_version;
+			return *this;
+		}
+
 	};
 
 }

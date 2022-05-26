@@ -37,6 +37,19 @@ agent_information::agent_information(
 
 }
 
+agent_information& agent_information::operator=(
+	const agent_information& a_agent_information
+)
+{
+	m_agent_type_identifier = a_agent_information.m_agent_type_identifier;
+	m_agent_specific_information = a_agent_information.m_agent_specific_information;
+	m_timestamp = a_agent_information.m_timestamp;
+	m_disclosure_iteration = a_agent_information.m_disclosure_iteration;
+
+	return *this;
+
+}
+
 bool agent_information::newer_than(
 	const agent_information& a_agent_information
 ) const

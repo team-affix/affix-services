@@ -54,6 +54,15 @@ namespace affix_services
 		);
 
 		/// <summary>
+		/// Copy operator.
+		/// </summary>
+		/// <param name="a_client_information"></param>
+		/// <returns></returns>
+		client_information& operator=(
+			const client_information& a_client_information
+		);
+
+		/// <summary>
 		/// Registers a path. If the path is already in the registry,
 		/// it simply updates the path registration timestamp.
 		/// </summary>

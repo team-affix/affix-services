@@ -38,6 +38,17 @@ message_relay_body::message_relay_body(
 
 }
 
+message_relay_body& message_relay_body::operator=(
+	const message_relay_body& a_message_relay_body
+)
+{
+	m_source_client_identity = a_message_relay_body.m_source_client_identity;
+	m_targeted_agent_type_identifier = a_message_relay_body.m_targeted_agent_type_identifier;
+	m_payload = a_message_relay_body.m_payload;
+	m_path = a_message_relay_body.m_path;
+	return *this;
+}
+
 message_header<message_types, affix_base::details::semantic_version_number> message_relay_body::create_message_header(
 
 ) const

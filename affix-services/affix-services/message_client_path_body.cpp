@@ -31,6 +31,15 @@ message_client_path_body::message_client_path_body(
 
 }
 
+message_client_path_body& message_client_path_body::operator=(
+	const message_client_path_body& a_message_client_path_body
+)
+{
+	m_client_path = a_message_client_path_body.m_client_path;
+	m_register = a_message_client_path_body.m_register;
+	return *this;
+}
+
 message_header<message_types, affix_base::details::semantic_version_number> message_client_path_body::create_message_header(
 
 ) const

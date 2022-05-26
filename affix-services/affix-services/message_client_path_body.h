@@ -41,6 +41,10 @@ namespace affix_services
 			const message_client_path_body& a_message_client_path_body
 		);
 
+		message_client_path_body& operator=(
+			const message_client_path_body& a_message_client_path_body
+		);
+
 		/// <summary>
 		/// Returns a message header populated with information regarding this message body.
 		/// </summary>

@@ -36,6 +36,16 @@ client_information::client_information(
 
 }
 
+client_information& client_information::operator=(
+	const client_information& a_client_information
+)
+{
+	m_identity = a_client_information.m_identity;
+	m_agents = a_client_information.m_agents;
+	m_paths = a_client_information.m_paths;
+	return *this;
+}
+
 bool client_information::register_path(
 	const std::vector<std::string>& a_path
 )

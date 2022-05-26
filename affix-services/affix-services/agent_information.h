@@ -61,6 +61,15 @@ namespace affix_services
 		);
 
 		/// <summary>
+		/// Copy operator method.
+		/// </summary>
+		/// <param name="a_agent_information"></param>
+		/// <returns></returns>
+		agent_information& operator=(
+			const agent_information& a_agent_information
+		);
+
+		/// <summary>
 		/// Returns whether or not this agent information is newer than an argued agent_information object.
 		/// </summary>
 		/// <param name="a_client_information"></param>

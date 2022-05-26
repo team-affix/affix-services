@@ -34,6 +34,10 @@ namespace affix_services
 			const message_relay_body& a_message_rqt_relay_body
 		);
 
+		message_relay_body& operator=(
+			const message_relay_body& a_message_relay_body
+		);
+
 		message_header<message_types, affix_base::details::semantic_version_number> create_message_header(
 
 		) const;

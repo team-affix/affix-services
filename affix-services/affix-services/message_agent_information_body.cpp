@@ -31,6 +31,15 @@ message_agent_information_body::message_agent_information_body(
 
 }
 
+message_agent_information_body& message_agent_information_body::operator=(
+	const message_agent_information_body& a_message_agent_information_body
+)
+{
+	m_client_identity = a_message_agent_information_body.m_client_identity;
+	m_agent_information = a_message_agent_information_body.m_agent_information;
+	return *this;
+}
+
 message_header<message_types, affix_base::details::semantic_version_number> message_agent_information_body::create_message_header(
 
 ) const
