@@ -836,8 +836,8 @@ void client::process_relay_message(
 			return;
 
 		// Add the payload
-		locked_resource l_agent_inbox = l_agent_inbox_iterator->second->lock();
-		l_agent_inbox->push_back(l_request);
+		auto& l_agent_inbox = l_agent_inbox_iterator->second;
+		l_agent_inbox.push_back(l_request);
 
 		return;
 
@@ -846,13 +846,13 @@ void client::process_relay_message(
 	// Get the recipient's identity from the request
 	std::string l_recipient_identity = l_request.m_message_body.m_path.front();
 
-	std::vector<ptr<authenticated_connection>>::iterator l_recipient_connection = std::find_if(l_authenticated_connections->begin(), l_authenticated_connections->end(),
+	std::vector<ptr<authenticated_connection>>::iterator l_recipient_connection = std::find_if(l_client_data->m_authenticated_connections.begin(), l_client_data->m_authenticated_connections.end(),
 			[&](ptr<authenticated_connection> a_recipient_authenticated_connection)
 			{
 				return a_recipient_authenticated_connection->remote_identity() == l_recipient_identity;
 			});
 
-	if (l_recipient_connection == l_authenticated_connections->end())
+	if (l_recipient_connection == l_client_data->m_authenticated_connections.end())
 		// The recipient is not connected
 		return;
 
@@ -867,10 +867,10 @@ void client::process_client_path_messages(
 
 )
 {
-	locked_resource l_client_path_messages = m_client_path_messages.lock();
+	locked_resource l_client_data = m_client_data.lock();
 
-	for (int i = l_client_path_messages->size() - 1; i >= 0; i--)
-		process_client_path_message(l_client_path_messages.resource(), l_client_path_messages->begin() + i);
+	for (int i = l_client_data->m_client_path_messages.size() - 1; i >= 0; i--)
+		process_client_path_message(l_client_data->m_client_path_messages, l_client_data->m_client_path_messages.begin() + i);
 
 }
 
@@ -879,6 +879,8 @@ void client::process_client_path_message(
 	std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_client_path_body>>::iterator a_client_path_message
 )
 {
+	locked_resource l_client_data = m_client_data.lock();
+
 	// Extract useful data from iterator
 	message l_message = *a_client_path_message;
 
@@ -890,7 +892,7 @@ void client::process_client_path_message(
 		std::find(
 			l_message.m_message_body.m_client_path.begin(),
 			l_message.m_message_body.m_client_path.end(),
-			m_local_identity);
+			l_client_data->m_local_identity);
 
 	if (l_local_client_iterator != l_message.m_message_body.m_client_path.end())
 		// Don't do anything, this machine is already a part of the path.
@@ -900,21 +902,19 @@ void client::process_client_path_message(
 	l_message.m_message_header.m_version = i_affix_services_version;
 
 	// Prefix the client path with our local identity.
-	l_message.m_message_body.m_client_path.insert(l_message.m_message_body.m_client_path.begin(), m_local_identity);
+	l_message.m_message_body.m_client_path.insert(l_message.m_message_body.m_client_path.begin(), l_client_data->m_local_identity);
 
-	// Lock the vector of registered clients.
-	locked_resource l_registered_clients = m_remote_clients.lock();
 
-	std::vector<client_information>::iterator l_client_information = std::find_if(l_registered_clients->begin(), l_registered_clients->end(),
+	std::vector<client_information>::iterator l_client_information = std::find_if(l_client_data->m_remote_clients.begin(), l_client_data->m_remote_clients.end(),
 		[&](const client_information& a_client_information)
 		{
 			return a_client_information.m_identity == l_message.m_message_body.m_client_path.back();
 		});
 
-	if (l_client_information == l_registered_clients->end())
+	if (l_client_information == l_client_data->m_remote_clients.end())
 	{
 		// If the client information is not currently registered, create a mostly empty client information to populate.
-		l_client_information = l_registered_clients->insert(l_registered_clients->end(),
+		l_client_information = l_client_data->m_remote_clients.insert(l_client_data->m_remote_clients.end(),
 			client_information(l_message.m_message_body.m_client_path.back()));
 	}
 
@@ -930,27 +930,24 @@ void client::process_client_path_message(
 	{
 		// We are deregistering a path. This path must be deregistered from ALL client_information objects, 
 		// since some paths to any client may be dependent on the path we are deregistering.
-		for (int i = l_registered_clients->size() - 1; i >= 0; i--)
+		for (int i = l_client_data->m_remote_clients.size() - 1; i >= 0; i--)
 		{
-			l_registered_clients->at(i).deregister_paths_starting_with(l_message.m_message_body.m_client_path);
+			l_client_data->m_remote_clients.at(i).deregister_paths_starting_with(l_message.m_message_body.m_client_path);
 		}
 
 	}
 
-	// Lock vector of authenticated connections
-	locked_resource l_authenticated_connections = m_authenticated_connections.lock();
-
-	for (int i = 0; i < l_authenticated_connections->size(); i++)
+	for (int i = 0; i < l_client_data->m_authenticated_connections.size(); i++)
 	{
 		if (std::find(l_message.m_message_body.m_client_path.begin(),
 			l_message.m_message_body.m_client_path.end(),
-			l_authenticated_connections->at(i)->remote_identity()) !=
+			l_client_data->m_authenticated_connections.at(i)->remote_identity()) !=
 			l_message.m_message_body.m_client_path.end())
 			// Don't send a reveal request to this peer. They are already a part of the path.
 			continue;
 
 		// Send the message to the remote client
-		async_send_message(l_authenticated_connections->at(i), l_message);
+		async_send_message(l_client_data->m_authenticated_connections.at(i), l_message);
 
 	}
 
@@ -961,10 +958,10 @@ void client::process_agent_information_messages(
 )
 {
 	// Lock the mutex preventing concurrent reads/writes to the index_requests vector
-	locked_resource l_reveal_requests = m_agent_information_messages.lock();
+	locked_resource l_client_data = m_client_data.lock();
 
-	for (int i = l_reveal_requests->size() - 1; i >= 0; i--)
-		process_agent_information_message(l_reveal_requests.resource(), l_reveal_requests->begin() + i);
+	for (int i = l_client_data->m_agent_information_messages.size() - 1; i >= 0; i--)
+		process_agent_information_message(l_client_data->m_agent_information_messages, l_client_data->m_agent_information_messages.begin() + i);
 
 }
 
@@ -973,6 +970,8 @@ void client::process_agent_information_message(
 	std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_agent_information_body>>::iterator a_agent_information_message
 )
 {
+	locked_resource l_client_data = m_client_data.lock();
+
 	// Extract data out from iterator
 	message l_request = *a_agent_information_message;
 
@@ -982,18 +981,15 @@ void client::process_agent_information_message(
 	// Set the message's version to this client's version (since we will be redistributing the message to our neighbors)
 	l_request.m_message_header.m_version = i_affix_services_version;
 
-	// Lock the vector of known relay paths
-	locked_resource l_registered_clients = m_remote_clients.lock();
-
 	// Try to find an entry for the client
 	std::vector<client_information>::iterator l_registered_client =
-		std::find_if(l_registered_clients->begin(), l_registered_clients->end(),
+		std::find_if(l_client_data->m_remote_clients.begin(), l_client_data->m_remote_clients.end(),
 			[&](client_information& a_client_information)
 			{
 				return a_client_information.m_identity == l_request.m_message_body.m_client_identity;
 			});
 
-	if (l_registered_client != l_registered_clients->end())
+	if (l_registered_client != l_client_data->m_remote_clients.end())
 	{
 		// Try to find an entry for the agent
 		std::vector<agent_information>::iterator l_agent_information_iterator =
@@ -1024,13 +1020,10 @@ void client::process_agent_information_message(
 	}
 	// else (DO NOTHING)
 
-	// Get the current authenticated connections
-	locked_resource l_authenticated_connections = m_authenticated_connections.lock();
-
-	for (int i = 0; i < l_authenticated_connections->size(); i++)
+	for (int i = 0; i < l_client_data->m_authenticated_connections.size(); i++)
 	{
 		// Send the message to the remote client
-		async_send_message(l_authenticated_connections->at(i), l_request);
+		async_send_message(l_client_data->m_authenticated_connections.at(i), l_request);
 
 	}
 
@@ -1041,11 +1034,11 @@ void client::process_pending_function_calls(
 )
 {
 	// Lock the vector preventing concurrent reads/writes to it
-	locked_resource l_pending_function_calls = m_pending_function_calls.lock();
+	locked_resource l_client_data = m_client_data.lock();
 
 	// Process each individual pending function call request
-	for (int i = l_pending_function_calls->size() - 1; i >= 0; i--)
-		process_pending_function_call(l_pending_function_calls.resource(), l_pending_function_calls->begin() + i);
+	for (int i = l_client_data->m_pending_function_calls.size() - 1; i >= 0; i--)
+		process_pending_function_call(l_client_data->m_pending_function_calls, l_client_data->m_pending_function_calls.begin() + i);
 
 }
 
@@ -1078,14 +1071,15 @@ void client::async_accept_next(
 
 )
 {
-	m_acceptor->async_accept(
+	locked_resource l_client_data = m_client_data.lock();
+
+	l_client_data->m_acceptor->async_accept(
 		[&](asio::error_code a_ec, tcp::socket a_socket)
 		{
-			// Store the new socket in the list of connections
-			locked_resource l_connection_results = m_connection_results.lock();
-
 			try
 			{
+				locked_resource l_lambda_client_data = m_client_data.lock();
+
 				// Extract remote endpoint from socket object
 				asio::ip::tcp::endpoint l_remote_endpoint = a_socket.remote_endpoint();
 
@@ -1102,7 +1096,7 @@ void client::async_accept_next(
 					true
 				);
 
-				l_connection_results->push_back(
+				l_lambda_client_data->m_connection_results.push_back(
 					new connection_result(
 						l_connection_information,
 						!a_ec
@@ -1129,10 +1123,10 @@ void client::process_registered_clients(
 
 )
 {
-	locked_resource l_registered_clients = m_remote_clients.lock();
+	locked_resource l_client_data = m_client_data.lock();
 
-	for (int i = l_registered_clients->size() - 1; i >= 0; i--)
-		process_registered_client(l_registered_clients.resource(), l_registered_clients->begin() + i);
+	for (int i = l_client_data->m_remote_clients.size() - 1; i >= 0; i--)
+		process_registered_client(l_client_data->m_remote_clients, l_client_data->m_remote_clients.begin() + i);
 
 }
 
