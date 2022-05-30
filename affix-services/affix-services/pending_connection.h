@@ -6,6 +6,8 @@
 
 namespace affix_services
 {
+	class client;
+
 	class pending_connection
 	{
 	protected:
@@ -27,7 +29,7 @@ namespace affix_services
 		/// <param name="a_outbound_connection_configuration"></param>
 		pending_connection(
 			affix_base::data::ptr<connection_information> a_connection_information,
-			affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>>& a_connection_results
+			client& a_client
 		);
 
 	};

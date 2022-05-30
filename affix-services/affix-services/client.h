@@ -20,90 +20,107 @@ namespace affix_services
 	class client
 	{
 	public:
-		/// <summary>
-		/// Contains the configuration for this client instance; this object governs how to behave as a connection processor.
-		/// </summary>
-		affix_base::data::ptr<client_configuration> m_client_configuration;
+		class data
+		{
+		public:
+			/// <summary>
+			/// Contains the configuration for this client instance; this object governs how to behave as a connection processor.
+			/// </summary>
+			affix_base::data::ptr<client_configuration> m_client_configuration;
 
-		/// <summary>
-		/// Base64 representation of the local client's identity.
-		/// </summary>
-		std::string m_local_identity;
+			/// <summary>
+			/// Base64 representation of the local client's identity.
+			/// </summary>
+			std::string m_local_identity;
 		
-		/// <summary>
-		/// A vector of all agents using this client.
-		/// </summary>
-		affix_base::threading::guarded_resource<std::map<std::string, affix_base::threading::guarded_resource<std::vector<message<affix_services::message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>>>*>> m_local_agent_inboxes;
+			/// <summary>
+			/// A vector of all inboxes for agents utilizing this local client.
+			/// </summary>
+			std::map<std::string, std::vector<message<affix_services::message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>>> m_local_agent_inboxes;
 
-		/// <summary>
-		/// IO context which runs all the asynchronous networking functions.
-		/// </summary>
-		asio::io_context& m_io_context;
+			/// <summary>
+			/// IO context which runs all the asynchronous networking functions.
+			/// </summary>
+			asio::io_context& m_io_context;
 
-		/// <summary>
-		/// If the server has a dedicated port, the endpoint for this acceptor should include that port.
-		/// If the server doesn't have a dedicated port, the endpoint should have port set to 0.
-		/// </summary>
-		affix_base::data::ptr<asio::ip::tcp::acceptor> m_acceptor;
+			/// <summary>
+			/// If the server has a dedicated port, the endpoint for this acceptor should include that port.
+			/// If the server doesn't have a dedicated port, the endpoint should have port set to 0.
+			/// </summary>
+			affix_base::data::ptr<asio::ip::tcp::acceptor> m_acceptor;
 
-		/// <summary>
-		/// A vector of all pending outbound connections.
-		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<pending_connection>>> m_pending_outbound_connections;
+			/// <summary>
+			/// A vector of all pending outbound connections.
+			/// </summary>
+			std::vector<affix_base::data::ptr<pending_connection>> m_pending_outbound_connections;
 
-		/// <summary>
-		/// A vector of all newly established connections.
-		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<connection_result>>> m_connection_results;
+			/// <summary>
+			/// A vector of all newly established connections.
+			/// </summary>
+			std::vector<affix_base::data::ptr<connection_result>> m_connection_results;
 
-		/// <summary>
-		/// A vector of all current authentication attempts, which holds those for both inbound and outbound connections.
-		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<pending_authentication>>> m_authentication_attempts;
+			/// <summary>
+			/// A vector of all current authentication attempts, which holds those for both inbound and outbound connections.
+			/// </summary>
+			std::vector<affix_base::data::ptr<pending_authentication>> m_authentication_attempts;
 
-		/// <summary>
-		/// Vector holding results from authentication attempts.
-		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_result>>> m_authentication_attempt_results;
+			/// <summary>
+			/// Vector holding results from authentication attempts.
+			/// </summary>
+			std::vector<affix_base::data::ptr<authentication_result>> m_authentication_attempt_results;
 
-		/// <summary>
-		/// A vector of fully authenticated connections.
-		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>>> m_authenticated_connections;
+			/// <summary>
+			/// A vector of fully authenticated connections.
+			/// </summary>
+			std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>> m_authenticated_connections;
 
-		/// <summary>
-		/// A vector of all the message data received from authenticated connections.
-		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, affix_base::data::ptr<std::vector<uint8_t>>>>> m_received_messages;
+			/// <summary>
+			/// A vector of all the message data received from authenticated connections.
+			/// </summary>
+			std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, affix_base::data::ptr<std::vector<uint8_t>>>> m_received_messages;
 
-	protected:
-		/// <summary>
-		/// Vector of relay requests that are pending being processed.
-		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>>> m_relay_messages;
+			/// <summary>
+			/// Vector of relay requests that are pending being processed.
+			/// </summary>
+			std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>> m_relay_messages;
 
-		/// <summary>
-		/// Vector of client_path requests that are pending being processed.
-		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_client_path_body>>> m_client_path_messages;
+			/// <summary>
+			/// Vector of client_path requests that are pending being processed.
+			/// </summary>
+			std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_client_path_body>> m_client_path_messages;
 
-		/// <summary>
-		/// Vector of reveal requests that are pending being processed.
-		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_agent_information_body>>> m_agent_information_messages;
+			/// <summary>
+			/// Vector of reveal requests that are pending being processed.
+			/// </summary>
+			std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_agent_information_body>> m_agent_information_messages;
 
-	protected:
-		/// <summary>
-		/// A vector of all pending miscellaneous functions that need to be called after a certain delay, hence the uint64_t in the tuple.
-		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<std::tuple<uint64_t, std::function<void()>>>> m_pending_function_calls;
+			/// <summary>
+			/// A vector of all pending miscellaneous functions that need to be called after a certain delay, hence the uint64_t in the tuple.
+			/// </summary>
+			std::vector<std::tuple<uint64_t, std::function<void()>>> m_pending_function_calls;
 		
-	public:
+			/// <summary>
+			/// A vector of registered clients, along with paths to those clients,
+			/// and agent information.
+			/// </summary>
+			std::vector<client_information> m_remote_clients;
+
+			data(
+				asio::io_context& a_io_context,
+				affix_base::data::ptr<client_configuration> a_client_configuration
+			) :
+				m_io_context(a_io_context),
+				m_client_configuration(a_client_configuration)
+			{
+
+			}
+
+		};
+
 		/// <summary>
-		/// A vector of registered clients, along with paths to those clients,
-		/// and agent information.
+		/// The local client data, guarded by a single mutex to prevent deadlocking.
 		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<client_information>> m_remote_clients;
+		affix_base::threading::guarded_resource<data> m_client_data;
 
 	public:
 		/// <summary>

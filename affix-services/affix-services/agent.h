@@ -12,37 +12,63 @@ namespace affix_services
 	class agent
 	{
 	public:
-		/// <summary>
-		/// The client which is being utilized by the agent for affix-services functionality.
-		/// </summary>
-		affix_services::client& m_local_client;
+		class data
+		{
+			/// <summary>
+			/// The client which is being utilized by the agent for affix-services functionality.
+			/// </summary>
+			affix_services::client& m_local_client;
+
+			/// <summary>
+			/// Information pertaining to the local agent.
+			/// </summary>
+			parsed_agent_information<AGENT_SPECIFIC_INFORMATION_TYPE> m_local_agent_information;
+
+			/// <summary>
+			/// Information about the remote agents of the same type as the local agent.
+			/// </summary>
+			std::map<std::string, affix_base::data::ptr<affix_services::parsed_agent_information<AGENT_SPECIFIC_INFORMATION_TYPE>>> m_remote_agents;
+
+			/// <summary>
+			/// The remote function invoker, used to invoke functions on remote agents of the same type as this.
+			/// </summary>
+			affix_base::distributed_computing::remote_function_invoker<FUNCTION_IDENTIFIER_TYPE> m_remote_function_invoker;
+
+			/// <summary>
+			/// The remote invocation processor, used to process invocations raised by remote agents of the same type as the local agent.
+			/// </summary>
+			affix_base::distributed_computing::remote_invocation_processor<
+				FUNCTION_IDENTIFIER_TYPE,
+				std::string /*(used for client identity)*/> m_remote_invocation_processor;
+
+			/// <summary>
+			/// Constructs the agent data structure with argued field values.
+			/// </summary>
+			/// <param name="a_client"></param>
+			/// <param name="a_type_identifier"></param>
+			/// <param name="a_agent_specific_information"></param>
+			data(
+				client& a_client,
+				const std::string& a_type_identifier,
+				const AGENT_SPECIFIC_INFORMATION_TYPE& a_agent_specific_information
+			) :
+				m_client(a_client),
+				m_local_agent_information(
+					a_type_identifier,
+					a_agent_specific_information,
+					affix_base::timing::utc_time(),
+					0
+				)
+			{
+
+			}
+
+		};
 
 		/// <summary>
-		/// Information pertaining to the local agent.
+		/// The data for the local agent.
 		/// </summary>
-		parsed_agent_information<AGENT_SPECIFIC_INFORMATION_TYPE> m_local_agent_information;
-
-		/// <summary>
-		/// A vector of all data that has been received which was destined for this agent.
-		/// </summary>
-		affix_base::threading::guarded_resource<std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>>> m_inbox;
-
-		/// <summary>
-		/// Information about the remote agents of the same type as the local agent.
-		/// </summary>
-		affix_base::threading::guarded_resource<std::map<std::string, affix_base::data::ptr<affix_services::parsed_agent_information<AGENT_SPECIFIC_INFORMATION_TYPE>>>> m_remote_agents;
-
-		/// <summary>
-		/// The remote function invoker, used to invoke functions on remote agents of the same type as this.
-		/// </summary>
-		affix_base::distributed_computing::remote_function_invoker<FUNCTION_IDENTIFIER_TYPE> m_remote_function_invoker;
-
-		/// <summary>
-		/// The remote invocation processor, used to process invocations raised by remote agents of the same type as the local agent.
-		/// </summary>
-		affix_base::distributed_computing::remote_invocation_processor<
-			FUNCTION_IDENTIFIER_TYPE,
-			std::string /*(used for client identity)*/> m_remote_invocation_processor;
+		affix_base::threading::guarded_resource<data> m_agent_data;
 
 	public:
 		/// <summary>
@@ -56,20 +82,21 @@ namespace affix_services
 			const std::string& a_type_identifier,
 			const AGENT_SPECIFIC_INFORMATION_TYPE& a_agent_specific_information
 		) :
-			m_local_client(a_local_client),
-			m_local_agent_information(
-				a_type_identifier,
-				a_agent_specific_information,
-				affix_base::timing::utc_time(),
-				0
+			m_agent_data(
+				data(
+					a_local_client,
+					a_type_identifier,
+					a_agent_specific_information
+				)
 			)
 		{
+			affix_base::threading::locked_resource l_agent_data = m_agent_data.lock();
 
 			// Add this agent's information to the client on construction of this object
-			affix_base::threading::locked_resource l_client_local_agent_inboxes = m_local_client.m_local_agent_inboxes.lock();
+			affix_base::threading::locked_resource l_client_local_agent_inboxes = l_agent_data->m_local_client.m_local_agent_inboxes.lock();
 
 			// Lock the local agent information
-			affix_base::threading::const_locked_resource l_local_agent_information = m_local_agent_information.m_agent_information.const_lock();
+			affix_base::threading::const_locked_resource l_local_agent_information = l_agent_data->m_local_agent_information.m_agent_information.const_lock();
 
 			// Try to find entry for an agent with the same type identifier
 			auto l_agent_iterator = l_client_local_agent_inboxes->find(l_local_agent_information->m_agent_type_identifier);

@@ -1,5 +1,6 @@
 #include "pending_authentication.h"
 #include "affix-base/timing.h"
+#include "client.h"
 
 using namespace affix_services;
 using affix_base::networking::async_authenticate;
@@ -20,7 +21,7 @@ pending_authentication::pending_authentication(
 	affix_base::data::ptr<connection_information> a_connection_information,
 	const std::vector<uint8_t>& a_remote_seed,
 	const affix_base::cryptography::rsa_key_pair& a_local_key_pair,
-	affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_result>>>& a_authentication_attempt_results,
+	client& a_client,
 	const bool& a_enable_timeout,
 	const uint64_t& a_timeout_in_seconds
 ) :
@@ -39,7 +40,7 @@ pending_authentication::pending_authentication(
 		[&,a_connection_information](bool a_result)
 		{
 			// Lock mutex preventing concurrent reads/writes to a vector of authentication attempt results.
-			locked_resource l_authentication_attempt_results = a_authentication_attempt_results.lock();
+			locked_resource l_client_data = a_client.m_client_data.lock();
 
 			// Lock mutex preventing concurrent reads/writes to the state of this authentication attempt.
 			locked_resource l_finished = m_finished.lock();
@@ -78,7 +79,7 @@ pending_authentication::pending_authentication(
 				);
 
 				// Push success result into vector.
-				l_authentication_attempt_results->push_back(l_authentication_attempt_result);
+				l_client_data->m_authentication_attempt_results.push_back(l_authentication_attempt_result);
 
 			}
 			else
@@ -95,7 +96,7 @@ pending_authentication::pending_authentication(
 				);
 
 				// Push failure result into vector.
-				l_authentication_attempt_results->push_back(l_authentication_attempt_result);
+				l_client_data->m_authentication_attempt_results.push_back(l_authentication_attempt_result);
 
 			}
 
