@@ -61,7 +61,7 @@ namespace affix_services
 			affix_base::data::ptr<connection_information> a_connection_information,
 			const std::vector<uint8_t>& a_remote_seed,
 			const affix_base::cryptography::rsa_key_pair& a_local_key_pair,
-			affix_base::threading::guarded_resource<std::vector<affix_base::data::ptr<authentication_result>>>& a_authentication_attempt_results,
+			affix_base::threading::guarded_resource<typename client::guarded_data>& a_client_guarded_data,
 			const bool& a_enable_timeout,
 			const uint64_t& a_timeout_in_seconds
 		);
