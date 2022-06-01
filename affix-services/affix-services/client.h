@@ -225,18 +225,18 @@ namespace affix_services
 		)
 		{
 			// Lock the vector of agent information messages
-			affix_base::threading::locked_resource l_agent_information_messages = m_agent_information_messages.lock();
+			affix_base::threading::locked_resource l_client_data = m_client_data.lock();
 
 			// Create the message body
 			message_agent_information_body l_message_body(
-				m_local_identity,
+				l_client_data->m_local_identity,
 				a_agent_information);
 
 			// Create the message
 			message l_message(l_message_body.create_message_header(), l_message_body);
 
 			// Add the message to the vector
-			l_agent_information_messages->push_back(l_message);
+			l_client_data->m_agent_information_messages.push_back(l_message);
 
 		}
 

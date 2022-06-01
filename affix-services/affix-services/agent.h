@@ -11,7 +11,7 @@ namespace affix_services
 	template<typename AGENT_SPECIFIC_INFORMATION_TYPE, typename FUNCTION_IDENTIFIER_TYPE>
 	class agent
 	{
-	public:
+	protected:
 		class data
 		{
 		public:
