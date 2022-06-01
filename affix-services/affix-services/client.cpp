@@ -36,28 +36,24 @@ client::client(
 	asio::io_context& a_io_context,
 	affix_base::data::ptr<client_configuration> a_client_configuration
 ) :
-	m_client_data(
-		data(
-		a_io_context,
-		a_client_configuration
-		)
-	)
+	m_io_context(a_io_context),
+	m_client_configuration(a_client_configuration)
 {
 	locked_resource l_client_data = m_client_data.lock();
 
 	// Get the local identity string from the local public key.
-	if (!rsa_to_base64_string(a_client_configuration->m_local_key_pair.resource().public_key, l_client_data->m_local_identity))
+	if (!rsa_to_base64_string(a_client_configuration->m_local_key_pair.resource().public_key, m_local_identity))
 		throw std::exception("The inputted base64 RSA public key string is not in correct format.");
 
 
 	// Create and register the only path from the local client to the local client
-	client_information l_local_client(l_client_data->m_local_identity);
-	l_local_client.register_path({ l_client_data->m_local_identity });
+	client_information l_local_client(m_local_identity);
+	l_local_client.register_path({ m_local_identity });
 	// Register the local client in the index
 	l_client_data->m_remote_clients.push_back(l_local_client);
 
 
-	if (l_client_data->m_client_configuration->m_enable_server.resource())
+	if (m_client_configuration->m_enable_server.resource())
 		// If the server is enabled, start it
 		start_server();
 
@@ -93,7 +89,7 @@ void client::relay(
 	locked_resource l_client_data = m_client_data.lock();
 
 	// Generate message body
-	message_relay_body l_message_body = message_relay_body(l_client_data->m_local_identity, a_target_agent_type_identifier, a_payload, a_path);
+	message_relay_body l_message_body = message_relay_body(m_local_identity, a_target_agent_type_identifier, a_payload, a_path);
 
 	// Generate full message
 	message l_message(l_message_body.create_message_header(), l_message_body);

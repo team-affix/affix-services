@@ -19,29 +19,14 @@ namespace affix_services
 {
 	class client
 	{
-	public:
+	protected:
 		class data
 		{
 		public:
 			/// <summary>
-			/// Contains the configuration for this client instance; this object governs how to behave as a connection processor.
-			/// </summary>
-			affix_base::data::ptr<client_configuration> m_client_configuration;
-
-			/// <summary>
-			/// Base64 representation of the local client's identity.
-			/// </summary>
-			std::string m_local_identity;
-		
-			/// <summary>
 			/// A vector of all inboxes for agents utilizing this local client.
 			/// </summary>
 			std::map<std::string, std::vector<message<affix_services::message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>>> m_local_agent_inboxes;
-
-			/// <summary>
-			/// IO context which runs all the asynchronous networking functions.
-			/// </summary>
-			asio::io_context& m_io_context;
 
 			/// <summary>
 			/// If the server has a dedicated port, the endpoint for this acceptor should include that port.
@@ -105,22 +90,28 @@ namespace affix_services
 			/// </summary>
 			std::vector<client_information> m_remote_clients;
 
-			data(
-				asio::io_context& a_io_context,
-				affix_base::data::ptr<client_configuration> a_client_configuration
-			) :
-				m_io_context(a_io_context),
-				m_client_configuration(a_client_configuration)
-			{
-
-			}
-
 		};
 
+	protected:
 		/// <summary>
 		/// The local client data, guarded by a single mutex to prevent deadlocking.
 		/// </summary>
 		affix_base::threading::guarded_resource<data> m_client_data;
+
+		/// <summary>
+		/// Base64 representation of the local client's identity.
+		/// </summary>
+		std::string m_local_identity;
+
+		/// <summary>
+		/// Contains the configuration for this client instance; this object governs how to behave as a connection processor.
+		/// </summary>
+		affix_base::data::ptr<client_configuration> m_client_configuration;
+
+		/// <summary>
+		/// IO context which runs all the asynchronous networking functions.
+		/// </summary>
+		asio::io_context& m_io_context;
 
 	public:
 		/// <summary>
