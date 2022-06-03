@@ -85,7 +85,7 @@ namespace affix_services
 
 		};
 
-	protected:
+	public:
 		/// <summary>
 		/// Contains the configuration for this client instance; this object governs how to behave as a connection processor.
 		/// </summary>
@@ -95,7 +95,13 @@ namespace affix_services
 		/// Base64 representation of the local client's identity.
 		/// </summary>
 		std::string m_local_identity;
-		
+
+		/// <summary>
+		/// The client data that must be guarded in a thread-safe manner.
+		/// </summary>
+		affix_base::threading::guarded_resource<guarded_data> m_guarded_data;
+
+	protected:
 		/// <summary>
 		/// IO context which runs all the asynchronous networking functions.
 		/// </summary>
@@ -106,12 +112,6 @@ namespace affix_services
 		/// If the server doesn't have a dedicated port, the endpoint should have port set to 0.
 		/// </summary>
 		affix_base::data::ptr<asio::ip::tcp::acceptor> m_acceptor;
-
-		/// <summary>
-		/// The client data that must be guarded in a thread-safe manner.
-		/// </summary>
-		affix_base::threading::guarded_resource<guarded_data> m_guarded_data;
-
 
 	public:
 		/// <summary>
@@ -141,8 +141,20 @@ namespace affix_services
 			const std::vector<uint8_t>& a_payload = {}
 		);
 
+		void register_local_agent(
+			const std::string& a_agent_identifier
+		);
+
 		void disclose_agent_information(
 			const affix_services::agent_information& a_agent_information
+		);
+
+		std::map<std::string, agent_information> get_remote_agents(
+			const std::string& a_agent_type_identifier
+		);
+
+		std::vector<message<affix_services::message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>> pop_inbox(
+			const std::string& a_agent_type_identifier
 		);
 
 	protected:

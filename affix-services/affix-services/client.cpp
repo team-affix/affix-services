@@ -99,6 +99,24 @@ void client::relay(
 
 }
 
+void client::register_local_agent(
+	const std::string& a_agent_identifier
+)
+{
+	affix_base::threading::locked_resource l_guarded_data = m_guarded_data.lock();
+
+	auto l_agent_inbox = l_guarded_data->m_local_agent_inboxes.find(a_agent_identifier);
+
+	if (l_agent_inbox != l_guarded_data->m_local_agent_inboxes.end())
+	{
+		// Throw exception if there is already an agent with the same type identifier registered.
+		throw std::exception(std::string("Cannot register two or more agents with the same type identifier: " + a_agent_identifier).c_str());
+	}
+
+	l_guarded_data->m_local_agent_inboxes.insert({ a_agent_identifier, {} });
+
+}
+
 void client::disclose_agent_information(
 	const affix_services::agent_information& a_agent_information
 )
@@ -116,6 +134,51 @@ void client::disclose_agent_information(
 
 	// Add the message to the vector
 	l_guarded_data->m_agent_information_messages.push_back(l_message);
+
+}
+
+std::map<std::string, agent_information> client::get_remote_agents(
+	const std::string& a_agent_type_identifier
+)
+{
+	const_locked_resource l_guarded_data = m_guarded_data.const_lock();
+
+	std::map<std::string, agent_information> l_remote_agents;
+
+	for (const client_information& l_client_information : l_guarded_data->m_remote_clients)
+	{
+		auto l_agent_entry = std::find_if(
+			l_client_information.m_agents.begin(),
+			l_client_information.m_agents.end(),
+			[&](const agent_information& a_agent_information)
+			{
+				return a_agent_information.m_agent_type_identifier == a_agent_type_identifier;
+			});
+
+		if (l_agent_entry != l_client_information.m_agents.end())
+		{
+			l_remote_agents.insert({ l_client_information.m_identity, *l_agent_entry });
+		}
+
+	}
+
+	return l_remote_agents;
+
+}
+
+std::vector<message<affix_services::message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>> client::pop_inbox(
+	const std::string& a_agent_type_identifier
+)
+{
+	locked_resource l_guarded_data = m_guarded_data.lock();
+
+	auto l_local_agent_inbox = l_guarded_data->m_local_agent_inboxes.find(a_agent_type_identifier);
+
+	auto l_result = l_local_agent_inbox->second;
+
+	l_local_agent_inbox->second.clear();
+
+	return l_result;
 
 }
 

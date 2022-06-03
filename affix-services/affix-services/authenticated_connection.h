@@ -23,7 +23,6 @@ namespace affix_services {
 
 	namespace networking {
 
-
 		class authenticated_connection
 		{
 		public:
