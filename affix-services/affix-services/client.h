@@ -157,6 +157,15 @@ namespace affix_services
 			const std::string& a_agent_type_identifier
 		);
 
+		/// <summary>
+		/// Returns the shortest path in terms of connecting nodes to a remote identity.
+		/// </summary>
+		/// <param name="a_identity"></param>
+		/// <returns></returns>
+		std::vector<std::string> fastest_path_to_identity(
+			const std::string& a_identity
+		);
+
 	protected:
 		/// <summary>
 		/// Recursively causes all neighboring machines to register all paths to all locally registered clients.
@@ -173,14 +182,6 @@ namespace affix_services
 			const std::string& a_neighbor_identity
 		);
 
-		/// <summary>
-		/// Returns the shortest path in terms of connecting nodes to a remote identity.
-		/// </summary>
-		/// <param name="a_identity"></param>
-		/// <returns></returns>
-		std::vector<std::string> fastest_path_to_identity(
-			const std::string& a_identity
-		);
 
 		/// <summary>
 		/// Starts the server associated with this affix-services module.
@@ -228,14 +229,12 @@ namespace affix_services
 			const message<message_header<message_types, affix_base::details::semantic_version_number>, MESSAGE_BODY_TYPE>& a_message
 		)
 		{
-			// Lock mutex preventing concurrent reads/writes to the connections vector
-			affix_base::threading::locked_resource l_authenticated_connections = m_authenticated_connections.lock();
+			std::scoped_lock l_lock(m_guarded_data);
 
 			// Try to find a connection associated with the remote identity
-			std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>>::iterator l_authenticated_connection =
-				find_connection(l_authenticated_connections.resource(), a_remote_identity);
+			auto l_authenticated_connection = find_connection(m_guarded_data->m_authenticated_connections, a_remote_identity);
 
-			if (l_authenticated_connection == l_authenticated_connections->end())
+			if (l_authenticated_connection == m_guarded_data->m_authenticated_connections.end())
 			{
 				// No associated connection was found.
 				return;
@@ -258,8 +257,7 @@ namespace affix_services
 			const message<message_header<message_types, affix_base::details::semantic_version_number>, MESSAGE_BODY_TYPE>& a_message
 		)
 		{
-			// Lock mutex preventing concurrent reads/writes to the connections vector
-			affix_base::threading::locked_resource l_authenticated_connections = m_authenticated_connections.lock();
+			std::scoped_lock l_lock(m_guarded_data);
 
 			// The byte buffer into which the message header data is to be stored
 			affix_base::data::byte_buffer l_message_byte_buffer;

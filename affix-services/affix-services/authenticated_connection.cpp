@@ -43,8 +43,8 @@ authenticated_connection::authenticated_connection(
 	m_start_time(utc_time())
 {
 	// Set the last interaction time to the current utc time, to avoid having it ever be set to zero.
-	locked_resource l_last_interaction_time = m_last_interaction_time.lock();
-	(*l_last_interaction_time) = utc_time();
+	std::scoped_lock l_lock(m_last_interaction_time);
+	(*m_last_interaction_time) = utc_time();
 }
 
 void authenticated_connection::async_send(
@@ -52,18 +52,16 @@ void authenticated_connection::async_send(
 )
 {
 	// Set the last interaction time to the current utc time.
-	locked_resource l_last_interaction_time = m_last_interaction_time.lock();
-	(*l_last_interaction_time) = utc_time();
 
-	// Lock the transmission_security_manager, keeping the rolling tokens embedded inside it valid
-	locked_resource l_transmission_security_manager = m_transmission_security_manager.lock();
+	std::scoped_lock l_lock(m_last_interaction_time, m_transmission_security_manager);
+	(*m_last_interaction_time) = utc_time();
 
 	vector<uint8_t> l_exported_transmission_data;
 
 	transmission_result l_transmission_result = transmission_result::unknown;
 
 	// TRY TO EXPORT MESSAGE DATA IN "TRANSMISSION" FORMAT
-	if (!l_transmission_security_manager->export_transmission(a_byte_buffer.data(), l_exported_transmission_data, l_transmission_result)) {
+	if (!m_transmission_security_manager->export_transmission(a_byte_buffer.data(), l_exported_transmission_data, l_transmission_result)) {
 		LOG_ERROR("[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result]);
 
 		// Close the connection.
@@ -102,27 +100,25 @@ void authenticated_connection::async_receive(
 	m_socket_io_guard.async_receive(*l_received_exported_message_data,
 		m_receive_dispatcher.dispatch([&, l_received_exported_message_data, a_callback](bool a_result)
 		{
-
-			// Set the last interaction time to the current utc time.
-			locked_resource l_last_interaction_time = m_last_interaction_time.lock();
-			(*l_last_interaction_time) = utc_time();
-
-			// Lock the transmission_security_manager to prevent concurrent reads/writes to the rolling_tokens involved
-			locked_resource l_transmission_security_manager = m_transmission_security_manager.lock();
-
-			// The result from trying to import the message
-			transmission_result l_transmission_result = transmission_result::unknown;
-
-			// If the receive call was unsuccessful, close the connection, then return.
-			if (!a_result || !l_transmission_security_manager->import_transmission(l_received_exported_message_data.val(), a_received_message_data, l_transmission_result))
 			{
-				LOG_ERROR("[ CONNECTION ] Error receiving data.");
-				LOG_ERROR("[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result]);
+				// Set the last interaction time to the current utc time.
+				std::scoped_lock l_lock(m_last_interaction_time, m_transmission_security_manager);
+				(*m_last_interaction_time) = utc_time();
 
-				// Close the connection.
-				close();
+				// The result from trying to import the message
+				transmission_result l_transmission_result = transmission_result::unknown;
 
-				return;
+				// If the receive call was unsuccessful, close the connection, then return.
+				if (!a_result || !m_transmission_security_manager->import_transmission(l_received_exported_message_data.val(), a_received_message_data, l_transmission_result))
+				{
+					LOG_ERROR("[ CONNECTION ] Error receiving data.");
+					LOG_ERROR("[ TRANSMISSION SECURITY MANAGER ] " << transmission_result_strings[l_transmission_result]);
+
+					// Close the connection.
+					close();
+
+					return;
+				}
 			}
 
 			// Call the argued callback function
@@ -137,13 +133,13 @@ void authenticated_connection::close(
 )
 {
 	// Lock mutex for m_connected boolean
-	locked_resource l_connected = m_connected.lock();
+	std::scoped_lock l_connected_lock(m_connected);
 
 	// Make sure the socket closes.
 	m_connection_information->m_socket->close();
 
 	// Record the fact that the connection is no longer valid.
-	(*l_connected) = false;
+	(*m_connected) = false;
 
 }
 
@@ -152,14 +148,14 @@ uint64_t authenticated_connection::lifetime() const {
 }
 
 uint64_t authenticated_connection::idletime() {
-	locked_resource l_last_interaction_time = m_last_interaction_time.lock();
-	return utc_time() - (*l_last_interaction_time);
+	std::scoped_lock l_last_interaction_time_lock(m_last_interaction_time);
+	return utc_time() - (*m_last_interaction_time);
 }
 
 const std::string& authenticated_connection::remote_identity(
 
 )
 {
-	locked_resource l_transmission_security_manager = m_transmission_security_manager.lock();
-	return l_transmission_security_manager->m_security_information->m_remote_identity;
+	std::scoped_lock l_lock(m_transmission_security_manager);
+	return m_transmission_security_manager->m_security_information->m_remote_identity;
 }

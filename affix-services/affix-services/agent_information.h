@@ -3,7 +3,6 @@
 #include "affix-base/serializable.h"
 #include "affix-base/utc_time.h"
 #include "affix-base/guarded_resource.h"
-#include "affix-base/synchronized_resource.h"
 
 namespace affix_services
 {

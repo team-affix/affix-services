@@ -44,12 +44,12 @@ namespace affix_services {
 			/// <summary>
 			/// Dispatcher which tracks the progress of the send and receive callback functions.
 			/// </summary>
-			affix_base::callback::dispatcher<affix_base::threading::cross_thread_mutex, void, bool> m_send_dispatcher;
+			affix_base::callback::dispatcher<void, bool> m_send_dispatcher;
 
 			/// <summary>
 			/// Dispatcher which tracks the progress of the send and receive callback functions.
 			/// </summary>
-			affix_base::callback::dispatcher<affix_base::threading::cross_thread_mutex, void, bool> m_receive_dispatcher;
+			affix_base::callback::dispatcher<void, bool> m_receive_dispatcher;
 			
 		protected:
 			/// <summary>

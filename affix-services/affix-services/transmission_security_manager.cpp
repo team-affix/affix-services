@@ -10,7 +10,6 @@ using affix_base::data::byte_buffer;
 using affix_services::networking::transmission_result;
 using std::vector;
 using affix_services::security::rolling_token;
-using affix_base::threading::locked_resource;
 
 transmission_security_manager::transmission_security_manager(
 	affix_base::data::ptr<security_information> a_security_information

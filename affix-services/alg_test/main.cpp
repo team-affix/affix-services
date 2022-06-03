@@ -43,7 +43,9 @@ int main()
 
 	int message_iteration = 0;
 
-	l_agent_0.m_guarded_data.lock()->m_remote_invocation_processor.add_function(
+	l_agent_0.m_guarded_data.lock();
+	
+	l_agent_0.m_guarded_data->m_remote_invocation_processor.add_function(
 		"test-function",
 		std::function([&](std::string a_client_identity)
 			{
@@ -51,6 +53,8 @@ int main()
 					std::cout << "RECEIVED MESSAGE:" << message_iteration << std::endl;
 				message_iteration++;
 			}));
+
+	l_agent_0.m_guarded_data.unlock();
 
 	std::clog << "[ APPLICATION ] Importing client_1 configuration..." << std::endl;
 	ptr<client_configuration> l_client_configuration_1(new client_configuration("config/client_configuration_1.json"));
@@ -119,9 +123,12 @@ int main()
 			std::cerr << a_ex.what() << std::endl;
 		}
 
-		const auto& l_authenticated_connections = l_client_0.m_guarded_data.const_lock()->m_authenticated_connections;
+		std::scoped_lock l_client_0_lock(l_client_0.m_guarded_data);
+		std::scoped_lock l_client_1_lock(l_client_1.m_guarded_data);
+
+		const auto& l_authenticated_connections = l_client_0.m_guarded_data->m_authenticated_connections;
 		
-		auto& l_client_1_auth_connections = l_client_1.m_guarded_data.lock()->m_authenticated_connections;
+		auto& l_client_1_auth_connections = l_client_1.m_guarded_data->m_authenticated_connections;
 
 		if (affix_base::timing::utc_time() - l_start_time > 5 &&
 			l_client_1_auth_connections.size() > 0)
@@ -143,12 +150,14 @@ int main()
 
 		if (l_authenticated_connections.size() >= 1 && l_relayed_messages < l_max_relay_messages)
 		{
-			l_agent_1.invoke(
-				l_client_0.m_local_identity,
-				"test-function"
-			);
-			l_relayed_messages++;
-
+			if (l_client_1.fastest_path_to_identity(l_client_0.m_local_identity).size() > 0)
+			{
+				l_agent_1.invoke(
+					l_client_0.m_local_identity,
+					"test-function"
+				);
+				l_relayed_messages++;
+			}
 		}
 
 	}

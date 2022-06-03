@@ -73,9 +73,9 @@ namespace affix_services
 			)
 		{
 			// Lock the local agent information
-			affix_base::threading::locked_resource l_guarded_data = m_guarded_data.lock();
+			std::scoped_lock l_lock(m_guarded_data);
 
-			if (!l_guarded_data->m_local_agent_information.set_parsed_agent_specific_information(a_agent_specific_information))
+			if (!m_guarded_data->m_local_agent_information.set_parsed_agent_specific_information(a_agent_specific_information))
 			{
 				throw std::exception("[ AGENT ] Error: unable to set the parsed agent specific information.");
 			}
@@ -93,12 +93,12 @@ namespace affix_services
 		)
 		{
 			// Lock the local agent information
-			affix_base::threading::locked_resource l_local_agent_information = m_local_agent_information.m_agent_information.lock();
+			std::scoped_lock l_lock(m_guarded_data);
 			
-			m_local_client.disclose_agent_information(*l_local_agent_information);
+			m_local_client.disclose_agent_information(m_guarded_data->m_local_agent_information);
 
 			// Increment the disclosure iteration.
-			l_local_agent_information->m_disclosure_iteration++;
+			m_guarded_data->m_local_agent_information.m_disclosure_iteration++;
 
 		}
 
@@ -109,11 +109,13 @@ namespace affix_services
 			SERIALIZABLE_PARAMETER_TYPES ... a_args
 		)
 		{
+			std::scoped_lock l_lock(m_guarded_data);
+
 			// Get the local agent information in a thread-safe manner
-			std::string l_agent_type_identifier = m_local_agent_information.m_agent_information.const_lock()->m_agent_type_identifier;
+			std::string l_agent_type_identifier = m_guarded_data->m_local_agent_information.m_agent_type_identifier;
 
 			// Serialize the function invocation
-			affix_base::data::byte_buffer l_serialized_invocation = m_remote_function_invoker.serialize_invocation(
+			affix_base::data::byte_buffer l_serialized_invocation = m_guarded_data->m_remote_function_invoker.serialize_invocation(
 				a_function_identifier,
 				a_args...
 			);
@@ -191,13 +193,13 @@ namespace affix_services
 
 		)
 		{
-			affix_base::threading::const_locked_resource l_guarded_data = m_guarded_data.const_lock();
+			std::scoped_lock l_lock(m_guarded_data);
 
 			std::map<std::string, affix_services::agent_information> l_remote_agents = m_local_client.get_remote_agents(
-				l_guarded_data->m_local_agent_information.m_agent_type_identifier
+				m_guarded_data->m_local_agent_information.m_agent_type_identifier
 			);
 
-			std::map<std::string, affix_services::agent_information>& l_registered_agents = l_guarded_data->m_registered_agents;
+			std::map<std::string, affix_services::agent_information>& l_registered_agents = m_guarded_data->m_registered_agents;
 
 			for (int i = 0; i < l_remote_agents.size(); i++)
 			{
@@ -214,7 +216,7 @@ namespace affix_services
 				{
 					// If the agent is not registered,
 					// and the client has an agent of the local type associated with it, register it.
-					l_registered_agent = l_registered_agents.insert(l_remote_agent).first;
+					l_registered_agent = l_registered_agents.insert({ l_remote_agent->first, l_remote_agent->second }).first;
 
 					// Call method notfying of a change to the agents
 					on_remote_agent_connect(l_registered_agent->first);
@@ -282,7 +284,9 @@ namespace affix_services
 
 		)
 		{
-			std::string l_agent_identifier = m_guarded_data.const_lock()->m_local_agent_information.m_agent_type_identifier;
+			std::scoped_lock l_lock(m_guarded_data);
+
+			std::string l_agent_identifier = m_guarded_data->m_local_agent_information.m_agent_type_identifier;
 
 			auto l_inbox = m_local_client.pop_inbox(l_agent_identifier);
 
@@ -312,10 +316,10 @@ namespace affix_services
 			const affix_base::data::byte_buffer& a_byte_buffer
 		)
 		{
-			locked_resource l_guarded_data = m_guarded_data.lock();
+			std::scoped_lock l_lock(m_guarded_data);
 
 			// Process the invocation using agent-specific-defined functions.
-			l_guarded_data->m_remote_invocation_processor.process(a_remote_client_identity, a_byte_buffer);
+			m_guarded_data->m_remote_invocation_processor.process(a_remote_client_identity, a_byte_buffer);
 
 		}
 
