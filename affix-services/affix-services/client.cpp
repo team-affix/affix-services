@@ -904,14 +904,14 @@ void client::process_relay_message(
 	std::string l_recipient_identity = l_request.m_message_body.m_path.front();
 
 	auto l_recipient_connection = std::find_if(
-		m_guarded_data->m_authentication_attempts.begin(),
-		m_guarded_data->m_authentication_attempts.end(),
+		m_guarded_data->m_authenticated_connections.begin(),
+		m_guarded_data->m_authenticated_connections.end(),
 			[&](ptr<authenticated_connection> a_recipient_authenticated_connection)
 			{
 				return a_recipient_authenticated_connection->remote_identity() == l_recipient_identity;
 			});
 
-	if (l_recipient_connection == m_guarded_data->m_authentication_attempts.end())
+	if (l_recipient_connection == m_guarded_data->m_authenticated_connections.end())
 		// The recipient is not connected
 		return;
 
