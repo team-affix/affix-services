@@ -102,6 +102,14 @@ namespace affix_services
 
 		}
 
+		/// <summary>
+		/// Serializes the remote invocation, and then relays the serialized invocation 
+		/// to the locally-similar remote agent associated with the argued remote client identity.
+		/// </summary>
+		/// <typeparam name="...SERIALIZABLE_PARAMETER_TYPES"></typeparam>
+		/// <param name="a_remote_client_identity"></param>
+		/// <param name="a_function_identifier"></param>
+		/// <param name="...a_args"></param>
 		template<typename ... SERIALIZABLE_PARAMETER_TYPES>
 		void invoke(
 			const std::string& a_remote_client_identity,
@@ -141,7 +149,92 @@ namespace affix_services
 			agent_specific_process();
 		}
 
+		/// <summary>
+		/// Adds a function which can be called by remote agents to the local agent.
+		/// </summary>
+		/// <typeparam name="...SERIALIZABLE_PARAMETER_TYPES"></typeparam>
+		/// <param name="a_function_identifier"></param>
+		/// <param name="a_function"></param>
+		template<typename ... SERIALIZABLE_PARAMETER_TYPES>
+		void add_function(
+			const FUNCTION_IDENTIFIER_TYPE& a_function_identifier,
+			const std::function<void(std::string, SERIALIZABLE_PARAMETER_TYPES...)>& a_function
+		)
+		{
+			std::scoped_lock l_lock(m_guarded_data);
+
+			m_guarded_data->m_remote_invocation_processor.add_function(
+				a_function_identifier,
+				a_function
+			);
+
+		}
+
+		/// <summary>
+		/// Removes a remote-invocable function from the local agent.
+		/// </summary>
+		/// <param name="a_function_identifier"></param>
+		void remove_function(
+			const FUNCTION_IDENTIFIER_TYPE& a_function_identifier
+		)
+		{
+			std::scoped_lock l_lock(m_guarded_data);
+
+			m_guarded_data->m_remote_invocation_processor.remove_function(
+				a_function_identifier
+			);
+
+		}
+
+		/// <summary>
+		/// Gets the identity with the largest numerical value.
+		/// </summary>
+		/// <returns></returns>
+		std::string largest_identity(
+
+		)
+		{
+			std::scoped_lock l_lock(m_guarded_data);
+
+			std::string l_max_identity_value;
+
+			for (auto i = m_guarded_data->m_registered_agents.begin(); i != m_guarded_data->m_registered_agents.end(); i++)
+				l_max_identity_value = larger_identity(l_max_identity_value, i->first);
+
+			return l_max_identity_value;
+		}
+
 	protected:
+		/// <summary>
+		/// Returns the larger of two identities when each are represented numerically.
+		/// </summary>
+		/// <param name="a_identity_0"></param>
+		/// <param name="a_identity_1"></param>
+		/// <returns></returns>
+		std::string larger_identity(
+			const std::string& a_identity_0,
+			const std::string& a_identity_1
+		)
+		{
+			if (a_identity_0.empty())
+				return a_identity_1;
+			if (a_identity_1.empty())
+				return a_identity_0;
+
+			for (int i = 0; i < a_identity_0.size(); i++)
+			{
+				if (a_identity_0[i] != a_identity_1[i])
+				{
+					if ((uint8_t)a_identity_0[i] > (uint8_t)a_identity_1[i])
+						return a_identity_0;
+					else
+						return a_identity_1;
+				}
+			}
+
+			return "";
+
+		}
 		/// <summary>
 		/// The entry point for customizable processing in the agent.
 		/// </summary>
