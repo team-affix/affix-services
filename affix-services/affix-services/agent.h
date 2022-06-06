@@ -138,6 +138,28 @@ namespace affix_services
 		}
 
 		/// <summary>
+		/// Performs a remote invocation on all locally-similar remote agents.
+		/// </summary>
+		/// <typeparam name="...SERIALIZABLE_PARAMETER_TYPES"></typeparam>
+		/// <param name="a_remote_client_identity"></param>
+		/// <param name="a_function_identifier"></param>
+		/// <param name="...a_args"></param>
+		template<typename ... SERIALIZABLE_PARAMETER_TYPES>
+		void invoke_on_all(
+			const FUNCTION_IDENTIFIER_TYPE& a_function_identifier,
+			SERIALIZABLE_PARAMETER_TYPES ... a_args
+		)
+		{
+			std::scoped_lock l_lock(m_guarded_data);
+
+			for (auto i : m_guarded_data->m_registered_agents)
+			{
+				invoke(i.first, a_function_identifier, a_args...);
+			}
+
+		}
+
+		/// <summary>
 		/// Processes all messages and handles all repetative functionality.
 		/// </summary>
 		void process(
