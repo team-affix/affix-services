@@ -83,5 +83,7 @@ std::vector<std::string> client_information::fastest_path(
 
 )
 {
+	if (m_paths.size() == 0)
+		return {};
 	return m_paths.front();
 }

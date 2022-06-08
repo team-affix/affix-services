@@ -111,7 +111,7 @@ namespace affix_services
 		/// <param name="a_function_identifier"></param>
 		/// <param name="...a_args"></param>
 		template<typename ... SERIALIZABLE_PARAMETER_TYPES>
-		void invoke(
+		bool invoke(
 			const std::string& a_remote_client_identity,
 			const FUNCTION_IDENTIFIER_TYPE& a_function_identifier,
 			SERIALIZABLE_PARAMETER_TYPES ... a_args
@@ -128,48 +128,16 @@ namespace affix_services
 				a_args...
 			);
 
+			if (!agent_is_registered(a_remote_client_identity))
+				// Since the remote agent is not registered locally, return false.
+				return false;
+
 			// Relay the serialized invocation to the remote agent.
-			m_local_client.relay(
+			return m_local_client.relay(
 				a_remote_client_identity,
 				l_agent_type_identifier,
 				l_serialized_invocation.data()
 			);
-
-		}
-
-		template<typename ... REQUEST_SERIALIZABLE_PARAMETER_TYPES, typename ... RESPONSE_SERIALIZABLE_PARAMETER_TYPES>
-		bool synchronize(
-			const std::function<std::string()>& a_get_remote_client_identity,
-			const FUNCTION_IDENTIFIER_TYPE& a_request_function_identifier,
-			const FUNCTION_IDENTIFIER_TYPE& a_response_function_identifier,
-			const std::tuple<REQUEST_SERIALIZABLE_PARAMETER_TYPES ...>& a_request_args,
-			RESPONSE_SERIALIZABLE_PARAMETER_TYPES& ... a_response_args
-		)
-		{
-			std::string l_previous_remote_client_identity;
-
-			volatile bool l_callback_completed = false;
-
-			add_function
-
-			while (!l_callback_completed)
-			{
-				std::string l_current_remote_client_identity = a_get_remote_client_identity();
-
-				if (l_current_remote_client_identity.empty())
-					return false;
-
-				if (l_current_remote_client_identity != l_previous_remote_client_identity)
-				{
-					std::apply([&](REQUEST_SERIALIZABLE_PARAMETER_TYPES ... a_request_args_variadic)
-						{
-							invoke(l_current_remote_client_identity, a_request_function_identifier, a_request_args_variadic);
-						}, a_request_args);
-
-					l_previous_remote_client_identity = l_current_remote_client_identity;
-				}
-
-			}
 
 		}
 
@@ -192,6 +160,78 @@ namespace affix_services
 			{
 				invoke(i.first, a_function_identifier, a_args...);
 			}
+
+		}
+
+		template<typename ... REQUEST_SERIALIZABLE_PARAMETER_TYPES, typename ... RESPONSE_SERIALIZABLE_PARAMETER_TYPES>
+		bool synchronize(
+			const std::string& a_remote_client_identity,
+			const FUNCTION_IDENTIFIER_TYPE& a_request_function_identifier,
+			const FUNCTION_IDENTIFIER_TYPE& a_response_function_identifier,
+			const std::tuple<REQUEST_SERIALIZABLE_PARAMETER_TYPES ...>& a_request_args = {},
+			std::tuple<RESPONSE_SERIALIZABLE_PARAMETER_TYPES& ...> a_response_args = {}
+		)
+		{
+			volatile bool l_callback_completed = false;
+
+			// Create response callback function
+			add_function(a_response_function_identifier,
+				std::function([&](
+					std::string a_callback_remote_client_identity,
+					RESPONSE_SERIALIZABLE_PARAMETER_TYPES... a_callback_response_args
+					)
+					{
+						if (a_callback_remote_client_identity != a_remote_client_identity ||
+							l_callback_completed)
+							// If the remote identity does not match
+							// the expected remote identity, just return
+							// Also, if the callback has already completed, just return.
+							return;
+
+						// Loop over the responded args, outputting them into the reference tuple that was
+						// argued into the synchronize() function.
+						constexpr_for(
+							[](const auto& a_const_param, auto& a_mutable_param)
+							{
+								a_mutable_param = a_const_param;
+							},
+							std::forward_as_tuple(a_callback_response_args...),
+							a_response_args);
+
+						// Mark the callback as completed.
+						l_callback_completed = true;
+
+					}));
+
+
+			// Send request to remote agent (invoke the remote function)
+			bool l_invocation_successful = false;
+
+			std::apply([&](REQUEST_SERIALIZABLE_PARAMETER_TYPES ... a_request_args_variadic)
+				{
+					l_invocation_successful = invoke(a_remote_client_identity, a_request_function_identifier, a_request_args_variadic...);
+				}, a_request_args);
+
+			if (!l_invocation_successful)
+				// The invocation failed.
+				// There was no path registered to the remote identity.
+				return false;
+
+			// Loop until the response has been received
+			while (!l_callback_completed)
+			{
+				if (!agent_is_registered(a_remote_client_identity))
+					// Since the remote agent is not registered locally, just 
+					// return false.
+					return false;
+			}
+
+			// Delete the callback, seeing as the callback function has already been utilized
+			// and will no longer be needed.
+			remove_function(a_response_function_identifier);
+
+			// Return success
+			return true;
 
 		}
 
@@ -262,7 +302,39 @@ namespace affix_services
 			return l_max_identity_value;
 		}
 
+		/// <summary>
+		/// Returns a boolean indicating whether or not the argued agent is registered locally.
+		/// </summary>
+		/// <param name="a_remote_client_identity"></param>
+		/// <returns></returns>
+		bool agent_is_registered(
+			const std::string& a_remote_client_identity
+		)
+		{
+			std::scoped_lock l_lock(m_guarded_data);
+			return m_guarded_data->m_registered_agents.find(a_remote_client_identity) !=
+				m_guarded_data->m_registered_agents.end();
+		}
+
 	protected:
+		/// <summary>
+		/// Traverses two separate variadic argument lists in sync.
+		/// </summary>
+		/// <param name="a_identity_0"></param>
+		/// <param name="a_identity_1"></param>
+		/// <returns></returns>
+		template<typename FUNCTION_TYPE, typename ... PARAMS>
+		constexpr void constexpr_for(FUNCTION_TYPE&& a_function, std::tuple<PARAMS& ...> a_params_0, std::tuple<PARAMS& ...> a_params_1)
+		{
+			std::apply([&](PARAMS& ... a_params_0_variadic)
+				{
+					std::apply([&](PARAMS& ... a_params_1_variadic)
+						{
+							(a_function(a_params_0_variadic, a_params_1_variadic), ...);
+						}, a_params_1);
+				}, a_params_0);
+		}
+
 		/// <summary>
 		/// Returns the larger of two identities when each are represented numerically.
 		/// </summary>

@@ -79,7 +79,7 @@ void client::process(
 	process_registered_clients();
 }
 
-void client::relay(
+bool client::relay(
 	const std::string& a_remote_client_identity,
 	const std::string& a_target_agent_type_identifier,
 	const std::vector<uint8_t>& a_payload
@@ -88,14 +88,22 @@ void client::relay(
 	// Lock the vector of relay requests, allowing for pushing back
 	std::scoped_lock l_lock(m_guarded_data);
 
+	// Get the path to the identity
+	std::vector<std::string> l_path_to_identity = fastest_path_to_identity(a_remote_client_identity);
+
+	if (l_path_to_identity.size() == 0)
+		return false;
+
 	// Generate message body
-	message_relay_body l_message_body = message_relay_body(m_local_identity, a_target_agent_type_identifier, a_payload, fastest_path_to_identity(a_remote_client_identity));
+	message_relay_body l_message_body = message_relay_body(m_local_identity, a_target_agent_type_identifier, a_payload, l_path_to_identity);
 
 	// Generate full message
 	message l_message(l_message_body.create_message_header(), l_message_body);
 
 	// Add this message to the queue to process
 	m_guarded_data->m_relay_messages.push_back(l_message);
+
+	return true;
 
 }
 

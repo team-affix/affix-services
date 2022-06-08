@@ -44,12 +44,16 @@ int main()
 	int message_iteration = 0;
 
 	l_agent_0.add_function(
-		"test-function",
-		std::function([&](std::string a_client_identity)
+		"test-request",
+		std::function([&](std::string a_client_identity, int a_request_index)
 			{
 				if (message_iteration % 100 == 0)
-					std::cout << "RECEIVED MESSAGE:" << message_iteration << std::endl;
+					std::cout << "RECEIVED MESSAGE:" << message_iteration << " REQUEST INDEX: " << a_request_index << std::endl;
+
+				l_agent_0.invoke(a_client_identity, "test-response", int(10));
+
 				message_iteration++;
+
 			}));
 
 	std::clog << "[ APPLICATION ] Importing client_1 configuration..." << std::endl;
@@ -80,16 +84,38 @@ int main()
 	l_agent_2.disclose_agent_information();
 
 	// Boolean describing whether the context thread should continue
-	bool l_context_thread_continue = true;
+	bool l_background_thread_continue = true;
 
 	// Run context
 	std::thread l_context_thread(
 		[&]
 		{
-			while (l_context_thread_continue)
+			while (l_background_thread_continue)
 			{
 				asio::io_context::work l_idle_work(l_io_context);
 				l_io_context.run();
+			}
+		});
+
+	std::thread l_affix_services_thread(
+		[&]
+		{
+			while (l_background_thread_continue)
+			{
+				try
+				{
+					l_client_0.process();
+					l_client_1.process();
+					l_client_2.process();
+
+					l_agent_0.process();
+					l_agent_1.process();
+					l_agent_2.process();
+				}
+				catch (std::exception a_ex)
+				{
+					std::cerr << a_ex.what() << std::endl;
+				}
 			}
 		});
 
@@ -104,69 +130,53 @@ int main()
 	// Processing loop
 	for (int i = 0; true; i++)
 	{
-		try
 		{
-			l_client_0.process();
-			l_client_1.process();
-			l_client_2.process();
+			std::scoped_lock l_client_0_lock(l_client_0.m_guarded_data);
+			std::scoped_lock l_client_1_lock(l_client_1.m_guarded_data);
 
-			l_agent_0.process();
-			l_agent_1.process();
-			l_agent_2.process();
-		}
-		catch (std::exception a_ex)
-		{
-			std::cerr << a_ex.what() << std::endl;
-		}
-
-		std::scoped_lock l_client_0_lock(l_client_0.m_guarded_data);
-		std::scoped_lock l_client_1_lock(l_client_1.m_guarded_data);
-
-		const auto& l_authenticated_connections = l_client_0.m_guarded_data->m_authenticated_connections;
+			const auto& l_authenticated_connections = l_client_0.m_guarded_data->m_authenticated_connections;
 		
-		auto& l_client_1_auth_connections = l_client_1.m_guarded_data->m_authenticated_connections;
+			auto& l_client_1_auth_connections = l_client_1.m_guarded_data->m_authenticated_connections;
 
-		if (affix_base::timing::utc_time() - l_start_time > 5 &&
-			l_client_1_auth_connections.size() > 0)
-		{
-			auto l_connection_with_client_0 =
-				std::find_if(l_client_1_auth_connections.begin(), l_client_1_auth_connections.end(),
-					[&](ptr<affix_services::networking::authenticated_connection> a_auth_conn)
-					{
-						return a_auth_conn->remote_identity() == l_client_0.m_local_identity;
-					});
-
-			if (l_connection_with_client_0 != l_client_1_auth_connections.end())
+			if (affix_base::timing::utc_time() - l_start_time > 5 &&
+				l_client_1_auth_connections.size() > 0)
 			{
-				(*l_connection_with_client_0)->close();
-				std::cout << "CLOSING CONNECTION TO CLIENT 0" << std::endl;
-			}
+				auto l_connection_with_client_0 =
+					std::find_if(l_client_1_auth_connections.begin(), l_client_1_auth_connections.end(),
+						[&](ptr<affix_services::networking::authenticated_connection> a_auth_conn)
+						{
+							return a_auth_conn->remote_identity() == l_client_0.m_local_identity;
+						});
 
+				if (l_connection_with_client_0 != l_client_1_auth_connections.end())
+				{
+					(*l_connection_with_client_0)->close();
+					std::cout << "CLOSING CONNECTION TO CLIENT 0" << std::endl;
+				}
+
+			}
 		}
 
-		if (l_authenticated_connections.size() >= 1 && l_relayed_messages < l_max_relay_messages)
+		if (l_relayed_messages < l_max_relay_messages)
 		{
-			if (l_client_1.fastest_path_to_identity(l_client_0.m_local_identity).size() > 0)
+			int l_response = 0;
+
+			if (l_agent_1.synchronize(
+				l_client_0.m_local_identity,
+				"test-request", "test-response", std::tuple{int(l_relayed_messages)}, std::forward_as_tuple(l_response)))
 			{
-				int a;
-				int b;
-
-				l_agent_1.synchronize([] { return ""; }, "request", "response", {}, a, b);
-
-				l_agent_1.invoke(
-					l_client_0.m_local_identity,
-					"test-function"
-				);
 				l_relayed_messages++;
 			}
 		}
 
 	}
 
-	l_context_thread_continue = false;
+	l_background_thread_continue = false;
 
 	if (l_context_thread.joinable())
 		l_context_thread.join();
+	if (l_affix_services_thread.joinable())
+		l_affix_services_thread.join();
 
 	return 0;
 }

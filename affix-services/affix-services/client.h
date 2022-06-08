@@ -135,7 +135,7 @@ namespace affix_services
 		/// </summary>
 		/// <param name="a_exclusive_path"></param>
 		/// <param name="a_payload"></param>
-		void relay(
+		bool relay(
 			const std::string& a_remote_client_identity,
 			const std::string& a_target_agent_type_identifier,
 			const std::vector<uint8_t>& a_payload = {}
