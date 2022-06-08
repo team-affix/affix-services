@@ -129,6 +129,42 @@ namespace affix_services
 
 		}
 
+		template<typename ... REQUEST_SERIALIZABLE_PARAMETER_TYPES, typename ... RESPONSE_SERIALIZABLE_PARAMETER_TYPES>
+		bool synchronize(
+			const std::function<std::string()>& a_get_remote_client_identity,
+			const FUNCTION_IDENTIFIER_TYPE& a_request_function_identifier,
+			const FUNCTION_IDENTIFIER_TYPE& a_response_function_identifier,
+			const std::tuple<REQUEST_SERIALIZABLE_PARAMETER_TYPES ...>& a_request_args,
+			RESPONSE_SERIALIZABLE_PARAMETER_TYPES& ... a_response_args
+		)
+		{
+			std::string l_previous_remote_client_identity;
+
+			volatile bool l_callback_completed = false;
+
+			add_function
+
+			while (!l_callback_completed)
+			{
+				std::string l_current_remote_client_identity = a_get_remote_client_identity();
+
+				if (l_current_remote_client_identity.empty())
+					return false;
+
+				if (l_current_remote_client_identity != l_previous_remote_client_identity)
+				{
+					std::apply([&](REQUEST_SERIALIZABLE_PARAMETER_TYPES ... a_request_args_variadic)
+						{
+							invoke(l_current_remote_client_identity, a_request_function_identifier, a_request_args_variadic);
+						}, a_request_args);
+
+					l_previous_remote_client_identity = l_current_remote_client_identity;
+				}
+
+			}
+
+		}
+
 		/// <summary>
 		/// Processes all messages and handles all repetative functionality.
 		/// </summary>

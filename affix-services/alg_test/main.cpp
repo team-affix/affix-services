@@ -152,6 +152,11 @@ int main()
 		{
 			if (l_client_1.fastest_path_to_identity(l_client_0.m_local_identity).size() > 0)
 			{
+				int a;
+				int b;
+
+				l_agent_1.synchronize([] { return ""; }, "request", "response", {}, a, b);
+
 				l_agent_1.invoke(
 					l_client_0.m_local_identity,
 					"test-function"
