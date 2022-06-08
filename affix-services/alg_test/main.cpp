@@ -43,9 +43,7 @@ int main()
 
 	int message_iteration = 0;
 
-	l_agent_0.m_guarded_data.lock();
-	
-	l_agent_0.m_guarded_data->m_remote_invocation_processor.add_function(
+	l_agent_0.add_function(
 		"test-function",
 		std::function([&](std::string a_client_identity)
 			{
@@ -53,8 +51,6 @@ int main()
 					std::cout << "RECEIVED MESSAGE:" << message_iteration << std::endl;
 				message_iteration++;
 			}));
-
-	l_agent_0.m_guarded_data.unlock();
 
 	std::clog << "[ APPLICATION ] Importing client_1 configuration..." << std::endl;
 	ptr<client_configuration> l_client_configuration_1(new client_configuration("config/client_configuration_1.json"));
