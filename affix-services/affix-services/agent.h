@@ -123,10 +123,16 @@ namespace affix_services
 			std::string l_agent_type_identifier = m_guarded_data->m_local_agent_information.m_agent_type_identifier;
 
 			// Serialize the function invocation
-			affix_base::data::byte_buffer l_serialized_invocation = m_guarded_data->m_remote_function_invoker.serialize_invocation(
+			affix_base::data::byte_buffer l_serialized_invocation;
+			
+			if (!m_guarded_data->m_remote_function_invoker.serialize_invocation(
+				l_serialized_invocation,
 				a_function_identifier,
-				a_args...
-			);
+				a_args...))
+			{
+				return false;
+			}
+
 
 			if (!agent_is_registered(a_remote_client_identity))
 				// Since the remote agent is not registered locally, return false.
@@ -542,7 +548,8 @@ namespace affix_services
 			std::scoped_lock l_lock(m_guarded_data);
 
 			// Process the invocation using agent-specific-defined functions.
-			m_guarded_data->m_remote_invocation_processor.process(a_remote_client_identity, a_byte_buffer);
+			if (!m_guarded_data->m_remote_invocation_processor.process(a_remote_client_identity, a_byte_buffer))
+				throw std::exception("[ AGENT ] Error: unable to process remote invocation.");
 
 		}
 
