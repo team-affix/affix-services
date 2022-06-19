@@ -23,7 +23,7 @@ namespace affix_services
 		struct guarded_data
 		{
 			/// <summary>
-			/// A vector of all agents using this client.
+			/// A vector of all inboxes used by agents registered with this client.
 			/// </summary>
 			std::map<std::string, std::vector<message<affix_services::message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>>> m_local_agent_inboxes;
 
@@ -33,7 +33,7 @@ namespace affix_services
 			std::vector<affix_base::data::ptr<pending_connection>> m_pending_outbound_connections;
 
 			/// <summary>
-			/// A vector of all newly established connections.
+			/// A vector of all pending outbound connection results.
 			/// </summary>
 			std::vector<affix_base::data::ptr<connection_result>> m_connection_results;
 
@@ -53,12 +53,12 @@ namespace affix_services
 			std::vector<affix_base::data::ptr<affix_services::networking::authenticated_connection>> m_authenticated_connections;
 
 			/// <summary>
-			/// A vector of all the message data received from authenticated connections.
+			/// A vector of all the message bytes received from authenticated connections.
 			/// </summary>
 			std::vector<std::tuple<affix_base::data::ptr<affix_services::networking::authenticated_connection>, affix_base::data::ptr<std::vector<uint8_t>>>> m_received_messages;
 
 			/// <summary>
-			/// Vector of relay requests that are pending being processed.
+			/// Vector of relay messages pending being processed.
 			/// </summary>
 			std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>> m_relay_messages;
 
@@ -73,12 +73,13 @@ namespace affix_services
 			std::vector<message<message_header<message_types, affix_base::details::semantic_version_number>, message_agent_information_body>> m_agent_information_messages;
 
 			/// <summary>
-			/// A vector of all pending miscellaneous functions that need to be called after a certain delay, hence the uint64_t in the tuple.
+			/// A vector of all pending miscellaneous functions that need to be called at a certain epoch time,
+			/// hence the uint64_t in the tuple.
 			/// </summary>
 			std::vector<std::tuple<uint64_t, std::function<void()>>> m_pending_function_calls;
 		
 			/// <summary>
-			/// A vector of registered clients, along with paths to those clients,
+			/// A vector of registered clients, along with ALL paths to those clients,
 			/// and agent information.
 			/// </summary>
 			std::vector<client_information> m_remote_clients;
@@ -141,18 +142,38 @@ namespace affix_services
 			const std::vector<uint8_t>& a_payload = {}
 		);
 
+		/// <summary>
+		/// Creates an inbox for the local agent.
+		/// </summary>
+		/// <param name="a_agent_identifier"></param>
 		void register_local_agent(
 			const std::string& a_agent_identifier
 		);
 
-		void disclose_agent_information(
+		/// <summary>
+		/// Discloses information for a local agent associated with the client.
+		/// </summary>
+		/// <param name="a_agent_information"></param>
+		void disclose_local_agent_information(
 			const affix_services::agent_information& a_agent_information
 		);
 
+		/// <summary>
+		/// Gets all agents who have the argued type identifier among all remote clients.
+		/// </summary>
+		/// <param name="a_agent_type_identifier"></param>
+		/// <returns></returns>
 		std::map<std::string, agent_information> get_remote_agents(
 			const std::string& a_agent_type_identifier
 		);
 
+		/// <summary>
+		/// Gets the inbox associated with the given local agent type identifier. 
+		/// (Since there can only be one local agent of a given type registered with the local client,
+		/// this identifies a single agent and resolves all ambiguity.)
+		/// </summary>
+		/// <param name="a_agent_type_identifier"></param>
+		/// <returns></returns>
 		std::vector<message<affix_services::message_header<message_types, affix_base::details::semantic_version_number>, message_relay_body>> pop_inbox(
 			const std::string& a_agent_type_identifier
 		);
@@ -181,7 +202,6 @@ namespace affix_services
 		void deregister_neighbor_index(
 			const std::string& a_neighbor_identity
 		);
-
 
 		/// <summary>
 		/// Starts the server associated with this affix-services module.
@@ -460,7 +480,7 @@ namespace affix_services
 		);
 
 		/// <summary>
-		/// Processes all pending function call.
+		/// Processes all pending function calls.
 		/// </summary>
 		void process_pending_function_calls(
 
@@ -491,10 +511,12 @@ namespace affix_services
 		);
 
 	protected:
+		/// <summary>
+		/// Accepts one connection (which will later be authenticated) asynchronously.
+		/// </summary>
 		void async_accept_next(
 
 		);
 
 	};
 }
-

@@ -125,7 +125,7 @@ void client::register_local_agent(
 
 }
 
-void client::disclose_agent_information(
+void client::disclose_local_agent_information(
 	const affix_services::agent_information& a_agent_information
 )
 {
@@ -198,6 +198,9 @@ void client::disclose_local_index(
 
 	for (int i = 0; i < m_guarded_data->m_remote_clients.size(); i++)
 	{
+		// Loop over all remote clients, and do the following:
+		// construct a message signifying the existence of a remote client (client path message),
+		// and send the message to THE ARGUED authenticated connection. 
 		for (int j = 0; j < m_guarded_data->m_remote_clients.at(i).m_paths.size(); j++)
 		{
 			// Generate the index message body
@@ -214,6 +217,8 @@ void client::disclose_local_index(
 		// Get vector of agents registered with the client
 		const std::vector<agent_information>& l_remote_client_agents = m_guarded_data->m_remote_clients.at(i).m_agents;
 
+		// Loop over all agents associated with the remote client, and send messages containing necessary data
+		// to THE ARGUED authenticated connection.
 		for (int j = 0; j < l_remote_client_agents.size(); j++)
 		{
 			// Construct the message body for agent_information

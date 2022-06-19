@@ -95,7 +95,7 @@ namespace affix_services
 			// Lock the local agent information
 			std::scoped_lock l_lock(m_guarded_data);
 			
-			m_local_client.disclose_agent_information(m_guarded_data->m_local_agent_information);
+			m_local_client.disclose_local_agent_information(m_guarded_data->m_local_agent_information);
 
 			// Increment the disclosure iteration.
 			m_guarded_data->m_local_agent_information.m_disclosure_iteration++;
