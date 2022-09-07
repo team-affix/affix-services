@@ -37,7 +37,6 @@ int main()
 		"config/client_configuration_0.json"
 	);
 	agent<std::string, std::string> l_agent_0(l_client_0, "test_agent", "agent-specific-information-0");
-
 	int message_iteration = 0;
 
 	l_agent_0.add_function(

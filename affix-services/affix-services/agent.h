@@ -8,7 +8,7 @@
 
 namespace affix_services
 {
-	template<typename AGENT_SPECIFIC_INFORMATION_TYPE, typename FUNCTION_IDENTIFIER_TYPE>
+	template<typename FUNCTION_IDENTIFIER_TYPE, typename AGENT_SPECIFIC_INFORMATION_TYPE>
 	class agent
 	{
 	public:
