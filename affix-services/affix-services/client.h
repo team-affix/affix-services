@@ -9,16 +9,88 @@
 #include "authentication_result.h"
 #include "messaging.h"
 #include "pending_connection.h"
-#include "client_configuration.h"
 #include "agent_information.h"
 #include "messaging.h"
 #include "client_information.h"
 #include "agent_information.h"
+#include "affix-base/data.h"
+#include "json.hpp"
 
 namespace affix_services
 {
 	class client
 	{
+	public:
+		struct configuration
+		{
+		public:
+			/// <summary>
+			/// Path to the JSON file.
+			/// </summary>
+			std::string m_json_file_path;
+
+			/// <summary>
+			/// Boolean describing whether or not timing out is enabled for pending authentication attempts.
+			/// </summary>
+			bool m_enable_pending_authentication_timeout = true;
+
+			/// <summary>
+			/// Maximum time after which pending authentication attempts will be discarded.
+			/// </summary>
+			uint64_t m_pending_authentication_timeout_in_seconds = 5;
+
+			/// <summary>
+			/// Boolean describing whether or not to close sockets after the connections have idled for a maximum amount of time.
+			/// </summary>
+			bool m_enable_authenticated_connection_timeout = true;
+
+			/// <summary>
+			/// Maximum amount of time that connections can idle for before they must be closed and reestablished.
+			/// </summary>
+			uint64_t m_authenticated_connection_timeout_in_seconds = 21600;
+
+			/// <summary>
+			/// The local RSA key pair, used for all message security
+			/// </summary>
+			affix_base::cryptography::rsa_key_pair m_local_key_pair;
+
+			/// <summary>
+			/// The delay in seconds for which the connection processor should wait before reconnecting to a remote peer.
+			/// </summary>
+			uint64_t m_reconnect_delay_in_seconds = 16;
+
+			/// <summary>
+			/// Import all identities approved for using this module.
+			/// </summary>
+			std::vector<std::string> m_approved_identities;
+
+			/// <summary>
+			/// Remote endpoints which this module will connect to.
+			/// </summary>
+			std::vector<std::string> m_remote_endpoint_strings;
+
+			/// <summary>
+			/// Boolean describing whether or not the server should be enabled.
+			/// </summary>
+			bool m_enable_server = false;
+
+			/// <summary>
+			/// Endpoint to which the acceptor is bound.
+			/// </summary>
+			uint16_t m_server_bind_port = 0;
+
+		public:
+			/// <summary>
+			/// Constructor which takes an argument for each field it is to populate.
+			/// </summary>
+			/// <param name="a_connection_enable_disconnect_after_maximum_idle_time"></param>
+			/// <param name="a_connection_maximum_idle_time_in_seconds"></param>
+			configuration(
+				const std::string& a_json_file_path
+			);
+
+		};
+
 	public:
 		struct guarded_data
 		{
@@ -90,7 +162,7 @@ namespace affix_services
 		/// <summary>
 		/// Contains the configuration for this client instance; this object governs how to behave as a connection processor.
 		/// </summary>
-		affix_base::data::ptr<client_configuration> m_client_configuration;
+		configuration m_client_configuration;
 
 		/// <summary>
 		/// Base64 representation of the local client's identity.
@@ -121,7 +193,7 @@ namespace affix_services
 		/// <param name="a_local_key_pair"></param>
 		client(
 			asio::io_context& a_io_context,
-			affix_base::data::ptr<client_configuration> a_client_configuration
+			const std::string& a_configuration_file_path
 		);
 
 		/// <summary>

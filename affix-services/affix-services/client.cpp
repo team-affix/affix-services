@@ -32,15 +32,124 @@ using affix_services::connection_information;
 using namespace affix_base::threading;
 using namespace affix_base::data;
 
+client::configuration::configuration(
+	const std::string& a_json_file_path
+) :
+	m_json_file_path(a_json_file_path)
+{
+	// Load json from file
+	nlohmann::ordered_json l_json;
+	std::ifstream l_ifs(a_json_file_path);
+	l_ifs >> l_json;
+	l_ifs.close();
+
+	// Configure enable_pending_authentication_timeout cache
+	if (l_json.contains("enable_pending_authentication_timeout"))
+		m_enable_pending_authentication_timeout = l_json["enable_pending_authentication_timeout"].get<bool>();
+
+	// Configure pending_authentication_timeout_in_seconds cache
+	if (l_json.contains("pending_authentication_timeout_in_seconds"))
+		m_pending_authentication_timeout_in_seconds = l_json["pending_authentication_timeout_in_seconds"].get<uint64_t>();
+
+	// Configure enable_authenticated_connection_timeout cache
+	if (l_json.contains("enable_authenticated_connection_timeout"))
+		m_enable_authenticated_connection_timeout = l_json["enable_authenticated_connection_timeout"].get<bool>();
+
+	// Configure authenticated_connection_timeout_in_seconds cache
+	if (l_json.contains("authenticated_connection_timeout_in_seconds"))
+		m_authenticated_connection_timeout_in_seconds = l_json["authenticated_connection_timeout_in_seconds"].get<uint64_t>();
+
+	// Configure local_key_pair cache
+	if (l_json.contains("local_private_key") && l_json.contains("local_public_key"))
+	{
+		// Read in base64 string versions of the RSA keys.
+		std::string l_private_key_string = l_json["local_private_key"].get<std::string>();
+		std::string l_public_key_string = l_json["local_public_key"].get<std::string>();
+
+		// Import the RSA keys from the base64 strings
+		if (!affix_base::cryptography::rsa_from_base64_string(
+			m_local_key_pair.private_key,
+			l_private_key_string
+		))
+		{
+			throw std::exception("Failed to load local RSA Private Key from base64 string.");
+		}
+		if (!affix_base::cryptography::rsa_from_base64_string(
+			m_local_key_pair.public_key,
+			l_public_key_string
+		))
+		{
+			throw std::exception("Failed to load local RSA Public Key from base64 string.");
+		}
+	}
+	else
+	{
+		m_local_key_pair = affix_base::cryptography::rsa_generate_key_pair(4096);
+	}
+
+	// Configure reconnect_delay_in_seconds cache
+	if (l_json.contains("reconnect_delay_in_seconds"))
+		m_reconnect_delay_in_seconds = l_json["reconnect_delay_in_seconds"].get<uint64_t>();
+
+	// Configure approved_identities cache
+	if (l_json.contains("approved_identities"))
+		m_approved_identities = l_json["approved_identities"].get<std::vector<std::string>>();
+	
+	// Configure remote_endpoints cache
+	if (l_json.contains("remote_endpoints"))
+		m_remote_endpoint_strings = l_json["remote_endpoints"].get<std::vector<std::string>>();
+
+	// Configure m_enable_server cache
+	if (l_json.contains("enable_server"))
+		m_enable_server = l_json["enable_server"].get<bool>();
+
+	// Configure server_bind_port cache
+	if (l_json.contains("server_bind_port"))
+		m_server_bind_port = l_json["server_bind_port"].get<uint16_t>();
+
+	// Begin exporting the json back to the file.
+	l_json.clear();
+
+	l_json["enable_pending_authentication_timeout"] = m_enable_pending_authentication_timeout;
+	l_json["pending_authentication_timeout_in_seconds"] = m_pending_authentication_timeout_in_seconds;
+	l_json["enable_authenticated_connection_timeout"] = m_enable_authenticated_connection_timeout;
+	l_json["authenticated_connection_timeout_in_seconds"] = m_authenticated_connection_timeout_in_seconds;
+
+	// Generate temporary storage for RSA base64 strings.
+	std::string l_local_public_key;
+	std::string l_local_private_key;
+
+	// Export public and private keys to Base64 format.
+	if (!affix_base::cryptography::rsa_to_base64_string(m_local_key_pair.public_key, l_local_public_key))
+		throw std::exception("Error: unable to convert RSA public key to Base64 format.");
+	if (!affix_base::cryptography::rsa_to_base64_string(m_local_key_pair.private_key, l_local_private_key))
+		throw std::exception("Error: unable to convert RSA private key to Base64 format.");
+
+	// Store the keys
+	l_json["local_public_key"] = l_local_public_key;
+	l_json["local_private_key"] = l_local_private_key;
+	l_json["reconnect_delay_in_seconds"] = m_reconnect_delay_in_seconds;
+	l_json["approved_identities"] = m_approved_identities;
+	l_json["remote_endpoints"] = m_remote_endpoint_strings;
+	l_json["enable_server"] = m_enable_server;
+	l_json["server_bind_port"] = m_server_bind_port;
+
+	// Write the json to file.
+	std::ofstream l_ofs(m_json_file_path);
+	l_ofs << l_json.dump(1, '\t');
+	l_ofs.close();
+
+}
+
 client::client(
 	asio::io_context& a_io_context,
-	affix_base::data::ptr<client_configuration> a_client_configuration
+	const std::string& a_configuration_file_path
 ) :
 	m_io_context(a_io_context),
-	m_client_configuration(a_client_configuration)
+	m_client_configuration(a_configuration_file_path)
 {
 	// Get the local identity string from the local public key.
-	if (!rsa_to_base64_string(a_client_configuration->m_local_key_pair.resource().public_key, m_local_identity))
+	if (!rsa_to_base64_string(m_client_configuration.m_local_key_pair.public_key, m_local_identity))
 		throw std::exception("The inputted base64 RSA public key string is not in correct format.");
 
 	// Lock all local guarded data
@@ -53,7 +162,7 @@ client::client(
 	m_guarded_data->m_remote_clients.push_back(l_local_client);
 
 
-	if (m_client_configuration->m_enable_server.resource())
+	if (m_client_configuration.m_enable_server)
 		// If the server is enabled, start it
 		start_server();
 
@@ -282,7 +391,7 @@ void client::start_server(
 	LOG("[ CONNECTION PROCESSOR ] Starting server.");
 
 	// Create acceptor object using the specified endpoint
-	m_acceptor = new tcp::acceptor(m_io_context, tcp::endpoint(tcp::v4(), m_client_configuration->m_server_bind_port.resource()));
+	m_acceptor = new tcp::acceptor(m_io_context, tcp::endpoint(tcp::v4(), m_client_configuration.m_server_bind_port));
 
 	// Begin accepting connections
 	async_accept_next();
@@ -293,7 +402,7 @@ void client::start_pending_outbound_connections(
 )
 {
 	// Get remote endpoints to which we should connect
-	std::vector<std::string> l_remote_endpoints = m_client_configuration->m_remote_endpoint_strings.resource();
+	std::vector<std::string> l_remote_endpoints = m_client_configuration.m_remote_endpoint_strings;
 
 	// Connect to remote parties
 	for (int i = 0; i < l_remote_endpoints.size(); i++)
@@ -376,7 +485,7 @@ void client::restart_pending_outbound_connection(
 	std::scoped_lock l_lock(m_guarded_data);
 
 	// The inclusive minimum UTC time at which this pending function should trigger.
-	uint64_t l_time_to_reconnect = affix_base::timing::utc_time() + m_client_configuration->m_reconnect_delay_in_seconds.resource();
+	uint64_t l_time_to_reconnect = affix_base::timing::utc_time() + m_client_configuration.m_reconnect_delay_in_seconds;
 
 	// Create delayed function call
 	m_guarded_data->m_pending_function_calls.push_back(
@@ -440,7 +549,7 @@ bool client::identity_approved(
 			return false;
 
 		// Get current approved identities
-		std::vector<std::string>& l_approved_identities = m_client_configuration->m_approved_identities.resource();
+		std::vector<std::string>& l_approved_identities = m_client_configuration.m_approved_identities;
 
 		return std::find(l_approved_identities.begin(), l_approved_identities.end(), l_identity) !=
 			l_approved_identities.end();
@@ -527,10 +636,10 @@ void client::process_connection_result(
 			new pending_authentication(
 				(*a_connection_result)->m_connection_information,
 				l_remote_seed,
-				m_client_configuration->m_local_key_pair.resource(),
+				m_client_configuration.m_local_key_pair,
 				*this,
-				m_client_configuration->m_enable_pending_authentication_timeout.resource(),
-				m_client_configuration->m_pending_authentication_timeout_in_seconds.resource()
+				m_client_configuration.m_enable_pending_authentication_timeout,
+				m_client_configuration.m_pending_authentication_timeout_in_seconds
 			)
 		);
 
@@ -700,9 +809,9 @@ void client::process_authenticated_connection(
 	std::vector<affix_base::data::ptr<authenticated_connection>>::iterator a_authenticated_connection
 )
 {
-	bool l_connection_timed_out = m_client_configuration->m_enable_authenticated_connection_timeout.resource() &&
+	bool l_connection_timed_out = m_client_configuration.m_enable_authenticated_connection_timeout &&
 		(*a_authenticated_connection)->idletime() >
-		m_client_configuration->m_authenticated_connection_timeout_in_seconds.resource();
+		m_client_configuration.m_authenticated_connection_timeout_in_seconds;
 
 	// Boolean describing whether the authenticated connection is still active (connected)
 	bool l_connected = false;

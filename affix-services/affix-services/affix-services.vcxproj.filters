@@ -96,9 +96,6 @@
     <ClInclude Include="security_information.h">
       <Filter>Header Files\security</Filter>
     </ClInclude>
-    <ClInclude Include="client_configuration.h">
-      <Filter>Header Files\processing</Filter>
-    </ClInclude>
     <ClInclude Include="client.h">
       <Filter>Header Files\processing</Filter>
     </ClInclude>
@@ -148,9 +145,6 @@
     </ClCompile>
     <ClCompile Include="security_information.cpp">
       <Filter>Source Files\security</Filter>
-    </ClCompile>
-    <ClCompile Include="client_configuration.cpp">
-      <Filter>Source Files\processing</Filter>
     </ClCompile>
     <ClCompile Include="client.cpp">
       <Filter>Source Files\processing</Filter>

@@ -30,14 +30,11 @@ int main()
 	};
 
 	// Get configuration for the connection processor
-	std::clog << "[ APPLICATION ] Importing client_0 configuration..." << std::endl;
-	ptr<client_configuration> l_client_configuration_0(new client_configuration("config/client_configuration_0.json"));
-	l_client_configuration_0->import_resource();
-	l_client_configuration_0->export_resource();
-
+	std::clog << "[ APPLICATION ] Creating client 0..." << std::endl;
+	
 	client l_client_0(
 		l_io_context,
-		l_client_configuration_0
+		"config/client_configuration_0.json"
 	);
 	agent<std::string, std::string> l_agent_0(l_client_0, "test_agent", "agent-specific-information-0");
 
@@ -56,25 +53,19 @@ int main()
 
 			}));
 
-	std::clog << "[ APPLICATION ] Importing client_1 configuration..." << std::endl;
-	ptr<client_configuration> l_client_configuration_1(new client_configuration("config/client_configuration_1.json"));
-	l_client_configuration_1->import_resource();
-	l_client_configuration_1->export_resource();
-
+	std::clog << "[ APPLICATION ] Creating client 1..." << std::endl;
+	
 	client l_client_1(
 		l_io_context,
-		l_client_configuration_1
+		"config/client_configuration_1.json"
 	);
 	agent<std::string, std::string> l_agent_1(l_client_1, "test_agent", "agent-specific-information-1");
 
-	std::clog << "[ APPLICATION ] Importing client_2 configuration..." << std::endl;
-	ptr<client_configuration> l_client_configuration_2(new client_configuration("config/client_configuration_2.json"));
-	l_client_configuration_2->import_resource();
-	l_client_configuration_2->export_resource();
-
+	std::clog << "[ APPLICATION ] Creating client 2..." << std::endl;
+	
 	client l_client_2(
 		l_io_context,
-		l_client_configuration_2
+		"config/client_configuration_2.json"
 	);
 	agent<std::string, std::string> l_agent_2(l_client_2, "test_agent", "agent-specific-information-2");
 
