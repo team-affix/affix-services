@@ -1,3 +1,6 @@
 [submodule "affix-base"]
 	path = affix-base
 	url = https://github.com/team-affix/affix-base.git
+[submodule "json"]
+	path = json
+	url = git@github.com:nlohmann/json.git

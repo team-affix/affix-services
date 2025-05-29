@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{0e5e1456-706b-49c2-b5b2-dccd9445c1f7}</ProjectGuid>
+    <ProjectGuid>{ebf602b3-0557-428e-b7e8-2476688753ba}</ProjectGuid>
     <RootNamespace>affixservices</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -29,26 +29,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -88,19 +88,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../asio/asio/include;../../cfvi-cross-file-variable-interpreter/cfvi/cfvi;../../cryptopp850/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../;../../affix-base;../../affix-base/asio/asio/include;../../json/single_include/nlohmann/</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <Lib>
-      <AdditionalDependencies>cryptlib.lib</AdditionalDependencies>
-    </Lib>
-    <Lib>
-      <AdditionalLibraryDirectories>../../cryptopp850/Win32/Output/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -110,8 +105,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../asio/asio/include;../../cfvi-cross-file-variable-interpreter/cfvi/cfvi;../../cryptopp850/</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>../../;../../affix-base;../../affix-base/asio/asio/include;../../json/single_include/nlohmann/</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -119,12 +115,6 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <Lib>
-      <AdditionalDependencies>cryptlib.lib</AdditionalDependencies>
-    </Lib>
-    <Lib>
-      <AdditionalLibraryDirectories>../../cryptopp850/Win32/Output/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -132,19 +122,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../asio/asio/include;../../cfvi-cross-file-variable-interpreter/cfvi/cfvi;../../cryptopp850/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../;../../affix-base;../../affix-base/asio/asio/include;../../json/single_include/nlohmann/</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <Lib>
-      <AdditionalDependencies>cryptlib.lib</AdditionalDependencies>
-    </Lib>
-    <Lib>
-      <AdditionalLibraryDirectories>../../cryptopp850/Win32/Output/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -154,8 +139,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../asio/asio/include;../../cfvi-cross-file-variable-interpreter/cfvi/cfvi;../../cryptopp850/</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>../../;../../affix-base;../../affix-base/asio/asio/include;../../json/single_include/nlohmann/</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -163,20 +149,55 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <Lib>
-      <AdditionalDependencies>cryptlib.lib</AdditionalDependencies>
-    </Lib>
-    <Lib>
-      <AdditionalLibraryDirectories>../../cryptopp850/Win32/Output/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\cfvi-cross-file-variable-interpreter\cfvi\cfvi\cfvi.vcxproj">
-      <Project>{aedc4dde-ae78-403a-8f60-d4804538ad12}</Project>
+    <ProjectReference Include="..\..\affix-base\affix-base\affix-base.vcxproj">
+      <Project>{7b4bfee2-ac81-40ce-a365-529cfc1111b3}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source.cpp" />
+    <ClInclude Include="agent.h" />
+    <ClInclude Include="agent_information.h" />
+    <ClInclude Include="client_information.h" />
+    <ClInclude Include="message.h" />
+    <ClInclude Include="message_agent_information_body.h" />
+    <ClInclude Include="message_client_path_body.h" />
+    <ClInclude Include="message_relay_body.h" />
+    <ClInclude Include="pending_authentication.h" />
+    <ClInclude Include="authentication_result.h" />
+    <ClInclude Include="details.h" />
+    <ClInclude Include="messaging.h" />
+    <ClInclude Include="connection_information.h" />
+    <ClInclude Include="pending_connection.h" />
+    <ClInclude Include="client.h" />
+    <ClInclude Include="security_information.h" />
+    <ClInclude Include="transmission_security_manager.h" />
+    <ClInclude Include="connection_result.h" />
+    <ClInclude Include="version.h" />
+    <ClInclude Include="authenticated_connection.h" />
+    <ClInclude Include="message_header.h" />
+    <ClInclude Include="message_types.h" />
+    <ClInclude Include="networking.h" />
+    <ClInclude Include="rolling_token.h" />
+    <ClInclude Include="security.h" />
+    <ClInclude Include="transmission_result.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="agent_information.cpp" />
+    <ClCompile Include="client_information.cpp" />
+    <ClCompile Include="message_agent_information_body.cpp" />
+    <ClCompile Include="message_client_path_body.cpp" />
+    <ClCompile Include="message_relay_body.cpp" />
+    <ClCompile Include="pending_authentication.cpp" />
+    <ClCompile Include="authentication_result.cpp" />
+    <ClCompile Include="authenticated_connection.cpp" />
+    <ClCompile Include="connection_information.cpp" />
+    <ClCompile Include="pending_connection.cpp" />
+    <ClCompile Include="client.cpp" />
+    <ClCompile Include="security_information.cpp" />
+    <ClCompile Include="transmission_security_manager.cpp" />
+    <ClCompile Include="rolling_token.cpp" />
+    <ClCompile Include="connection_result.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -13,10 +13,159 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\security">
+      <UniqueIdentifier>{0a4cd69f-f18c-4c77-9a39-834c4b4c1c0d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\security">
+      <UniqueIdentifier>{664f53d9-ef29-4374-b06d-04df527ff2ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\networking">
+      <UniqueIdentifier>{474e3cd5-fa04-4b7a-b1e5-fa554fcf2f43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\networking">
+      <UniqueIdentifier>{b63a2416-58cc-4d97-9ddd-5d290013a25f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\messaging">
+      <UniqueIdentifier>{079c81e4-4b85-4167-9fa7-6a03aeb2f82d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\messaging">
+      <UniqueIdentifier>{0c6e0580-fd61-4e25-ab8d-2b62d24880c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\details">
+      <UniqueIdentifier>{69d898c4-4569-4e27-8079-3b87834cd551}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\processing">
+      <UniqueIdentifier>{b0ef6205-5a64-4b0d-8566-7f051ca89fe4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\processing">
+      <UniqueIdentifier>{b8a6862b-067d-4c77-9b78-bbd59f2a9937}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\details">
+      <UniqueIdentifier>{48432e20-67c5-4066-8023-75a2b85c54a4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source.cpp">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="security.h">
+      <Filter>Header Files\security</Filter>
+    </ClInclude>
+    <ClInclude Include="rolling_token.h">
+      <Filter>Header Files\security</Filter>
+    </ClInclude>
+    <ClInclude Include="networking.h">
+      <Filter>Header Files\networking</Filter>
+    </ClInclude>
+    <ClInclude Include="authenticated_connection.h">
+      <Filter>Header Files\networking</Filter>
+    </ClInclude>
+    <ClInclude Include="message_header.h">
+      <Filter>Header Files\messaging</Filter>
+    </ClInclude>
+    <ClInclude Include="message_types.h">
+      <Filter>Header Files\messaging</Filter>
+    </ClInclude>
+    <ClInclude Include="details.h">
+      <Filter>Header Files\details</Filter>
+    </ClInclude>
+    <ClInclude Include="version.h">
+      <Filter>Header Files\details</Filter>
+    </ClInclude>
+    <ClInclude Include="transmission_security_manager.h">
+      <Filter>Header Files\security</Filter>
+    </ClInclude>
+    <ClInclude Include="transmission_result.h">
+      <Filter>Header Files\networking</Filter>
+    </ClInclude>
+    <ClInclude Include="pending_authentication.h">
+      <Filter>Header Files\networking</Filter>
+    </ClInclude>
+    <ClInclude Include="authentication_result.h">
+      <Filter>Header Files\networking</Filter>
+    </ClInclude>
+    <ClInclude Include="connection_result.h">
+      <Filter>Header Files\networking</Filter>
+    </ClInclude>
+    <ClInclude Include="messaging.h">
+      <Filter>Header Files\messaging</Filter>
+    </ClInclude>
+    <ClInclude Include="pending_connection.h">
+      <Filter>Header Files\networking</Filter>
+    </ClInclude>
+    <ClInclude Include="connection_information.h">
+      <Filter>Header Files\networking</Filter>
+    </ClInclude>
+    <ClInclude Include="security_information.h">
+      <Filter>Header Files\security</Filter>
+    </ClInclude>
+    <ClInclude Include="client.h">
+      <Filter>Header Files\processing</Filter>
+    </ClInclude>
+    <ClInclude Include="message_relay_body.h">
+      <Filter>Header Files\messaging</Filter>
+    </ClInclude>
+    <ClInclude Include="message_agent_information_body.h">
+      <Filter>Header Files\messaging</Filter>
+    </ClInclude>
+    <ClInclude Include="message.h">
+      <Filter>Header Files\messaging</Filter>
+    </ClInclude>
+    <ClInclude Include="message_client_path_body.h">
+      <Filter>Header Files\messaging</Filter>
+    </ClInclude>
+    <ClInclude Include="agent.h">
+      <Filter>Header Files\processing</Filter>
+    </ClInclude>
+    <ClInclude Include="client_information.h">
+      <Filter>Header Files\details</Filter>
+    </ClInclude>
+    <ClInclude Include="agent_information.h">
+      <Filter>Header Files\details</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="rolling_token.cpp">
+      <Filter>Source Files\security</Filter>
+    </ClCompile>
+    <ClCompile Include="authenticated_connection.cpp">
+      <Filter>Source Files\networking</Filter>
+    </ClCompile>
+    <ClCompile Include="transmission_security_manager.cpp">
+      <Filter>Source Files\security</Filter>
+    </ClCompile>
+    <ClCompile Include="pending_authentication.cpp">
+      <Filter>Source Files\networking</Filter>
+    </ClCompile>
+    <ClCompile Include="authentication_result.cpp">
+      <Filter>Source Files\networking</Filter>
+    </ClCompile>
+    <ClCompile Include="connection_result.cpp">
+      <Filter>Source Files\networking</Filter>
+    </ClCompile>
+    <ClCompile Include="connection_information.cpp">
+      <Filter>Source Files\networking</Filter>
+    </ClCompile>
+    <ClCompile Include="security_information.cpp">
+      <Filter>Source Files\security</Filter>
+    </ClCompile>
+    <ClCompile Include="client.cpp">
+      <Filter>Source Files\processing</Filter>
+    </ClCompile>
+    <ClCompile Include="message_relay_body.cpp">
+      <Filter>Source Files\messaging</Filter>
+    </ClCompile>
+    <ClCompile Include="message_agent_information_body.cpp">
+      <Filter>Source Files\messaging</Filter>
+    </ClCompile>
+    <ClCompile Include="pending_connection.cpp">
+      <Filter>Source Files\networking</Filter>
+    </ClCompile>
+    <ClCompile Include="message_client_path_body.cpp">
+      <Filter>Source Files\messaging</Filter>
+    </ClCompile>
+    <ClCompile Include="agent_information.cpp">
+      <Filter>Source Files\details</Filter>
+    </ClCompile>
+    <ClCompile Include="client_information.cpp">
+      <Filter>Source Files\details</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
